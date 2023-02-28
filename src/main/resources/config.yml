@@ -17,3 +17,6 @@ message:
   add-ok: '§6IpacEL §f> §b%player% §a已添加到白名单'
   del-ok: '§6IpacEL §f> §a%player% §b已从白名单移出'
   not: '§6IpacEL §f> §b您不在白名单中§7: @§a%player%'
+
+  err-name-length: '§6IpacEL §f> §b名称长度异常'
+  err-uuid-length: '§6IpacEL §f> §bUUID长度异常'

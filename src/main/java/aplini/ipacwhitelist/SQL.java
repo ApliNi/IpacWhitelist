@@ -44,8 +44,8 @@ public class SQL {
                     "CREATE TABLE IF NOT EXISTS `" + getPlugin().getConfig().getString("sql.table") + "` (" +
                             "`UUID` char(36) NOT NULL UNIQUE, " +
                             "`NAME` varchar(16) NOT NULL UNIQUE, " +
-                            "`TIME` bigint(11) NOT NULL UNIQUE, " +
-                            "`WHITE` boolean NOT NULL UNIQUE" +
+                            "`TIME` bigint(11) NOT NULL, " +
+                            "`WHITE` boolean NOT NULL" +
                             ");").execute();
         } catch (Exception e) {
             e.printStackTrace();
@@ -56,7 +56,7 @@ public class SQL {
     public static void addPlayer(String name, String UUID){
         try {
             PreparedStatement sql = connection.prepareStatement(
-                    "INSERT INTO `"+ getPlugin().getConfig().getString("sql.table") +"` (`UUID`, `NAME`, `TIME`, `WHITE`) VALUES (?, ?, ?, ?);");
+                    "REPLACE INTO `"+ getPlugin().getConfig().getString("sql.table") +"` (`UUID`, `NAME`, `TIME`, `WHITE`) VALUES (?, ?, ?, ?);");
             sql.setString(1, UUID);
             sql.setString(2, name);
             sql.setInt(3, 0);
@@ -118,7 +118,7 @@ public class SQL {
                     "UPDATE `"+ getPlugin().getConfig().getString("sql.table") +"` SET `WHITE` = ? WHERE `NAME` = ?;");
             sql.setBoolean(1, false);
             sql.setString(2, name);
-            sql.execute();
+            sql.executeUpdate();
             sql.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -132,7 +132,7 @@ public class SQL {
                     "UPDATE `"+ getPlugin().getConfig().getString("sql.table") +"` SET `WHITE` = ? WHERE `UUID` = ?;");
             sql.setBoolean(1, false);
             sql.setString(2, UUID);
-            sql.execute();
+            sql.executeUpdate();
             sql.close();
         } catch (Exception e) {
             e.printStackTrace();
