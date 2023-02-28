@@ -1,0 +1,10 @@
+name: IpacWhitelist
+version: '${project.version}'
+main: aplini.ipacwhitelist.IpacWhitelist
+api-version: 1.19
+
+commands:
+  wl:
+    description: 白名单
+    usage: /<command>
+    aliases: [ipacwhitelist]
