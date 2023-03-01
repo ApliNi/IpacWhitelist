@@ -50,7 +50,7 @@ public class SQL {
         try {
             connection.prepareStatement(
                     "CREATE TABLE IF NOT EXISTS `" + getPlugin().getConfig().getString("sql.table") + "` (" +
-                            "`UUID` char(36) NOT NULL UNIQUE, " +
+                            "`UUID` char(36) NOT NULL, " +
                             "`NAME` varchar(16) NOT NULL UNIQUE, " +
                             "`TIME` bigint(11) NOT NULL, " +
                             "`WHITE` boolean NOT NULL" +
