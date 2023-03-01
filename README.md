@@ -10,5 +10,6 @@ Ipacamod 服务器的新白名单插件
 
 **指令列表**
 - `/wl` - 主命令
+- `/wl reload` - 重载配置
 - `/wl add <name> [uuid]` - 添加到白名单, uuid为空时自动获取
 - `/wl del <name|uuid>` - 取消一个玩家的白名单, 不删除数据库中的记录

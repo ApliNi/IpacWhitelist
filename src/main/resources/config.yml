@@ -6,9 +6,8 @@ sql:
   password: password
   database: IpacWhitelist
   table: player
-  # stay-connected: true
 
-# 设置
+#
 
 
 # 消息
@@ -16,7 +15,11 @@ message:
   # %player% = 玩家名称
   add-ok: '§6IpacEL §f> §b%player% §a已添加到白名单'
   del-ok: '§6IpacEL §f> §a%player% §b已从白名单移出'
-  not: '§6IpacEL §f> §b您不在白名单中§7: @§a%player%'
+  not: '§6IpacEL §f> §b您不在白名单中§7: §a%player%'
+
+  reload: '§6IpacEL §f> IpacWhitelist重载完成'
 
   err-name-length: '§6IpacEL §f> §b名称长度异常'
   err-uuid-length: '§6IpacEL §f> §bUUID长度异常'
+  err-sql: '§6IpacEL §f> §b内部错误'
+  err-sql-player-join: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'

@@ -27,7 +27,6 @@ public class SQL {
             e.printStackTrace();
         }
     }
-
     // 断开
     public static synchronized void closeConnection() {
         try {
@@ -36,9 +35,9 @@ public class SQL {
             e.printStackTrace();
         }
     }
-
     // 初始化数据库
     public static synchronized void initialize() {
+        openConnection();
         try {
             connection.prepareStatement(
                     "CREATE TABLE IF NOT EXISTS `" + getPlugin().getConfig().getString("sql.table") + "` (" +
@@ -49,11 +48,14 @@ public class SQL {
                             ");").execute();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            closeConnection();
         }
     }
 
     // 添加玩家
-    public static void addPlayer(String name, String UUID){
+    public static boolean addPlayer(String name, String UUID){
+        openConnection();
         try {
             PreparedStatement sql = connection.prepareStatement(
                     "REPLACE INTO `"+ getPlugin().getConfig().getString("sql.table") +"` (`UUID`, `NAME`, `TIME`, `WHITE`) VALUES (?, ?, ?, ?);");
@@ -65,54 +67,19 @@ public class SQL {
             sql.close();
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
+        } finally {
+            closeConnection();
         }
+        return true;
     }
-    public static void addPlayer(String name){
-        addPlayer(name, "");
-    }
-
-    // 修改信息
-    public static void setPlayerUUID(String name, String UUID){
-        try {
-            PreparedStatement sql = connection.prepareStatement(
-                    "UPDATE `"+ getPlugin().getConfig().getString("sql.table") +"` SET `UUID` = ? WHERE `NAME` = ?;");
-            sql.setString(1, UUID);
-            sql.setString(2, name);
-            sql.executeUpdate();
-            sql.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    public static void setPlayerName(String name, String UUID){
-        try {
-            PreparedStatement sql = connection.prepareStatement(
-                    "UPDATE `"+ getPlugin().getConfig().getString("sql.table") +"` SET `NAME` = ? WHERE `UUID` = ?;");
-            sql.setString(1, name);
-            sql.setString(2, UUID);
-            sql.executeUpdate();
-            sql.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // 更新时间戳
-    public static void setPlayerTime(String UUID, Long Time){
-        try {
-            PreparedStatement sql = connection.prepareStatement(
-                    "UPDATE `"+ getPlugin().getConfig().getString("sql.table") +"` SET `TIME` = ? WHERE `UUID` = ?;");
-            sql.setLong(1, Time);
-            sql.setString(2, UUID);
-            sql.executeUpdate();
-            sql.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static boolean addPlayer(String name){
+        return addPlayer(name, "");
     }
 
     // 删除玩家, 通过名称
-    public static void delPlayerName(String name){
+    public static boolean delPlayerName(String name){
+        openConnection();
         try {
             PreparedStatement sql = connection.prepareStatement(
                     "UPDATE `"+ getPlugin().getConfig().getString("sql.table") +"` SET `WHITE` = ? WHERE `NAME` = ?;");
@@ -122,11 +89,16 @@ public class SQL {
             sql.close();
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
+        } finally {
+            closeConnection();
         }
+        return true;
     }
 
     // 删除玩家, 通过UUID
-    public static void delPlayerUUID(String UUID){
+    public static boolean delPlayerUUID(String UUID){
+        openConnection();
         try {
             PreparedStatement sql = connection.prepareStatement(
                     "UPDATE `"+ getPlugin().getConfig().getString("sql.table") +"` SET `WHITE` = ? WHERE `UUID` = ?;");
@@ -136,37 +108,69 @@ public class SQL {
             sql.close();
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
+        } finally {
+            closeConnection();
         }
+        return true;
     }
 
     // 是否在白名单中
-    public static boolean isWhitelisted(Player player){
+    public static int isWhitelisted(Player player){
+        openConnection();
         try {
             PreparedStatement sql;
             ResultSet results;
 
+            // 如果UUID匹配
             sql = connection.prepareStatement(
                     "SELECT * FROM `" + getPlugin().getConfig().getString("sql.table") + "` WHERE `WHITE` = true AND `UUID` = ?;");
             sql.setString(1, player.getUniqueId().toString());
             results = sql.executeQuery();
             if(results.next()){
-                setPlayerName(player.getName(), player.getUniqueId().toString());
-                return true;
+                // 更新名称和最后加入时间
+                try {
+                    PreparedStatement sql2 = connection.prepareStatement(
+                            "UPDATE `"+ getPlugin().getConfig().getString("sql.table") +"` SET `NAME` = ?, `TIME` = ? WHERE `UUID` = ?;");
+                    sql2.setString(1, player.getName());
+                    sql2.setLong(2, System.currentTimeMillis() / 1000);
+                    sql2.setString(3, player.getUniqueId().toString());
+                    sql2.executeUpdate();
+                    sql2.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return 1;
             }
 
+            // 如果名称匹配
             sql = connection.prepareStatement(
                     "SELECT * FROM `" + getPlugin().getConfig().getString("sql.table") + "` WHERE `WHITE` = true AND `NAME` = ?;");
             sql.setString(1, player.getName());
             results = sql.executeQuery();
             if(results.next()){
-                setPlayerUUID(player.getName(), player.getUniqueId().toString());
-                return true;
+                // 更新UUID/名称和最后加入时间
+                try {
+                    PreparedStatement sql2 = connection.prepareStatement(
+                            "UPDATE `"+ getPlugin().getConfig().getString("sql.table") +"` SET `UUID` = ?, `NAME` = ?, `TIME` = ? WHERE `NAME` = ?;");
+                    sql2.setString(1, player.getUniqueId().toString());
+                    sql2.setString(2, player.getName()); // 在第一次加入时处理名称大小写不匹配
+                    sql2.setLong(3, System.currentTimeMillis() / 1000);
+                    sql2.setString(4, player.getName());
+                    sql2.executeUpdate();
+                    sql2.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return 1;
             }
 
-            return false;
+            return 0;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return 2;
+        } finally {
+            closeConnection();
         }
     }
 }
