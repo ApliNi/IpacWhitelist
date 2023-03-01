@@ -155,11 +155,6 @@ public class SQL {
                 return 1;
             }
 
-            // 如果uuid不为空
-            if(!results.getString("UUID").equals("")){
-                return 0;
-            }
-
             // 如果名称匹配
             sql = connection.prepareStatement(
                     "SELECT * FROM `" + getPlugin().getConfig().getString("sql.table") + "` WHERE `WHITE` = true AND `NAME` = ?;");
@@ -167,6 +162,10 @@ public class SQL {
             results = sql.executeQuery();
             if(results.next()){
                 if(Util.isWhitelistedTimeout(results.getLong("TIME"))){
+                    return 0;
+                }
+                // 如果uuid不为空
+                if(!results.getString("UUID").equals("")){
                     return 0;
                 }
                 // 更新UUID/名称和最后加入时间

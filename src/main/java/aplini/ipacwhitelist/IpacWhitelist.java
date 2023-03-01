@@ -139,8 +139,6 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
             event.setKickMessage(plugin.getConfig().getString("message.err-sql-player-join", "message.err-sql-player-join"));
             event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
         }
-
-        event.getPlayer().setDisplayName("aaa");
     }
 
     public static IpacWhitelist getPlugin() {
