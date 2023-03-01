@@ -14,12 +14,18 @@ sql:
   table: player
 
 
+# 功能
+whitelist:
+  # 如果玩家在指定秒数内没上线过, 则视为不在白名单中. -1 = 禁用
+  timeout: 10368000 # 10368000 = 4个月
+
+
 # 消息
 message:
   # %player% = 玩家名称
   add-ok: '§6IpacEL §f> §b%player% §a已添加到白名单'
   del-ok: '§6IpacEL §f> §a%player% §b已从白名单移出'
-  not: '§6IpacEL §f> §b您不在白名单中§7: §a%player%'
+  not: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%player%'
 
   reload: '§6IpacEL §f> IpacWhitelist重载完成'
 

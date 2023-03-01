@@ -3,10 +3,7 @@ package aplini.ipacwhitelist;
 import org.bukkit.entity.Player;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 
 import static aplini.ipacwhitelist.IpacWhitelist.getPlugin;
 
@@ -70,7 +67,7 @@ public class SQL {
                     "REPLACE INTO `"+ getPlugin().getConfig().getString("sql.table") +"` (`UUID`, `NAME`, `TIME`, `WHITE`) VALUES (?, ?, ?, ?);");
             sql.setString(1, UUID);
             sql.setString(2, name);
-            sql.setInt(3, 0);
+            sql.setInt(3, -1);
             sql.setBoolean(4, true);
             sql.execute();
             sql.close();
@@ -125,6 +122,9 @@ public class SQL {
     }
 
     // 是否在白名单中
+    // 0 = 不在
+    // 1 = 存在
+    // 2 = 出错
     public static int isWhitelisted(Player player){
         openConnection();
         try {
@@ -137,6 +137,9 @@ public class SQL {
             sql.setString(1, player.getUniqueId().toString());
             results = sql.executeQuery();
             if(results.next()){
+                if(Util.isWhitelistedTimeout(results.getLong("TIME"))){
+                    return 0;
+                }
                 // 更新名称和最后加入时间
                 try {
                     PreparedStatement sql2 = connection.prepareStatement(
@@ -152,12 +155,20 @@ public class SQL {
                 return 1;
             }
 
+            // 如果uuid不为空
+            if(!results.getString("UUID").equals("")){
+                return 0;
+            }
+
             // 如果名称匹配
             sql = connection.prepareStatement(
                     "SELECT * FROM `" + getPlugin().getConfig().getString("sql.table") + "` WHERE `WHITE` = true AND `NAME` = ?;");
             sql.setString(1, player.getName());
             results = sql.executeQuery();
             if(results.next()){
+                if(Util.isWhitelistedTimeout(results.getLong("TIME"))){
+                    return 0;
+                }
                 // 更新UUID/名称和最后加入时间
                 try {
                     PreparedStatement sql2 = connection.prepareStatement(
@@ -182,4 +193,6 @@ public class SQL {
             closeConnection();
         }
     }
+
+
 }
