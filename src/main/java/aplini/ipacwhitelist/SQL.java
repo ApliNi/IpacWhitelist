@@ -2,6 +2,7 @@ package aplini.ipacwhitelist;
 
 import org.bukkit.entity.Player;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -15,12 +16,20 @@ public class SQL {
 
     // 连接
     public static synchronized void openConnection() {
+        String db = getPlugin().getConfig().getString("sql.db", "sqlite");
+        String jdbc;
+
+        if(db.equalsIgnoreCase("sqlite") || db.equalsIgnoreCase("h2")){
+            jdbc = "jdbc:"+ db +":"+ new File(getPlugin().getDataFolder(), "database.db").getAbsolutePath();
+        }else{
+            jdbc = "jdbc:mysql://" +
+                    getPlugin().getConfig().getString("sql.host") + ":" +
+                    getPlugin().getConfig().getString("sql.port") + "/" +
+                    getPlugin().getConfig().getString("sql.database");
+        }
+
         try {
-            connection = DriverManager.getConnection(
-                    "jdbc:mysql://" +
-                            getPlugin().getConfig().getString("sql.host") + ":" +
-                            getPlugin().getConfig().getString("sql.port") + "/" +
-                            getPlugin().getConfig().getString("sql.database"),
+            connection = DriverManager.getConnection(jdbc,
                     getPlugin().getConfig().getString("sql.user"),
                     getPlugin().getConfig().getString("sql.password"));
         } catch (Exception e) {
