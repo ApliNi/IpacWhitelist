@@ -24,6 +24,13 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
 
     public void onEnable() {
 //        SQL.openConnection();
+
+        try {
+            Class.forName("com."+ getPlugin().getConfig().getString("sql.db", "sqlite") +".jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
         SQL.initialize();
 
         getServer().getPluginManager().registerEvents(this, this);
