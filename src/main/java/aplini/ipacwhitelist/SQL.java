@@ -22,7 +22,7 @@ public class SQL {
         if(db.equalsIgnoreCase("sqlite") || db.equalsIgnoreCase("h2")){
             jdbc = "jdbc:"+ db +":"+ new File(getPlugin().getDataFolder(), "database.db").getAbsolutePath();
         }else{
-            jdbc = "jdbc:mysql://" +
+            jdbc = "jdbc:"+ db +"://" +
                     getPlugin().getConfig().getString("sql.host") + ":" +
                     getPlugin().getConfig().getString("sql.port") + "/" +
                     getPlugin().getConfig().getString("sql.database");
