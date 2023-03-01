@@ -2,6 +2,10 @@
 sql:
   # sqlite 和 h2 为单文件数据库, 无需修改其他数据库配置
   db: sqlite
+  # mysql: com.mysql.jdbc.Driver
+  # h2: org.h2.Driver
+  jdbc_driver: 'com.mysql.jdbc.Driver' # 留空则不使用
+
   host: localhost
   port: 3306
   user: root
