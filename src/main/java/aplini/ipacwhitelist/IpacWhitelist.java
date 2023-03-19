@@ -53,22 +53,24 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                 break;
             case "add":
                 if (args.length == 2) {
+                    // 检查参数
                     if (args[1].length() > 16) {
                         sender.sendMessage(plugin.getConfig().getString("message.err-name-length", "message.err-name-length"));
                         return true;
                     }
 
-                    if (SQL.addPlayer(args[1])) {
+                    boolean s = SQL.addPlayer(args[1]);
+                    if(s){
                         sender.sendMessage(plugin.getConfig().getString("message.add-ok", "message.add-ok")
                                 .replace("%player%", args[1]));
-                    } else {
+                    }else{
                         sender.sendMessage(plugin.getConfig().getString("message.err-sql", "message.err-sql"));
                     }
-
                     return true;
                 }
 
                 else if (args.length >= 3) {
+                    // 检查参数
                     if (args[1].length() > 16) {
                         sender.sendMessage(plugin.getConfig().getString("message.err-name-length", "message.err-name-length"));
                         return true;
@@ -78,10 +80,11 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                         return true;
                     }
 
-                    if (SQL.addPlayer(args[1], args[2])) {
+                    boolean s = SQL.addPlayer(args[1], args[2]);
+                    if(s){
                         sender.sendMessage(plugin.getConfig().getString("message.add-ok", "message.add-ok")
                                 .replace("%player%", args[1]));
-                    } else {
+                    }else{
                         sender.sendMessage(plugin.getConfig().getString("message.err-sql", "message.err-sql"));
                     }
                     return true;
@@ -90,23 +93,35 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                 sender.sendMessage("/wl add <Name> [UUID]");
                 break;
             case "del":
-                if (args[1].length() == 36) {
-                    if (SQL.delPlayerUUID(args[1])) {
-                        sender.sendMessage(plugin.getConfig().getString("message.add-ok", "message.add-ok")
-                                .replace("%player%", args[1]));
-                    } else {
-                        sender.sendMessage(plugin.getConfig().getString("message.err-sql", "message.err-sql"));
-                    }
-                } else {
-                    if (args[1].length() > 16) {
-                        sender.sendMessage(plugin.getConfig().getString("message.err-name-length", "message.err-name-length"));
+
+                if (args.length == 2) {
+                    if (args[1].length() == 36) {
+                        // uuid
+                        boolean s = SQL.delPlayerUUID(args[1]);
+                        if(s){
+                            sender.sendMessage(plugin.getConfig().getString("message.add-ok", "message.add-ok")
+                                    .replace("%player%", args[1]));
+                        }else{
+                            sender.sendMessage(plugin.getConfig().getString("message.err-sql", "message.err-sql"));
+                        }
                         return true;
                     }
-                    if (SQL.delPlayerName(args[1])) {
-                        sender.sendMessage(plugin.getConfig().getString("message.del-ok", "message.del-ok")
-                                .replace("%player%", args[1]));
-                    } else {
-                        sender.sendMessage(plugin.getConfig().getString("message.err-sql", "message.err-sql"));
+
+                    else if (args[1].length() <= 16) {
+                        // name
+                        boolean s = SQL.delPlayerName(args[1]);
+                        if(s){
+                            sender.sendMessage(plugin.getConfig().getString("message.del-ok", "message.del-ok")
+                                    .replace("%player%", args[1]));
+                        }else{
+                            sender.sendMessage(plugin.getConfig().getString("message.err-sql", "message.err-sql"));
+                        }
+                        return true;
+                    }
+
+                    else {
+                        sender.sendMessage(plugin.getConfig().getString("message.err-name-length", "message.err-name-length"));
+                        return true;
                     }
                 }
 
