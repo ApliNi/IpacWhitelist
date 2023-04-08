@@ -2,10 +2,8 @@
 sql:
   # sqlite 和 h2 为单文件数据库, 无需修改其他数据库配置
   db: mysql
-  # mysql: com.mysql.jdbc.Driver
-  # h2: org.h2.Driver
-  jdbc_driver: 'com.mysql.jdbc.Driver' # 留空则不使用
-
+  jdbc_driver: ''
+  # mysql
   host: localhost
   port: 3306
   user: root
@@ -33,3 +31,4 @@ message:
   err-uuid-length: '§6IpacEL §f> §bUUID长度异常'
   err-sql: '§6IpacEL §f> §b内部错误'
   err-sql-player-join: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'
+

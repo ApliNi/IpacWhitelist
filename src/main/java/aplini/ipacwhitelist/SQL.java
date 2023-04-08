@@ -45,13 +45,20 @@ public class SQL {
     public static synchronized void initialize() {
         openConnection();
         try {
-            connection.prepareStatement(
-                    "CREATE TABLE IF NOT EXISTS `" + getPlugin().getConfig().getString("sql.table") + "` (" +
-                            "`UUID` char(36) NOT NULL, " +
-                            "`NAME` varchar(16) NOT NULL UNIQUE, " +
-                            "`TIME` bigint(11) NOT NULL, " +
-                            "`WHITE` boolean NOT NULL" +
-                            ");").execute();
+            // uuid 不能唯一, 因为需要留空等待玩家加入时填充
+            connection.prepareStatement("""
+                    CREATE TABLE IF NOT EXISTS `%s` (
+                        `UUID` char(36) NOT NULL,
+                        `NAME` varchar(16) NOT NULL,
+                        `TIME` bigint(11) NOT NULL,
+                        `WHITE` boolean NOT NULL,
+                        
+                        INDEX `IDX_UUID` (`UUID`) USING BTREE,
+                        INDEX `IDX_NAME` (`NAME`) USING BTREE
+                    );
+                    """.formatted(
+                            getPlugin().getConfig().getString("sql.table")
+                    )).execute();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -137,6 +144,7 @@ public class SQL {
             sql.setString(1, player.getUniqueId().toString());
             results = sql.executeQuery();
             if(results.next()){
+                // 白名单上的玩家是否超时
                 if(Util.isWhitelistedTimeout(results.getLong("TIME"))){
                     return 0;
                 }
@@ -161,6 +169,7 @@ public class SQL {
             sql.setString(1, player.getName());
             results = sql.executeQuery();
             if(results.next()){
+                // 白名单上的玩家是否超时
                 if(Util.isWhitelistedTimeout(results.getLong("TIME"))){
                     return 0;
                 }
