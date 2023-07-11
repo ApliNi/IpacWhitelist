@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.sql.*;
+import java.util.Objects;
 
 import static aplini.ipacwhitelist.IpacWhitelist.getPlugin;
 
@@ -46,7 +47,25 @@ public class SQL {
         openConnection();
         try {
             // uuid 不能唯一, 因为需要留空等待玩家加入时填充
-            connection.prepareStatement("""
+
+            // SQLITE
+            if(Objects.equals(getPlugin().getConfig().getString("sql.db"), "sqlite")){
+                connection.prepareStatement("""
+                        CREATE TABLE IF NOT EXISTS "%s" (
+                            "UUID" TEXT NOT NULL,
+                            "NAME" TEXT NOT NULL,
+                            "TIME" INTEGER NOT NULL,
+                            "WHITE" BOOLEAN NOT NULL
+                        );
+                        CREATE INDEX IF NOT EXISTS idx_UUID ON %s (UUID);
+                        CREATE INDEX IF NOT EXISTS idx_NAME ON %s (NAME);
+                        """.formatted(
+                        getPlugin().getConfig().getString("sql.table"),
+                        getPlugin().getConfig().getString("sql.table"),
+                        getPlugin().getConfig().getString("sql.table")
+                )).execute();
+            }else{
+                connection.prepareStatement("""
                     CREATE TABLE IF NOT EXISTS `%s` (
                         `UUID` char(36) NOT NULL,
                         `NAME` varchar(16) NOT NULL,
@@ -57,8 +76,10 @@ public class SQL {
                         INDEX `IDX_NAME` (`NAME`) USING BTREE
                     );
                     """.formatted(
-                            getPlugin().getConfig().getString("sql.table")
-                    )).execute();
+                        getPlugin().getConfig().getString("sql.table")
+                )).execute();
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
