@@ -64,11 +64,11 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                         case 0 ->
                             sender.sendMessage(plugin.getConfig().getString("message.err-sql", ""));
                         case 1 ->
-                            sender.sendMessage(plugin.getConfig().getString("message.add-ok", "")
-                                    .replace("%player%", args[1]));
+                                sender.sendMessage(plugin.getConfig().getString("message.add-ok-reset", "")
+                                        .replace("%player%", args[1]));
                         case 2 ->
-                            sender.sendMessage(plugin.getConfig().getString("message.add-ok-reset", "")
-                                    .replace("%player%", args[1]));
+                                sender.sendMessage(plugin.getConfig().getString("message.add-ok", "")
+                                        .replace("%player%", args[1]));
                     }
                     return true;
                 } else if (args.length >= 3) {
@@ -87,10 +87,10 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                         case 0 ->
                                 sender.sendMessage(plugin.getConfig().getString("message.err-sql", ""));
                         case 1 ->
-                                sender.sendMessage(plugin.getConfig().getString("message.add-ok", "")
+                                sender.sendMessage(plugin.getConfig().getString("message.add-ok-reset", "")
                                         .replace("%player%", args[1]));
                         case 2 ->
-                                sender.sendMessage(plugin.getConfig().getString("message.add-ok-reset", "")
+                                sender.sendMessage(plugin.getConfig().getString("message.add-ok", "")
                                         .replace("%player%", args[1]));
                     }
                     return true;
