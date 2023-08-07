@@ -1,21 +1,30 @@
 package aplini.ipacwhitelist;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import static org.bukkit.Bukkit.getLogger;
 
 public class IpacWhitelist extends JavaPlugin implements Listener {
     private static IpacWhitelist plugin;
+    boolean allowJoin = false;
 
-    @Override
+
+    @Override // 插件加载
     public void onLoad() {
         plugin = this;
         plugin.saveDefaultConfig();
@@ -23,10 +32,14 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
         plugin.getConfig();
     }
 
+
+    // 插件启动
     public void onEnable() {
 //        SQL.openConnection();
 
-        if(!getConfig().getString("sql.jdbc_driver", "").equals("")){
+        Bukkit.getPluginManager().registerEvents(this, this);
+
+        if(!getConfig().getString("sql.jdbc_driver", "").isEmpty()){
             try {
                 Class.forName(getConfig().getString("sql.jdbc_driver"));
             } catch (ClassNotFoundException e) {
@@ -40,8 +53,60 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
         Objects.requireNonNull(plugin.getCommand("wl")).setExecutor(this);
     }
 
+
+    // 插件禁用
     public void onDisable() {
 //        SQL.closeConnection();
+    }
+
+
+    @EventHandler // 服务器启动完成
+    public void onServerLoad(ServerLoadEvent event) {
+        // 异步
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            // 等待时间
+            try {
+                TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("whitelist.late-join-time", 4000));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            // 允许加入
+            allowJoin = true;
+
+            getLogger().info("[IpacWhitelist] 启动等待结束");
+        });
+        executor.shutdown();
+    }
+
+
+    @EventHandler // 玩家加入
+    public void onPlayerLogin(PlayerLoginEvent event) {
+
+        // 白名单逻辑
+        // 0 = 不在, 1 = 存在, 2 = 出错
+        switch(SQL.isWhitelisted(event.getPlayer())){
+            case 0 -> {
+                getLogger().warning("[IpacWhitelist] "+ event.getPlayer().getName() +" 不在白名单中");
+                event.setKickMessage(plugin.getConfig().getString("message.not", "").replace("%player%", event.getPlayer().getName()));
+                event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
+                return;
+            }
+            case 2 -> {
+                getLogger().warning("[IpacWhitelist] "+ event.getPlayer().getName() +" 触发内部错误");
+                event.setKickMessage(plugin.getConfig().getString("message.err-sql-player-join", ""));
+                event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
+                return;
+            }
+        }
+
+        // 服务器启动等待
+        if(!allowJoin){
+            getLogger().info("[IpacWhitelist] "+ event.getPlayer().getName() +" 因启动等待被拒绝加入");
+            event.setKickMessage(plugin.getConfig().getString("message.late-join-time", ""));
+            event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
+            return;
+        }
     }
 
 
@@ -141,19 +206,6 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
             return list;
         }
         return null;
-    }
-
-    @EventHandler
-    public void onPlayerLogin(PlayerLoginEvent event) {
-        int success = SQL.isWhitelisted(event.getPlayer());
-        if (success == 0) {
-            event.setKickMessage(plugin.getConfig().getString("message.not", "")
-                    .replace("%player%", event.getPlayer().getName()));
-            event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
-        }else if(success == 2){
-            event.setKickMessage(plugin.getConfig().getString("message.err-sql-player-join", ""));
-            event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
-        }
     }
 
     public static IpacWhitelist getPlugin() {

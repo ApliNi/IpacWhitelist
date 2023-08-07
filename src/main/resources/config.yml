@@ -17,6 +17,9 @@ whitelist:
   # 如果玩家在指定秒数内没上线过, 则视为不在白名单中. -1 = 禁用
   timeout: 10368000 # 10368000 = 4个月
 
+  # 服务器启动完成后等待多少毫秒才能允许玩家加入
+  late-join-time: 4000 # 4秒
+
 
 # 消息
 message:
@@ -32,4 +35,6 @@ message:
   err-uuid-length: '§6IpacEL §f> §bUUID长度异常'
   err-sql: '§6IpacEL §f> §b内部错误'
   err-sql-player-join: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'
+
+  late-join-time: '§bIpacEL §f> §b服务器正在启动'
 
