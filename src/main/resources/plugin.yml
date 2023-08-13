@@ -3,6 +3,9 @@ version: '${project.version}'
 main: aplini.ipacwhitelist.IpacWhitelist
 api-version: 1.19
 
+softdepend:
+  - AuthMe
+
 commands:
   wl:
     description: 白名单

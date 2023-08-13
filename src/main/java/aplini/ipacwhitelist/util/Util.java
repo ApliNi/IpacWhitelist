@@ -1,4 +1,4 @@
-package aplini.ipacwhitelist;
+package aplini.ipacwhitelist.util;
 
 import static aplini.ipacwhitelist.IpacWhitelist.getPlugin;
 

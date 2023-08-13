@@ -7,15 +7,14 @@ Ipacamod 服务器的新白名单插件
 - [x] 白名单功能
 - [x] 使用数据库
 - [x] 根据最后上线时间取消白名单
-- [ ] 完全删除功能
-  - [ ] 同时删除各处的用户数据
 
 
 **指令列表**
 - `/wl` - 主命令
 - `/wl reload` - 重载配置
-- `/wl add <name> [uuid]` - 添加到白名单, uuid为空时自动获取
-- `/wl del <name|uuid>` - 取消一个玩家的白名单, 不删除数据库中的记录
+- `/wl add <playerName> [playerUUID]` - 添加到白名单, uuid为空时自动获取
+- `/wl del <playerName | playerUUID>` - 取消一个玩家的白名单, 不删除数据库中的记录
+- `/wl reconnect_database` - 重新连接数据库
 
 
 **特性**

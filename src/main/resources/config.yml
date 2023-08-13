@@ -1,24 +1,69 @@
 # 数据库
 sql:
-  # sqlite 和 h2 为单文件数据库, 无需修改其他数据库配置
+  # sqlite, 暂不支持 mysql
   db: sqlite
-  jdbc_driver: ''
+
   # mysql
   host: localhost
   port: 3306
   user: root
   password: password
   database: IpacWhitelist
-  table: player
 
 
-# 功能
+# 白名单功能
 whitelist:
   # 如果玩家在指定秒数内没上线过, 则视为不在白名单中. -1 = 禁用
+  # 参观账户不受此限制
   timeout: 10368000 # 10368000 = 4个月
 
   # 服务器启动完成后等待多少毫秒才能允许玩家加入
   late-join-time: 4000 # 4秒
+
+
+# 参观账户
+# 参观账户允许不在白名单中的玩家加入服务器, 可以限制其功能
+visit:
+  # 如果关闭, 则不会注册相关的事件, 修改后需要重启服务器
+  # 如果开启, 不在白名单中的玩家将会以参观账户的形式加入服务器
+  enable: false
+  # 最多允许同时加入多少参观账户
+  max-visit-player: 10
+
+  # AuthMe
+  auto-register-AuthMe: true # 为参观账户自动注册, 相当于 `authme register <playerName> <password>`, 但不会踢出玩家
+  auto-login-AuthMe: true # 为参观账户自动登录, 相当于 `/authme forcelogin <playerName>`
+  auto-register-AuthMe-password: 'complexPassword' # 需要在这里填写一个复杂的密码
+
+  # 这些指令只是示例, 请根据自己的需求修改
+
+  # 参观账户事件程序
+  # command 和 message 中可使用的变量: %playerName%, %playerUUID%
+  event:
+    onNewVisitPlayerLoginEvent: # 参观账户第一次登录服务器 (第一次登录也会触发 onVisitPlayerLoginEvent 事件)
+      command:
+        - 'lp user %playerUUID% parent add visit'
+        - 'gamemode spectator %playerName%'
+
+    onVisitPlayerLoginEvent: # 参观账户登录服务器
+      command: []
+
+    onVisitPlayerJoinEvent: # 参观账户加入服务器
+      command: []
+      message:
+        - '§6IpacEL §f> §a您正在使用参观账户=w='
+
+    onVisitPlayerQuitEvent: # 参观账户退出服务器
+      command: []
+
+
+  # 参观账户被添加到白名单时执行一些指令 `/wl add <playerName> [playerUUID]`
+  # 可用变量: %playerName%, %playerUUID%
+  # 如果指令中不包含 UUID, 则尝试从数据库中查找
+  wl-add:
+    command:
+      - 'lp user %playerUUID% parent remove visit'
+      - 'gamemode survival %playerName%'
 
 
 # 消息
@@ -30,11 +75,15 @@ message:
   not: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%player%'
 
   reload: '§6IpacEL §f> IpacWhitelist重载完成'
+  reconnect-database: '§6IpacEL §f> §a初始化数据库完成'
 
   err-name-length: '§6IpacEL §f> §b名称长度异常'
   err-uuid-length: '§6IpacEL §f> §bUUID长度异常'
   err-sql: '§6IpacEL §f> §b内部错误'
   err-sql-player-join: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'
 
-  late-join-time: '§bIpacEL §f> §b服务器正在启动'
+  late-join-time: '§6IpacEL §f> §b服务器正在启动'
+
+  visit:
+    quota-is-full: '§6IpacEL §f> §b参观账户队列已满'
 
