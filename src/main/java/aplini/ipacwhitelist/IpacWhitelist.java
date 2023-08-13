@@ -1,11 +1,12 @@
 package aplini.ipacwhitelist;
 
 import aplini.ipacwhitelist.util.SQL;
-import aplini.ipacwhitelist.util.wlType;
+import aplini.ipacwhitelist.util.Type;
 import aplini.ipacwhitelist.visit.Visit;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
@@ -13,15 +14,16 @@ import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static aplini.ipacwhitelist.util.SQL.getVisitPlayerUUIDFromName;
+import static aplini.ipacwhitelist.util.Type.NOT;
 
 public class IpacWhitelist extends JavaPlugin implements Listener {
     private static IpacWhitelist plugin;
@@ -109,20 +111,21 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
         }
 
         // 白名单逻辑
-        wlType state = SQL.isWhitelisted(event.getPlayer());
+        Type state = SQL.isWhitelisted(event.getPlayer());
         switch(state){
 
-            // 不存在, 已移出白名单, 参观账户, 已删除数据的参观账号
-            case NOT, NOT_WHITE, VISIT, VISIT_DATA_DELETE -> { // 不在白名单中
+            case WHITE -> // 白名单
+                    event.setResult(PlayerLoginEvent.Result.ALLOWED);
+
+            // 不存在or已移出白名单, 参观账户
+            case NOT, VISIT -> { // 不在白名单中
                 // 是否启用参观账户
                 if(plugin.getConfig().getBoolean("visit.enable", false)){
-                    switch(state){
-                        case NOT, NOT_WHITE, VISIT_DATA_DELETE -> { // 属于新参观账户
-                            Visit.onNewVisitPlayerLoginEvent(event);
-                        }
-                        case VISIT -> { // 属于已存在的参观账户
-                            Visit.onVisitPlayerLoginEvent(event);
-                        }
+                    // 如果是新账户, 则需要触发 NewVisit 事件
+                    if(state == NOT){
+                        Visit.onNewVisitPlayerLoginEvent(event);
+                    }else{
+                        Visit.onVisitPlayerLoginEvent(event);
                     }
                 }else{
                     getLogger().info("[IpacWhitelist] %s 不在白名单中".formatted(event.getPlayer().getName()));
@@ -131,7 +134,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                 }
             }
 
-            case EXPIRED -> { // 白名单已过期
+            case WHITE_EXPIRED -> { // 白名单已过期
                 getLogger().info("[IpacWhitelist] %s 白名单已过期或不在白名单中".formatted(event.getPlayer().getName()));
                 event.setKickMessage(plugin.getConfig().getString("message.join.not", "").replace("%player%", event.getPlayer().getName()));
                 event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
@@ -143,15 +146,12 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                 event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
             }
 
-            case ERROR -> { // 内部错误
+            default -> { // 内部错误
                 getLogger().warning("[IpacWhitelist] %s 触发内部错误".formatted(event.getPlayer().getName()));
                 event.setKickMessage(plugin.getConfig().getString("message.join.err", ""));
                 event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
             }
         }
-
-        // 允许玩家登录
-        event.setResult(PlayerLoginEvent.Result.ALLOWED);
     }
 
 
@@ -174,6 +174,11 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
 
             // 添加一个账户
             case "add" -> {
+
+                String playerName;
+                String playerUUID;
+                Type state;
+
                 if(args.length == 2){
                     // 检查参数
                     if(args[1].length() > 16){
@@ -181,30 +186,10 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                         return true;
                     }
 
-                    // VISIT=是参观账户, 重置数据. DEFAULT=是普通账户, 重置数据. NOT=是新账户, 创建数据
-                    switch(SQL.addPlayer(args[1])){
-                        case VISIT -> {
-                            // 运行 wl-add
-                            String UUID = getVisitPlayerUUIDFromName(args[1]);
-                            for(String li : plugin.getConfig().getStringList("visit.wl-add.command")){
-                                Bukkit.getScheduler().callSyncMethod(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-                                        li
-                                                .replace("%playerName%", args[1])
-                                                .replace("%playerUUID%", UUID)));
-                            }
-                            // DEFAULT ->
-                            sender.sendMessage(plugin.getConfig().getString("message.command.add-reset", "")
-                                    .replace("%player%", args[1]));
-                        }
-                        case DEFAULT ->
-                                sender.sendMessage(plugin.getConfig().getString("message.command.add-reset", "")
-                                        .replace("%player%", args[1]));
-                        case NOT ->
-                                sender.sendMessage(plugin.getConfig().getString("message.command.add", "")
-                                        .replace("%player%", args[1]));
-                        default ->
-                                sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
-                    }
+                    playerName = args[1];
+                    playerUUID = getVisitPlayerUUIDFromName(args[1]);
+                    state = SQL.addPlayer(playerName);
+
                 }else if(args.length >= 3){
                     // 检查参数
                     if(args[1].length() > 16){
@@ -216,32 +201,35 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                         return true;
                     }
 
-                    // VISIT=是参观账户, 重置数据. DEFAULT=是普通账户, 重置数据. NOT=是新账户, 创建数据
-                    switch(SQL.addPlayer(args[1], args[2])){
-                        case VISIT -> {
-                            // 运行 wl-add
-                            for(String li : plugin.getConfig().getStringList("visit.wl-add.command")){
-                                Bukkit.getScheduler().callSyncMethod(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-                                        li
-                                                .replace("%playerName%", args[1])
-                                                .replace("%playerUUID%", args[2])));
-                            }
-                            // DEFAULT ->
-                            sender.sendMessage(plugin.getConfig().getString("message.command.add-reset", "")
-                                    .replace("%player%", args[1]));
-                        }
-                        case DEFAULT ->
-                                sender.sendMessage(plugin.getConfig().getString("message.command.add-reset", "")
-                                        .replace("%player%", args[1]));
-                        case NOT ->
-                                sender.sendMessage(plugin.getConfig().getString("message.command.add", "")
-                                        .replace("%player%", args[1]));
-                        default ->
-                                sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
-                    }
+                    playerName = args[1];
+                    playerUUID = args[2];
+                    state = SQL.addPlayer(playerName, playerUUID);
+
                 }else{
                     sender.sendMessage("/wl add <Name> [UUID]");
+                    return true;
                 }
+
+                switch(state){
+                    case VISIT -> { // 参观账户
+                        // 运行 wl-add
+                        for(String li : plugin.getConfig().getStringList("visit.wl-add.command")){
+                            Bukkit.getScheduler().callSyncMethod(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
+                                    li
+                                            .replace("%playerName%", playerName)
+                                            .replace("%playerUUID%", playerUUID)));
+                        }
+                        // WHITE, BLACK ->
+                        sender.sendMessage(plugin.getConfig().getString("message.command.add-reset", "").replace("%player%", args[1]));
+                    }
+                    case WHITE, BLACK -> // 普通账户/黑名单
+                            sender.sendMessage(plugin.getConfig().getString("message.command.add-reset", "").replace("%player%", args[1]));
+                    case NOT -> // 没有账户
+                            sender.sendMessage(plugin.getConfig().getString("message.command.add", "").replace("%player%", args[1]));
+                    default ->
+                            sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
+                }
+
                 return true;
             }
 
@@ -252,15 +240,18 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                     return true;
                 }
 
-                wlType b;
+                Type state;
+                Player player;
 
                 // uuid
                 if(args[1].length() == 36){
-                    b = SQL.delPlayerUUID(args[1]);
+                    state = SQL.delPlayerUUID(args[1]);
+                    player = Bukkit.getPlayer(UUID.fromString(args[1]));
                 }
                 // name
                 else if(args[1].length() <= 16){
-                    b = SQL.delPlayerName(args[1]);
+                    state = SQL.delPlayerName(args[1]);
+                    player = Bukkit.getPlayer(args[1]);
                 }
 
                 else{
@@ -268,8 +259,12 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                     return true;
                 }
 
-                if(b != wlType.ERROR){
+                if(state != Type.ERROR){
                     sender.sendMessage(plugin.getConfig().getString("message.command.del", "").replace("%player%", args[1]));
+                    // 踢出玩家
+                    if(plugin.getConfig().getBoolean("whitelist.kick-out-on-del") && player != null){
+                        player.kickPlayer(plugin.getConfig().getString("message.join.not", "").replace("%player%", player.getName()));
+                    }
                 }else{
                     sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
                 }
@@ -283,15 +278,18 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                     return true;
                 }
 
-                wlType b;
+                Type state;
+                Player player;
 
                 // uuid
                 if(args[1].length() == 36){
-                    b = SQL.banPlayerUUID(args[1]);
+                    state = SQL.banPlayerUUID(args[1]);
+                    player = Bukkit.getPlayer(UUID.fromString(args[1]));
                 }
                 // name
                 else if(args[1].length() <= 16){
-                    b = SQL.banPlayerName(args[1]);
+                    state = SQL.banPlayerName(args[1]);
+                    player = Bukkit.getPlayer(args[1]);
                 }
 
                 else{
@@ -299,8 +297,12 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                     return true;
                 }
 
-                if(b != wlType.ERROR){
+                if(state != Type.ERROR){
                     sender.sendMessage(plugin.getConfig().getString("message.command.ban", "").replace("%player%", args[1]));
+                    // 踢出玩家
+                    if(plugin.getConfig().getBoolean("whitelist.kick-out-on-ban") && player != null){
+                        player.kickPlayer(plugin.getConfig().getString("message.join.black", "").replace("%player%", player.getName()));
+                    }
                 }else{
                     sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
                 }
@@ -315,14 +317,14 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if(args.length == 1){
-            List<String> list = new ArrayList<>();
-            list.add("reload");
-            list.add("add");
-            list.add("del");
-            list.add("ban");
-            list.add("unban");
-            list.add("reconnect_database");
-            return list;
+            return List.of(
+                    "reload",
+                    "add",
+                    "del",
+                    "ban",
+                    "unban",
+                    "reconnect_database"
+            );
         }
         return null;
     }

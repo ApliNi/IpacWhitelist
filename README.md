@@ -13,9 +13,8 @@ Ipacamod 服务器的新白名单插件
 - `/wl` - 主命令
 - `/wl reload` - 重载配置
 - `/wl add <playerName> [playerUUID]` - 添加到白名单, uuid为空时自动获取
-- `/wl del <playerName|playerUUID>` - 取消玩家的白名单
+- `/wl del|unban <playerName|playerUUID>` - 取消玩家的白名单, 如果玩家被封禁则解除
 - `/wl ban <playerName|playerUUID>` - 封禁玩家
-- `/wl unban <playerName|playerUUID>` - 取消封禁玩家
 - `/wl reconnect_database` - 重新连接数据库
 
 
