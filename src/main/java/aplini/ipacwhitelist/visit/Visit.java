@@ -34,7 +34,7 @@ public class Visit implements Listener {
     public static void onNewVisitPlayerLoginEvent(PlayerLoginEvent event) {
         // 参观账户队列已满
         if(visitList.size() == plugin.getConfig().getInt("visit.max-visit-player")){
-            event.setKickMessage(plugin.getConfig().getString("message.message.quota-is-full", ""));
+            event.setKickMessage(plugin.getConfig().getString("message.visit.full", ""));
             event.setResult(PlayerLoginEvent.Result.KICK_FULL);
             return;
         }
@@ -62,7 +62,7 @@ public class Visit implements Listener {
     public static void onVisitPlayerLoginEvent(PlayerLoginEvent event) {
         // 参观账户队列已满
         if(visitList.size() == plugin.getConfig().getInt("visit.max-visit-player")){
-            event.setKickMessage(plugin.getConfig().getString("message.message.quota-is-full", ""));
+            event.setKickMessage(plugin.getConfig().getString("message.visit.full", ""));
             event.setResult(PlayerLoginEvent.Result.KICK_FULL);
             return;
         }

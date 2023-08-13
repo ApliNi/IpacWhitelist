@@ -84,7 +84,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
 
         // 服务器启动等待
         if(!allowJoin){
-            event.setKickMessage(plugin.getConfig().getString("message.late-join-time", ""));
+            event.setKickMessage(plugin.getConfig().getString("message.join.starting", ""));
             event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
             return;
         }
@@ -98,7 +98,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                     Visit.onNewVisitPlayerLoginEvent(event);
                 }else{
                     getLogger().warning("[IpacWhitelist] %s 不在白名单中".formatted(event.getPlayer().getName()));
-                    event.setKickMessage(plugin.getConfig().getString("message.not", "").replace("%player%", event.getPlayer().getName()));
+                    event.setKickMessage(plugin.getConfig().getString("message.join.not", "").replace("%player%", event.getPlayer().getName()));
                     event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
                 }
             }
@@ -113,7 +113,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
 
             case ERROR -> { // 内部错误
                 getLogger().warning("[IpacWhitelist] %s 触发内部错误".formatted(event.getPlayer().getName()));
-                event.setKickMessage(plugin.getConfig().getString("message.err-sql-player-join", ""));
+                event.setKickMessage(plugin.getConfig().getString("message.join.err", ""));
                 event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
             }
         }
@@ -127,7 +127,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
         switch(args[0]){
             case "reload" -> {
                 plugin.reloadConfig();
-                sender.sendMessage(plugin.getConfig().getString("message.reload", ""));
+                sender.sendMessage(plugin.getConfig().getString("message.command.reload", ""));
             }
 
             // 重新连接数据库
@@ -137,7 +137,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                 SQL.connection();
                 SQL.initialize();
                 allowJoin = true;
-                sender.sendMessage(plugin.getConfig().getString("message.reconnect-database", ""));
+                sender.sendMessage(plugin.getConfig().getString("message.command.reconnect-database", ""));
             }
 
             // 添加一个账户
@@ -145,7 +145,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                 if(args.length == 2){
                     // 检查参数
                     if(args[1].length() > 16){
-                        sender.sendMessage(plugin.getConfig().getString("message.err-name-length", ""));
+                        sender.sendMessage(plugin.getConfig().getString("message.command.err-name-length", ""));
                         return true;
                     }
 
@@ -161,26 +161,26 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                                                 .replace("%playerUUID%", UUID)));
                             }
                             // DEFAULT ->
-                            sender.sendMessage(plugin.getConfig().getString("message.add-ok-reset", "")
+                            sender.sendMessage(plugin.getConfig().getString("message.command.add-reset", "")
                                     .replace("%player%", args[1]));
                         }
                         case DEFAULT ->
-                                sender.sendMessage(plugin.getConfig().getString("message.add-ok-reset", "")
+                                sender.sendMessage(plugin.getConfig().getString("message.command.add-reset", "")
                                         .replace("%player%", args[1]));
                         case NOT ->
-                                sender.sendMessage(plugin.getConfig().getString("message.add-ok", "")
+                                sender.sendMessage(plugin.getConfig().getString("message.command.add", "")
                                         .replace("%player%", args[1]));
                         default ->
-                                sender.sendMessage(plugin.getConfig().getString("message.err-sql", ""));
+                                sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
                     }
                 }else if(args.length >= 3){
                     // 检查参数
                     if(args[1].length() > 16){
-                        sender.sendMessage(plugin.getConfig().getString("message.err-name-length", ""));
+                        sender.sendMessage(plugin.getConfig().getString("message.command.err-name-length", ""));
                         return true;
                     }
                     if(args[2].length() != 36){
-                        sender.sendMessage(plugin.getConfig().getString("message.err-uuid-length", ""));
+                        sender.sendMessage(plugin.getConfig().getString("message.command.err-uuid-length", ""));
                         return true;
                     }
 
@@ -195,17 +195,17 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                                                 .replace("%playerUUID%", args[2])));
                             }
                             // DEFAULT ->
-                            sender.sendMessage(plugin.getConfig().getString("message.add-ok-reset", "")
+                            sender.sendMessage(plugin.getConfig().getString("message.command.add-reset", "")
                                     .replace("%player%", args[1]));
                         }
                         case DEFAULT ->
-                                sender.sendMessage(plugin.getConfig().getString("message.add-ok-reset", "")
+                                sender.sendMessage(plugin.getConfig().getString("message.command.add-reset", "")
                                         .replace("%player%", args[1]));
                         case NOT ->
-                                sender.sendMessage(plugin.getConfig().getString("message.add-ok", "")
+                                sender.sendMessage(plugin.getConfig().getString("message.command.add", "")
                                         .replace("%player%", args[1]));
                         default ->
-                                sender.sendMessage(plugin.getConfig().getString("message.err-sql", ""));
+                                sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
                     }
                 }else{
                     sender.sendMessage("/wl add <Name> [UUID]");
@@ -233,14 +233,14 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                 }
 
                 else{
-                    sender.sendMessage(plugin.getConfig().getString("message.err-name-length", ""));
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-name-length", ""));
                     return true;
                 }
 
                 if(b){
-                    sender.sendMessage(plugin.getConfig().getString("message.del-ok", "").replace("%player%", args[1]));
+                    sender.sendMessage(plugin.getConfig().getString("message.command.del", "").replace("%player%", args[1]));
                 }else{
-                    sender.sendMessage(plugin.getConfig().getString("message.err-sql", ""));
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
                 }
                 return true;
             }

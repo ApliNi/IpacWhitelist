@@ -68,22 +68,24 @@ visit:
 
 # 消息
 message:
-  # %player% = 玩家名称
-  add-ok: '§6IpacEL §f> §b%player% §a已添加到白名单'
-  add-ok-reset: '§6IpacEL §f> §b%player% §a的白名单已重置'
-  del-ok: '§6IpacEL §f> §a%player% §b已移出白名单'
-  not: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%player%'
+  # 指令消息
+  command:
+    add: '§6IpacEL §f> §b%player% §a已添加到白名单'
+    add-reset: '§6IpacEL §f> §b%player% §a的白名单已重置'
+    del: '§6IpacEL §f> §a%player% §b已移出白名单'
+    reload: '§6IpacEL §f> IpacWhitelist重载完成'
+    reconnect-database: '§6IpacEL §f> §a初始化数据库完成'
+    err: '§6IpacEL §f> §b内部错误'
+    err-name-length: '§6IpacEL §f> §b名称长度异常'
+    err-uuid-length: '§6IpacEL §f> §bUUID长度异常'
 
-  reload: '§6IpacEL §f> IpacWhitelist重载完成'
-  reconnect-database: '§6IpacEL §f> §a初始化数据库完成'
+  # 玩家加入
+  join:
+    not: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%player%'
+    black: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
+    err: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'
+    starting: '§6IpacEL §f> §b服务器正在启动'
 
-  err-name-length: '§6IpacEL §f> §b名称长度异常'
-  err-uuid-length: '§6IpacEL §f> §bUUID长度异常'
-  err-sql: '§6IpacEL §f> §b内部错误'
-  err-sql-player-join: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'
-
-  late-join-time: '§6IpacEL §f> §b服务器正在启动'
-
+  # 参观账户
   visit:
-    quota-is-full: '§6IpacEL §f> §b参观账户队列已满'
-
+    full: '§6IpacEL §f> §b参观账户队列已满'
