@@ -1,6 +1,7 @@
 package aplini.ipacwhitelist;
 
 import aplini.ipacwhitelist.util.SQL;
+import aplini.ipacwhitelist.util.wlType;
 import aplini.ipacwhitelist.visit.Visit;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -93,7 +94,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
         switch(SQL.isWhitelisted(event.getPlayer())){
 
             case NOT -> { // 不在白名单中
-                // 非白名单玩家加入服务器 -> 交给参观账户
+                // 是否启用参观账户
                 if(plugin.getConfig().getBoolean("visit.enable", false)){
                     Visit.onNewVisitPlayerLoginEvent(event);
                 }else{
@@ -101,6 +102,12 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                     event.setKickMessage(plugin.getConfig().getString("message.join.not", "").replace("%player%", event.getPlayer().getName()));
                     event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
                 }
+            }
+
+            case BLACK -> { // 黑名单
+                getLogger().warning("[IpacWhitelist] %s 在黑名单中".formatted(event.getPlayer().getName()));
+                event.setKickMessage(plugin.getConfig().getString("message.join.black", "").replace("%player%", event.getPlayer().getName()));
+                event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
             }
 
             case VISIT_DEL_DATA -> { // 已删除数据的参观账户
@@ -185,7 +192,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                     }
 
                     // VISIT=是参观账户, 重置数据. DEFAULT=是普通账户, 重置数据. NOT=是新账户, 创建数据
-                    switch(SQL.addPlayer(args[1])){
+                    switch(SQL.addPlayer(args[1], args[2])){
                         case VISIT -> {
                             // 运行 wl-add
                             for(String li : plugin.getConfig().getStringList("visit.wl-add.command")){
@@ -214,7 +221,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
             }
 
             // 删除一个账户
-            case "del" -> {
+            case "del", "unban" -> {
                 if(args.length != 2){
                     sender.sendMessage("/wl del <Name|UUID>");
                     return true;
@@ -226,14 +233,13 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                 if(args[1].length() == 36){
                     b = SQL.delPlayerUUID(args[1]);
                 }
-
                 // name
                 else if(args[1].length() <= 16){
                     b = SQL.delPlayerName(args[1]);
                 }
 
                 else{
-                    sender.sendMessage(plugin.getConfig().getString("message.command.err-name-length", ""));
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-length", ""));
                     return true;
                 }
 
@@ -242,6 +248,38 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                 }else{
                     sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
                 }
+                return true;
+            }
+
+            // 封禁一个账户
+            case "ban" -> {
+                if(args.length != 2){
+                    sender.sendMessage("/wl del <Name|UUID>");
+                    return true;
+                }
+
+                wlType b;
+
+                // uuid
+                if(args[1].length() == 36){
+                    b = SQL.banPlayerUUID(args[1]);
+                }
+                // name
+                else if(args[1].length() <= 16){
+                    b = SQL.banPlayerName(args[1]);
+                }
+
+                else{
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-length", ""));
+                    return true;
+                }
+
+                if(b != wlType.ERROR){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.ban", "").replace("%player%", args[1]));
+                }else{
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
+                }
+
                 return true;
             }
         }
@@ -256,6 +294,8 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
             list.add("reload");
             list.add("add");
             list.add("del");
+            list.add("ban");
+            list.add("unban");
             list.add("reconnect_database");
             return list;
         }

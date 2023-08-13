@@ -59,7 +59,7 @@ visit:
 
   # 参观账户被添加到白名单时执行一些指令 `/wl add <playerName> [playerUUID]`
   # 可用变量: %playerName%, %playerUUID%
-  # 如果指令中不包含 UUID, 则尝试从数据库中查找
+  # 如果指令中不包含 UUID, 则会从数据库中查找
   wl-add:
     command:
       - 'lp user %playerUUID% parent remove visit'
@@ -73,9 +73,11 @@ message:
     add: '§6IpacEL §f> §b%player% §a已添加到白名单'
     add-reset: '§6IpacEL §f> §b%player% §a的白名单已重置'
     del: '§6IpacEL §f> §a%player% §b已移出白名单'
+    ban: '§6IpacEL §f> §a%player% §b已列入黑名单'
     reload: '§6IpacEL §f> IpacWhitelist重载完成'
     reconnect-database: '§6IpacEL §f> §a初始化数据库完成'
     err: '§6IpacEL §f> §b内部错误'
+    err-length: '§6IpacEL §f> §b名称或UUID长度异常'
     err-name-length: '§6IpacEL §f> §b名称长度异常'
     err-uuid-length: '§6IpacEL §f> §bUUID长度异常'
 

@@ -60,7 +60,7 @@ public class SQL {
                             "UUID" TEXT NOT NULL,
                             "NAME" TEXT NOT NULL,
                             "TIME" INTEGER NOT NULL,
-                            "WHITE" BOOLEAN NOT NULL,
+                            "WHITE" INTEGER NOT NULL,
                             "Type" INTEGER NOT NULL,
                             PRIMARY KEY("ID" AUTOINCREMENT)
                         );
@@ -93,44 +93,71 @@ public class SQL {
         }
     }
 
-    // 添加玩家
-    public static wlType addPlayer(String name, String UUID, wlType Type){
+    /**
+     *
+     * @param name 玩家名称, 可使用 null
+     * @param UUID 玩家 UUID, 可使用 null
+     * @param Time 时间戳. -1=始终有效, -2=使用默认值
+     * @param White 白名单状态
+     * @param Type 白名单类型, 可使用 null
+     * @return 账户类型 VISIT, VISIT_DEL_DATA, DEFAULT, NOT
+     */
+    // 修改或创建玩家数据
+    public static wlType setPlayerData(String name, String UUID, int Time, wlType White, wlType Type){
         wlType out;
         try {
             PreparedStatement sql;
             ResultSet results;
-            // 检查是否有相同的记录
-            if(!UUID.isEmpty()){
+
+            // 检查是否有 name 和 uuid 匹配的记录
+            if(name != null && UUID != null){
                 sql = connection.prepareStatement("SELECT * FROM `player` WHERE `NAME` = ? AND `UUID` = ? ORDER BY ROWID DESC LIMIT 1;");
                 sql.setString(1, name);
                 sql.setString(2, UUID);
-            }else{
+            }else if(name != null){
                 sql = connection.prepareStatement("SELECT * FROM `player` WHERE `NAME` = ? ORDER BY ROWID DESC LIMIT 1;");
                 sql.setString(1, name);
+                UUID = "";
+            }else if(UUID != null){
+                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `UUID` = ? ORDER BY ROWID DESC LIMIT 1;");
+                sql.setString(1, UUID);
+                name = "";
+            }else{
+                return ERROR;
             }
+
             results = sql.executeQuery();
             if(results.next()){
-                // 检查是否为参观账户
-                if(results.getLong("Type") == 1){
-                    out = VISIT;
-                }else{
-                    out = DEFAULT;
+                // 输出账户类型
+                switch(results.getInt("Type")){
+                    case 1 -> out = VISIT;
+                    case 2 -> out = VISIT_DEL_DATA;
+                    default -> out = DEFAULT;
                 }
+                // 处理缺省值
+                Time = Time == -2 ? results.getInt("TIME") : Time;
+                int TypeID = Type != null ? Type.getID() : results.getInt("Type");
+
                 // 已添加, 重置这个ID的 TIME WHITE Type
                 sql = connection.prepareStatement("UPDATE `player` SET `TIME` = ?, `WHITE` = ?, `Type` = ? WHERE `ID` = ?;");
-                sql.setInt(1, -1);
-                sql.setBoolean(2, true);
-                sql.setInt(3, Type.getID());
-                sql.setLong(4, results.getLong("ID"));
+                sql.setInt(1, Time);
+                sql.setInt(2, White.getID());
+                sql.setInt(3, TypeID);
+                sql.setInt(4, results.getInt("ID"));
             }else{
+                // 输出账户类型
                 out = NOT;
+                // 处理缺省值
+                Time = Time == -2 ? -1 : Time;
+                int TypeID = Type != null ? Type.getID() : DEFAULT.getID();
+
                 // 未添加, 创建记录
                 sql = connection.prepareStatement("REPLACE INTO `player` (`UUID`, `NAME`, `TIME`, `WHITE`, `Type`) VALUES (?, ?, ?, ?, ?);");
                 sql.setString(1, UUID);
                 sql.setString(2, name);
-                sql.setInt(3, -1);
-                sql.setBoolean(4, true);
-                sql.setInt(5, Type.getID());
+                sql.setLong(3, Time);
+                sql.setInt(4, White.getID());
+                sql.setInt(5, TypeID);
             }
             sql.execute();
             sql.close();
@@ -140,14 +167,71 @@ public class SQL {
         }
         return out;
     }
+//    public static wlType addPlayer(String name, String UUID, wlType Type){
+//        wlType out;
+//        try {
+//            PreparedStatement sql;
+//            ResultSet results;
+//            // 检查是否有相同的记录
+//            if(!UUID.isEmpty()){
+//                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `NAME` = ? AND `UUID` = ? ORDER BY ROWID DESC LIMIT 1;");
+//                sql.setString(1, name);
+//                sql.setString(2, UUID);
+//            }else{
+//                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `NAME` = ? ORDER BY ROWID DESC LIMIT 1;");
+//                sql.setString(1, name);
+//            }
+//            results = sql.executeQuery();
+//            if(results.next()){
+//                // 检查是否为参观账户
+//                if(results.getLong("Type") == 1){
+//                    out = VISIT;
+//                }else{
+//                    out = DEFAULT;
+//                }
+//                // 已添加, 重置这个ID的 TIME WHITE Type
+//                sql = connection.prepareStatement("UPDATE `player` SET `TIME` = ?, `WHITE` = ?, `Type` = ? WHERE `ID` = ?;");
+//                sql.setInt(1, -1);
+//                sql.setBoolean(2, true);
+//                sql.setInt(3, Type.getID());
+//                sql.setLong(4, results.getLong("ID"));
+//            }else{
+//                out = NOT;
+//                // 未添加, 创建记录
+//                sql = connection.prepareStatement("REPLACE INTO `player` (`UUID`, `NAME`, `TIME`, `WHITE`, `Type`) VALUES (?, ?, ?, ?, ?);");
+//                sql.setString(1, UUID);
+//                sql.setString(2, name);
+//                sql.setInt(3, -1);
+//                sql.setBoolean(4, true);
+//                sql.setInt(5, Type.getID());
+//            }
+//            sql.execute();
+//            sql.close();
+//
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//        return out;
+//    }
+    // 添加玩家
     public static wlType addPlayer(String name){
-        return addPlayer(name, "", wlType.DEFAULT);
+//        return addPlayer(name, "", wlType.DEFAULT);
+        return setPlayerData(name, null, -1, WHITE, DEFAULT);
     }
     public static wlType addPlayer(String name, String UUID){
-        return addPlayer(name, UUID, wlType.DEFAULT);
+//        return addPlayer(name, UUID, wlType.DEFAULT);
+        return setPlayerData(name, UUID, -1, WHITE, DEFAULT);
     }
-    public static wlType addPlayer(Player player, wlType type){
-        return addPlayer(player.getName(), String.valueOf(player.getUniqueId()), type);
+    public static void addPlayer(Player player, wlType type){
+//        return addPlayer(player.getName(), String.valueOf(player.getUniqueId()), type);
+        setPlayerData(player.getName(), String.valueOf(player.getUniqueId()), -1, WHITE, type);
+    }
+    // 封禁玩家
+    public static wlType banPlayerName(String name){
+        return setPlayerData(name, null, -2, BLACK, null);
+    }
+    public static wlType banPlayerUUID(String UUID){
+        return setPlayerData(null, UUID, -2, BLACK, null);
     }
 
     // 删除玩家, 通过名称
@@ -179,7 +263,7 @@ public class SQL {
     }
 
     // 是否在白名单中
-    // NOT = 不在, DEFAULT = 存在, ERROR = 出错, VISIT = 存在但是参观账号, VISIT_DEL_DATA = 已删除数据的参观账户
+    // NOT = 不在, WHITE = 存在, ERROR = 出错, VISIT = 存在但是参观账号, VISIT_DEL_DATA = 已删除数据的参观账户
     public static wlType isWhitelisted(Player player){
         try {
             PreparedStatement sql;
@@ -191,6 +275,8 @@ public class SQL {
             results = sql.executeQuery();
             if(results.next()){
 
+                // 黑名单
+                if(results.getLong("WHITE") == BLACK.getID()){return BLACK;}
                 // 是否为参观账户
                 if(results.getLong("Type") == VISIT.getID()){return VISIT;}
                 if(results.getLong("Type") == VISIT_DEL_DATA.getID()){return VISIT_DEL_DATA;}
@@ -198,13 +284,13 @@ public class SQL {
                 if(Util.isWhitelistedTimeout(results.getLong("TIME"))){return NOT;}
 
                 // 更新名称和最后加入时间
-                PreparedStatement sql2 = connection.prepareStatement("UPDATE `player` SET `NAME` = ?, `TIME` = ? WHERE `ID` = ?;");
-                sql2.setString(1, player.getName());
-                sql2.setLong(2, System.currentTimeMillis() / 1000);
-                sql2.setLong(3, results.getLong("ID"));
-                sql2.executeUpdate();
-                sql2.close();
-                return DEFAULT;
+                PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `NAME` = ?, `TIME` = ? WHERE `ID` = ?;");
+                update.setString(1, player.getName());
+                update.setLong(2, System.currentTimeMillis() / 1000);
+                update.setLong(3, results.getLong("ID"));
+                update.executeUpdate();
+                update.close();
+                return WHITE;
             }
 
             // 如果名称匹配
@@ -213,23 +299,26 @@ public class SQL {
             results = sql.executeQuery();
             if(results.next()){
 
+                // 如果uuid不为空: 名称相同但uuid不同
+                if(!results.getString("UUID").isEmpty()){return NOT;}
+
+                // 黑名单
+                if(results.getLong("WHITE") == BLACK.getID()){return BLACK;}
                 // 是否为参观账户
                 if(results.getLong("Type") == VISIT.getID()){return VISIT;}
                 if(results.getLong("Type") == VISIT_DEL_DATA.getID()){return VISIT_DEL_DATA;}
                 // 白名单上的玩家是否超时
                 if(Util.isWhitelistedTimeout(results.getLong("TIME"))){return NOT;}
-                // 如果uuid不为空: 名称相同但uuid不同
-                if(!results.getString("UUID").isEmpty()){return NOT;}
 
                 // 更新UUID/名称和最后加入时间
-                PreparedStatement sql2 = connection.prepareStatement("UPDATE `player` SET `UUID` = ?, `NAME` = ?, `TIME` = ? WHERE `ID` = ?;");
-                sql2.setString(1, player.getUniqueId().toString());
-                sql2.setString(2, player.getName()); // 在第一次加入时处理名称大小写不匹配
-                sql2.setLong(3, System.currentTimeMillis() / 1000);
-                sql2.setLong(4, results.getLong("ID"));
-                sql2.executeUpdate();
-                sql2.close();
-                return DEFAULT;
+                PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `UUID` = ?, `NAME` = ?, `TIME` = ? WHERE `ID` = ?;");
+                update.setString(1, player.getUniqueId().toString());
+                update.setString(2, player.getName()); // 在第一次加入时处理名称大小写不匹配
+                update.setLong(3, System.currentTimeMillis() / 1000);
+                update.setLong(4, results.getLong("ID"));
+                update.executeUpdate();
+                update.close();
+                return WHITE;
             }
 
             return NOT;
@@ -238,11 +327,12 @@ public class SQL {
         }
     }
 
-    // 获取数据
+    // 获取参观账户的UUID, 通过名称
     public static String getVisitPlayerUUIDFromName(String name){
         String out = "";
         try {
-            PreparedStatement sql = connection.prepareStatement("SELECT * FROM `player` WHERE `NAME` = ? AND `Type` = ? ORDER BY ROWID DESC LIMIT 1;");
+            // 查找指定参观账户一条有uuid的记录
+            PreparedStatement sql = connection.prepareStatement("SELECT * FROM `player` WHERE `NAME` = ? AND `Type` = ? AND UUID != '' ORDER BY ROWID DESC LIMIT 1;");
             sql.setString(1, name);
             sql.setInt(2, VISIT.getID());
             ResultSet results = sql.executeQuery();
