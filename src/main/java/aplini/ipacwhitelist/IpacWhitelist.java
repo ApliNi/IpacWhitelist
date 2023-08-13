@@ -13,12 +13,14 @@ import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import static aplini.ipacwhitelist.util.SQL.getVisitPlayerUUIDFromName;
 import static org.bukkit.Bukkit.getLogger;
@@ -90,6 +92,24 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
             return;
         }
 
+        // ip 黑名单
+        // 原始ip格式: ipv4: /127.0.0.1, ipv6: /0:0:0:0:0:0:0:1 没有方括号
+        boolean inBlacklist = false;
+        String playerIP = event.getRealAddress().toString();
+        playerIP = playerIP.substring(playerIP.lastIndexOf("/") +1);
+        for(String li : plugin.getConfig().getStringList("whitelist.ip-blacklist")){
+            if(Pattern.matches(li, playerIP)){
+                inBlacklist = true;
+                break;
+            }
+        }
+        if(inBlacklist){
+            getLogger().info("[IpacWhitelist] %s 在IP黑名单中: %s".formatted(event.getPlayer().getName(), playerIP));
+            event.setKickMessage(plugin.getConfig().getString("message.join.black", "").replace("%player%", event.getPlayer().getName()));
+            event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
+            return;
+        }
+
         // 白名单逻辑
         switch(SQL.isWhitelisted(event.getPlayer())){
 
@@ -98,14 +118,14 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                 if(plugin.getConfig().getBoolean("visit.enable", false)){
                     Visit.onNewVisitPlayerLoginEvent(event);
                 }else{
-                    getLogger().warning("[IpacWhitelist] %s 不在白名单中".formatted(event.getPlayer().getName()));
+                    getLogger().info("[IpacWhitelist] %s 不在白名单中".formatted(event.getPlayer().getName()));
                     event.setKickMessage(plugin.getConfig().getString("message.join.not", "").replace("%player%", event.getPlayer().getName()));
                     event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
                 }
             }
 
             case BLACK -> { // 黑名单
-                getLogger().warning("[IpacWhitelist] %s 在黑名单中".formatted(event.getPlayer().getName()));
+                getLogger().info("[IpacWhitelist] %s 在黑名单中".formatted(event.getPlayer().getName()));
                 event.setKickMessage(plugin.getConfig().getString("message.join.black", "").replace("%player%", event.getPlayer().getName()));
                 event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
             }

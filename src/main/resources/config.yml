@@ -13,6 +13,12 @@ sql:
 
 # 白名单功能
 whitelist:
+  # 简易的 ip 黑名单. 在这里添加正则表达式, 匹配的ip不允许加入服务器 (也不允许使用参观账户
+  # 使用 /wl reload 重载配置即可应用
+  ip-blacklist: []
+#    - '^192\.168\.100\..+$'
+#    - '^fe80::1234:.+$' # ipv6没有方括号
+
   # 如果玩家在指定秒数内没上线过, 则视为不在白名单中. -1 = 禁用
   # 参观账户不受此限制
   timeout: 10368000 # 10368000 = 4个月
@@ -29,6 +35,13 @@ visit:
   enable: false
   # 最多允许同时加入多少参观账户
   max-visit-player: 10
+
+  # 限定参观账户只能使用以下域名加入服务器, 否则提示不在白名单
+  limit-hostname:
+    enable: false
+    list:
+      - 'visit.your-mc-server.com'
+      - 'visit2.your-mc-server.com'
 
   # AuthMe
   auto-register-AuthMe: true # 为参观账户自动注册, 相当于 `authme register <playerName> <password>`, 但不会踢出玩家

@@ -32,12 +32,7 @@ public class Visit implements Listener {
 
     // 新参观账户第一次登录服务器
     public static void onNewVisitPlayerLoginEvent(PlayerLoginEvent event) {
-        // 参观账户队列已满
-        if(visitList.size() == plugin.getConfig().getInt("visit.max-visit-player")){
-            event.setKickMessage(plugin.getConfig().getString("message.visit.full", ""));
-            event.setResult(PlayerLoginEvent.Result.KICK_FULL);
-            return;
-        }
+        if(ifForbiddenJoin(event)){return;}
 
         // 将这个玩家以参观账户的身份添加到数据库中
         SQL.addPlayer(event.getPlayer(), wlType.VISIT);
@@ -60,12 +55,7 @@ public class Visit implements Listener {
 
     // 参观账户登录服务器
     public static void onVisitPlayerLoginEvent(PlayerLoginEvent event) {
-        // 参观账户队列已满
-        if(visitList.size() == plugin.getConfig().getInt("visit.max-visit-player")){
-            event.setKickMessage(plugin.getConfig().getString("message.visit.full", ""));
-            event.setResult(PlayerLoginEvent.Result.KICK_FULL);
-            return;
-        }
+        if(ifForbiddenJoin(event)){return;}
 
         UUID playerUUID = event.getPlayer().getUniqueId();
 
@@ -81,7 +71,29 @@ public class Visit implements Listener {
         startAsyncEventFunc("onVisitPlayerLoginEvent", plugin, event.getPlayer());
 
         getLogger().info("[IpacWhitelist] %s 以参观模式加入服务器".formatted(event.getPlayer().getName()));
+    }
 
+    // 参观账户登录服务器时进行验证
+    public static boolean ifForbiddenJoin(PlayerLoginEvent event) {
+        // 限定主机名
+        if(plugin.getConfig().getBoolean("visit.limit-hostname.enable")){
+            String Hostname = event.getHostname();
+            if(!plugin.getConfig().getStringList("visit.limit-hostname.list").contains(Hostname)){
+                getLogger().info("[IpacWhitelist] %s 参观账户未使用专用地址: %s".formatted(event.getPlayer().getName(), Hostname));
+                event.setKickMessage(plugin.getConfig().getString("message.join.not", ""));
+                event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
+                return true;
+            }
+        }
+
+        // 参观账户队列已满
+        if(visitList.size() == plugin.getConfig().getInt("visit.max-visit-player")){
+            event.setKickMessage(plugin.getConfig().getString("message.visit.full", ""));
+            event.setResult(PlayerLoginEvent.Result.KICK_FULL);
+            return true;
+        }
+
+        return false;
     }
 
     @EventHandler // 玩家加入
