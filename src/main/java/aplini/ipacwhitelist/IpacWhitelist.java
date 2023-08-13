@@ -124,13 +124,19 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                 }
             }
 
+            case EXPIRED -> { // 白名单已过期
+                getLogger().info("[IpacWhitelist] %s 白名单已过期".formatted(event.getPlayer().getName()));
+                event.setKickMessage(plugin.getConfig().getString("message.join.not", "").replace("%player%", event.getPlayer().getName()));
+                event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
+            }
+
             case BLACK -> { // 黑名单
                 getLogger().info("[IpacWhitelist] %s 在黑名单中".formatted(event.getPlayer().getName()));
                 event.setKickMessage(plugin.getConfig().getString("message.join.black", "").replace("%player%", event.getPlayer().getName()));
                 event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
             }
 
-            case VISIT_DEL_DATA -> { // 已删除数据的参观账户
+            case VISIT_DATA_DELETE -> { // 已删除数据的参观账户
                 Visit.onNewVisitPlayerLoginEvent(event);
             }
 

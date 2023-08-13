@@ -130,7 +130,7 @@ public class SQL {
                 // 输出账户类型
                 switch(results.getInt("Type")){
                     case 1 -> out = VISIT;
-                    case 2 -> out = VISIT_DEL_DATA;
+                    case 2 -> out = VISIT_DATA_DELETE;
                     default -> out = DEFAULT;
                 }
                 // 处理缺省值
@@ -193,7 +193,7 @@ public class SQL {
 
 
     // 是否在白名单中
-    // NOT = 不在, WHITE = 存在, ERROR = 出错, VISIT = 存在但是参观账号, VISIT_DEL_DATA = 已删除数据的参观账户
+    // NOT = 不在, EXPIRED = 过期, WHITE = 存在, ERROR = 出错, VISIT = 存在但是参观账号, VISIT_DEL_DATA = 已删除数据的参观账户
     public static wlType isWhitelisted(Player player){
         try {
             PreparedStatement sql;
@@ -209,9 +209,9 @@ public class SQL {
                 if(results.getLong("WHITE") == BLACK.getID()){return BLACK;}
                 // 是否为参观账户
                 if(results.getLong("Type") == VISIT.getID()){return VISIT;}
-                if(results.getLong("Type") == VISIT_DEL_DATA.getID()){return VISIT_DEL_DATA;}
+                if(results.getLong("Type") == VISIT_DATA_DELETE.getID()){return VISIT_DATA_DELETE;}
                 // 白名单上的玩家是否超时
-                if(Util.isWhitelistedTimeout(results.getLong("TIME"))){return NOT;}
+                if(Util.isWhitelistedTimeout(results.getLong("TIME"))){return EXPIRED;}
 
                 // 更新名称和最后加入时间
                 PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `NAME` = ?, `TIME` = ? WHERE `ID` = ?;");
@@ -236,9 +236,9 @@ public class SQL {
                 if(results.getLong("WHITE") == BLACK.getID()){return BLACK;}
                 // 是否为参观账户
                 if(results.getLong("Type") == VISIT.getID()){return VISIT;}
-                if(results.getLong("Type") == VISIT_DEL_DATA.getID()){return VISIT_DEL_DATA;}
+                if(results.getLong("Type") == VISIT_DATA_DELETE.getID()){return VISIT_DATA_DELETE;}
                 // 白名单上的玩家是否超时
-                if(Util.isWhitelistedTimeout(results.getLong("TIME"))){return NOT;}
+                if(Util.isWhitelistedTimeout(results.getLong("TIME"))){return EXPIRED;}
 
                 // 更新UUID/名称和最后加入时间
                 PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `UUID` = ?, `NAME` = ?, `TIME` = ? WHERE `ID` = ?;");

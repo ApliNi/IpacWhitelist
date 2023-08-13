@@ -7,7 +7,7 @@ public enum wlType {
     // 数据表 Type -> ID
     DEFAULT(0), // 默认, 正常的账户
     VISIT(1), // 参观账户
-    VISIT_DEL_DATA(2), // 已删除数据的参观账户
+    VISIT_DATA_DELETE(2), // 已删除数据的参观账户
 
     // 数据表 White
     NOT_WHITE(0), // 不在白名单中
@@ -16,6 +16,7 @@ public enum wlType {
 
     // 表示
     NOT(0), // 不存在的
+    EXPIRED(0), // 白名单过期
     ERROR(-5), // 出错
     ;
 
