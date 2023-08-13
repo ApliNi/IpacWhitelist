@@ -13,7 +13,6 @@ import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static aplini.ipacwhitelist.util.SQL.getVisitPlayerUUIDFromName;
-import static org.bukkit.Bukkit.getLogger;
 
 public class IpacWhitelist extends JavaPlugin implements Listener {
     private static IpacWhitelist plugin;
@@ -111,12 +109,21 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
         }
 
         // 白名单逻辑
-        switch(SQL.isWhitelisted(event.getPlayer())){
+        wlType state = SQL.isWhitelisted(event.getPlayer());
+        switch(state){
 
-            case NOT -> { // 不在白名单中
+            // 不存在, 已移出白名单, 参观账户, 已删除数据的参观账号
+            case NOT, NOT_WHITE, VISIT, VISIT_DATA_DELETE -> { // 不在白名单中
                 // 是否启用参观账户
                 if(plugin.getConfig().getBoolean("visit.enable", false)){
-                    Visit.onNewVisitPlayerLoginEvent(event);
+                    switch(state){
+                        case NOT, NOT_WHITE, VISIT_DATA_DELETE -> { // 属于新参观账户
+                            Visit.onNewVisitPlayerLoginEvent(event);
+                        }
+                        case VISIT -> { // 属于已存在的参观账户
+                            Visit.onVisitPlayerLoginEvent(event);
+                        }
+                    }
                 }else{
                     getLogger().info("[IpacWhitelist] %s 不在白名单中".formatted(event.getPlayer().getName()));
                     event.setKickMessage(plugin.getConfig().getString("message.join.not", "").replace("%player%", event.getPlayer().getName()));
@@ -125,7 +132,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
             }
 
             case EXPIRED -> { // 白名单已过期
-                getLogger().info("[IpacWhitelist] %s 白名单已过期".formatted(event.getPlayer().getName()));
+                getLogger().info("[IpacWhitelist] %s 白名单已过期或不在白名单中".formatted(event.getPlayer().getName()));
                 event.setKickMessage(plugin.getConfig().getString("message.join.not", "").replace("%player%", event.getPlayer().getName()));
                 event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
             }
@@ -134,14 +141,6 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                 getLogger().info("[IpacWhitelist] %s 在黑名单中".formatted(event.getPlayer().getName()));
                 event.setKickMessage(plugin.getConfig().getString("message.join.black", "").replace("%player%", event.getPlayer().getName()));
                 event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
-            }
-
-            case VISIT_DATA_DELETE -> { // 已删除数据的参观账户
-                Visit.onNewVisitPlayerLoginEvent(event);
-            }
-
-            case VISIT -> { // 参观账户
-                Visit.onVisitPlayerLoginEvent(event);
             }
 
             case ERROR -> { // 内部错误

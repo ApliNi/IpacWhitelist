@@ -193,7 +193,7 @@ public class SQL {
 
 
     // 是否在白名单中
-    // NOT = 不在, EXPIRED = 过期, WHITE = 存在, ERROR = 出错, VISIT = 存在但是参观账号, VISIT_DEL_DATA = 已删除数据的参观账户
+    // NOT = 不存在记录, NOT_WHITE = 已移出白名单, EXPIRED = 过期, WHITE = 存在, ERROR = 出错, VISIT = 存在参观账号, VISIT_DEL_DATA = 已删除数据的参观账户
     public static wlType isWhitelisted(Player player){
         try {
             PreparedStatement sql;
@@ -207,20 +207,25 @@ public class SQL {
 
                 // 黑名单
                 if(results.getLong("WHITE") == BLACK.getID()){return BLACK;}
+                // 未定义
+                if(results.getLong("WHITE") == NOT_WHITE.getID()){return NOT_WHITE;}
                 // 是否为参观账户
                 if(results.getLong("Type") == VISIT.getID()){return VISIT;}
                 if(results.getLong("Type") == VISIT_DATA_DELETE.getID()){return VISIT_DATA_DELETE;}
                 // 白名单上的玩家是否超时
                 if(Util.isWhitelistedTimeout(results.getLong("TIME"))){return EXPIRED;}
 
-                // 更新名称和最后加入时间
-                PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `NAME` = ?, `TIME` = ? WHERE `ID` = ?;");
-                update.setString(1, player.getName());
-                update.setLong(2, System.currentTimeMillis() / 1000);
-                update.setLong(3, results.getLong("ID"));
-                update.executeUpdate();
-                update.close();
-                return WHITE;
+                // 白名单
+                if(results.getLong("WHITE") == WHITE.getID()){
+                    // 更新名称和最后加入时间
+                    PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `NAME` = ?, `TIME` = ? WHERE `ID` = ?;");
+                    update.setString(1, player.getName());
+                    update.setLong(2, System.currentTimeMillis() / 1000);
+                    update.setLong(3, results.getLong("ID"));
+                    update.executeUpdate();
+                    update.close();
+                    return WHITE;
+                }
             }
 
             // 如果名称匹配
@@ -234,21 +239,26 @@ public class SQL {
 
                 // 黑名单
                 if(results.getLong("WHITE") == BLACK.getID()){return BLACK;}
+                // 未定义
+                if(results.getLong("WHITE") == NOT_WHITE.getID()){return NOT_WHITE;}
                 // 是否为参观账户
                 if(results.getLong("Type") == VISIT.getID()){return VISIT;}
                 if(results.getLong("Type") == VISIT_DATA_DELETE.getID()){return VISIT_DATA_DELETE;}
                 // 白名单上的玩家是否超时
                 if(Util.isWhitelistedTimeout(results.getLong("TIME"))){return EXPIRED;}
 
-                // 更新UUID/名称和最后加入时间
-                PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `UUID` = ?, `NAME` = ?, `TIME` = ? WHERE `ID` = ?;");
-                update.setString(1, player.getUniqueId().toString());
-                update.setString(2, player.getName()); // 在第一次加入时处理名称大小写不匹配
-                update.setLong(3, System.currentTimeMillis() / 1000);
-                update.setLong(4, results.getLong("ID"));
-                update.executeUpdate();
-                update.close();
-                return WHITE;
+                // 白名单
+                if(results.getLong("WHITE") == WHITE.getID()){
+                    // 更新UUID/名称和最后加入时间
+                    PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `UUID` = ?, `NAME` = ?, `TIME` = ? WHERE `ID` = ?;");
+                    update.setString(1, player.getUniqueId().toString());
+                    update.setString(2, player.getName()); // 在第一次加入时处理名称大小写不匹配
+                    update.setLong(3, System.currentTimeMillis() / 1000);
+                    update.setLong(4, results.getLong("ID"));
+                    update.executeUpdate();
+                    update.close();
+                    return WHITE;
+                }
             }
 
             return NOT;
