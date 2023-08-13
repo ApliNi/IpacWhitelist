@@ -94,7 +94,7 @@ public class SQL {
     }
 
     /**
-     *
+     * 修改或创建玩家数据
      * @param name 玩家名称, 可使用 null
      * @param UUID 玩家 UUID, 可使用 null
      * @param Time 时间戳. -1=始终有效, -2=使用默认值
@@ -102,7 +102,6 @@ public class SQL {
      * @param Type 白名单类型, 可使用 null
      * @return 账户类型 VISIT, VISIT_DEL_DATA, DEFAULT, NOT
      */
-    // 修改或创建玩家数据
     public static wlType setPlayerData(String name, String UUID, int Time, wlType White, wlType Type){
         wlType out;
         try {
@@ -167,64 +166,22 @@ public class SQL {
         }
         return out;
     }
-//    public static wlType addPlayer(String name, String UUID, wlType Type){
-//        wlType out;
-//        try {
-//            PreparedStatement sql;
-//            ResultSet results;
-//            // 检查是否有相同的记录
-//            if(!UUID.isEmpty()){
-//                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `NAME` = ? AND `UUID` = ? ORDER BY ROWID DESC LIMIT 1;");
-//                sql.setString(1, name);
-//                sql.setString(2, UUID);
-//            }else{
-//                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `NAME` = ? ORDER BY ROWID DESC LIMIT 1;");
-//                sql.setString(1, name);
-//            }
-//            results = sql.executeQuery();
-//            if(results.next()){
-//                // 检查是否为参观账户
-//                if(results.getLong("Type") == 1){
-//                    out = VISIT;
-//                }else{
-//                    out = DEFAULT;
-//                }
-//                // 已添加, 重置这个ID的 TIME WHITE Type
-//                sql = connection.prepareStatement("UPDATE `player` SET `TIME` = ?, `WHITE` = ?, `Type` = ? WHERE `ID` = ?;");
-//                sql.setInt(1, -1);
-//                sql.setBoolean(2, true);
-//                sql.setInt(3, Type.getID());
-//                sql.setLong(4, results.getLong("ID"));
-//            }else{
-//                out = NOT;
-//                // 未添加, 创建记录
-//                sql = connection.prepareStatement("REPLACE INTO `player` (`UUID`, `NAME`, `TIME`, `WHITE`, `Type`) VALUES (?, ?, ?, ?, ?);");
-//                sql.setString(1, UUID);
-//                sql.setString(2, name);
-//                sql.setInt(3, -1);
-//                sql.setBoolean(4, true);
-//                sql.setInt(5, Type.getID());
-//            }
-//            sql.execute();
-//            sql.close();
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//        return out;
-//    }
     // 添加玩家
     public static wlType addPlayer(String name){
-//        return addPlayer(name, "", wlType.DEFAULT);
         return setPlayerData(name, null, -1, WHITE, DEFAULT);
     }
     public static wlType addPlayer(String name, String UUID){
-//        return addPlayer(name, UUID, wlType.DEFAULT);
         return setPlayerData(name, UUID, -1, WHITE, DEFAULT);
     }
     public static void addPlayer(Player player, wlType type){
-//        return addPlayer(player.getName(), String.valueOf(player.getUniqueId()), type);
         setPlayerData(player.getName(), String.valueOf(player.getUniqueId()), -1, WHITE, type);
+    }
+    // 移除玩家
+    public static wlType delPlayerName(String name){
+        return setPlayerData(name, null, -2, NOT_WHITE, null);
+    }
+    public static wlType delPlayerUUID(String UUID){
+        return setPlayerData(null, UUID, -2, NOT_WHITE, null);
     }
     // 封禁玩家
     public static wlType banPlayerName(String name){
@@ -234,33 +191,6 @@ public class SQL {
         return setPlayerData(null, UUID, -2, BLACK, null);
     }
 
-    // 删除玩家, 通过名称
-    public static boolean delPlayerName(String name){
-        try {
-            PreparedStatement sql = connection.prepareStatement("UPDATE `player` SET `WHITE` = ? WHERE `NAME` = ? ORDER BY ROWID DESC LIMIT 1;");
-            sql.setBoolean(1, false);
-            sql.setString(2, name);
-            sql.executeUpdate();
-            sql.close();
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
-
-    // 删除玩家, 通过UUID
-    public static boolean delPlayerUUID(String UUID){
-        try {
-            PreparedStatement sql = connection.prepareStatement("UPDATE `player` SET `WHITE` = ? WHERE `UUID` = ? ORDER BY ROWID DESC LIMIT 1;");
-            sql.setBoolean(1, false);
-            sql.setString(2, UUID);
-            sql.executeUpdate();
-            sql.close();
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
 
     // 是否在白名单中
     // NOT = 不在, WHITE = 存在, ERROR = 出错, VISIT = 存在但是参观账号, VISIT_DEL_DATA = 已删除数据的参观账户

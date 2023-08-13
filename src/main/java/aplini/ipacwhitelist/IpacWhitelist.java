@@ -227,7 +227,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                     return true;
                 }
 
-                boolean b;
+                wlType b;
 
                 // uuid
                 if(args[1].length() == 36){
@@ -243,7 +243,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                     return true;
                 }
 
-                if(b){
+                if(b != wlType.ERROR){
                     sender.sendMessage(plugin.getConfig().getString("message.command.del", "").replace("%player%", args[1]));
                 }else{
                     sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
