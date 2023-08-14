@@ -20,9 +20,9 @@ whitelist:
 #    - '^fe80::1234:.+$' # ipv6没有方括号
 
   # 玩家在线时, 对其使用 /wl del 或 /wl ban 等指令是否需要踢出玩家
-  kick-out-on-del: true # del
-  kick-out-on-ban: true # ban
-  kick-out-on-add-visit: true # 参观账户被添加到白名单时
+  kick-on-del: true # del
+  kick-on-ban: true # ban
+  kick-on-add-visit: true # 参观账户被添加到白名单时
 
   # 如果玩家在指定秒数内没上线过, 则视为不在白名单中. -1 = 禁用
   # 参观账户不受此限制

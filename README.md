@@ -38,12 +38,13 @@ whitelist:
   # 简易的 ip 黑名单. 在这里添加正则表达式, 匹配的ip不允许加入服务器 (也不允许使用参观账户
   # 使用 /wl reload 重载配置即可应用
   ip-blacklist: []
-  #    - '^192\.168\.100\..+$'
-  #    - '^fe80::1234:.+$' # ipv6没有方括号
+#    - '^192\.168\.100\..+$'
+#    - '^fe80::1234:.+$' # ipv6没有方括号
 
   # 玩家在线时, 对其使用 /wl del 或 /wl ban 等指令是否需要踢出玩家
-  kick-out-on-del: true # del
-  kick-out-on-ban: true # ban
+  kick-on-del: true # del
+  kick-on-ban: true # ban
+  kick-on-add-visit: true # 参观账户被添加到白名单时
 
   # 如果玩家在指定秒数内没上线过, 则视为不在白名单中. -1 = 禁用
   # 参观账户不受此限制
@@ -101,6 +102,7 @@ visit:
   wl-add:
     command:
       - 'lp user %playerUUID% parent remove visit' # 将玩家移出 visit 用户组
+      - 'authme unregister %playerName%' # 取消注册玩家
 
   # 参观账户被添加到白名单后执行一些指令, 如果参观账户现在不在线, 则推迟到下一次上线时运行
   # 可用变量: %playerName%, %playerUUID% (从玩家对象中获取)
@@ -128,6 +130,7 @@ message:
 
   # 玩家加入
   join:
+    add: '§6IpacEL §f> §a您的白名单已重置, 请重新加入服务器'
     not: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%player%'
     expired: '§6IpacEL §f> §b太久没有上线? 请联系管理员恢复白名单§7: §a%player%'
     black: '§6IpacEL §f> §b您被列入黑名单: §a%player%'

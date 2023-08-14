@@ -90,7 +90,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                         // 获取玩家对象, 如果不在线则为 null
                         Player player = Bukkit.getPlayer(playerName);
                         // 是否需要踢出玩家
-                        if(plugin.getConfig().getBoolean("whitelist.kick-out-on-add-visit") && player != null){
+                        if(plugin.getConfig().getBoolean("whitelist.kick-on-add-visit") && player != null){
                             player.kickPlayer(plugin.getConfig().getString("message.join.add"));
                             player = null;
                         }
@@ -149,7 +149,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                 if(state != Type.ERROR){
                     // 踢出玩家
-                    if(plugin.getConfig().getBoolean("whitelist.kick-out-on-del") && player != null){
+                    if(plugin.getConfig().getBoolean("whitelist.kick-on-del") && player != null){
                         player.kickPlayer(plugin.getConfig().getString("message.join.not", "").replace("%player%", playerName));
                     }
                     sender.sendMessage(plugin.getConfig().getString("message.command.del", "").replace("%player%", playerName));
@@ -196,7 +196,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                         SQL.setPlayerData(null, playerUUID, -2, Type.VISIT_BLACK);
                     }
                     // 踢出玩家
-                    if(plugin.getConfig().getBoolean("whitelist.kick-out-on-ban") && player != null){
+                    if(plugin.getConfig().getBoolean("whitelist.kick-on-ban") && player != null){
                         player.kickPlayer(plugin.getConfig().getString("message.join.black", "").replace("%player%", player.getName()));
                     }
                 }else{
