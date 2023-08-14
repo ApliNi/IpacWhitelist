@@ -80,14 +80,20 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                     return true;
                 }
 
-                // 获取玩家对象, 如果不在线则为 null
-                Player player = Bukkit.getPlayer(playerName);
+
 
                 // 根据添加前的 Type
                 switch(state){
                     case VISIT, VISIT_CONVERT, VISIT_BLACK -> { // 参观账户/需要转换的参观账户/被封禁的参观账户
                         // 运行 wl-add
                         startVisitConvertFunc(plugin, playerName, playerUUID, "visit.wl-add.command");
+                        // 获取玩家对象, 如果不在线则为 null
+                        Player player = Bukkit.getPlayer(playerName);
+                        // 是否需要踢出玩家
+                        if(plugin.getConfig().getBoolean("whitelist.kick-out-on-add-visit") && player != null){
+                            player.kickPlayer(plugin.getConfig().getString("message.join.add"));
+                            player = null;
+                        }
                         // 玩家在线或不在线
                         if(player != null){
                             // 修改 Type 为 WHITE, 同时更新时间
