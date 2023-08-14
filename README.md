@@ -18,10 +18,126 @@ Ipacamod 服务器的新白名单插件
 - `/wl reconnect_database` - 重新连接数据库
 
 
-**特性**
-- 玩家加入时要求UUID与白名单中的相同
-  - 如果UUID为空则要求名称相同, 并在该玩家加入时填充UUID
-- 如果玩家改名, 则更新名称
-  - 如果新名称与其他名称相同, 则报错
+**config.yml**
+```yaml
+# 数据库
+sql:
+  # sqlite, 暂不支持 mysql
+  db: sqlite
 
-> 在出现一个能像 FloodGate 一样自动修改玩家名称前缀的软件出来之前, 您需要让新的离线玩家名称中包含任意正版账号不支持的字符, 比如 `-`. 
+  # mysql
+  host: localhost
+  port: 3306
+  user: root
+  password: password
+  database: IpacWhitelist
+
+
+# 白名单功能
+whitelist:
+  # 简易的 ip 黑名单. 在这里添加正则表达式, 匹配的ip不允许加入服务器 (也不允许使用参观账户
+  # 使用 /wl reload 重载配置即可应用
+  ip-blacklist: []
+  #    - '^192\.168\.100\..+$'
+  #    - '^fe80::1234:.+$' # ipv6没有方括号
+
+  # 玩家在线时, 对其使用 /wl del 或 /wl ban 等指令是否需要踢出玩家
+  kick-out-on-del: true # del
+  kick-out-on-ban: true # ban
+
+  # 如果玩家在指定秒数内没上线过, 则视为不在白名单中. -1 = 禁用
+  # 参观账户不受此限制
+  timeout: 10368000 # 10368000 = 4个月
+
+  # 服务器启动完成后等待多少毫秒才能允许玩家加入
+  late-join-time: 4000 # 4秒
+
+
+# 参观账户
+# 参观账户允许不在白名单中的玩家加入服务器, 可以限制其功能
+visit:
+  # 如果开启, 不在白名单和移出白名单的玩家将会以参观账户的形式加入服务器. 白名单过期和封禁中的账户依然不可加入服务器
+  # 关闭可重载配置, 但开启它需要重启服务器
+  enable: false
+  # 最多允许同时加入多少参观账户
+  max-visit-player: 10
+
+  # 限定参观账户只能使用以下域名加入服务器, 否则提示不在白名单
+  limit-hostname:
+    enable: false
+    list:
+      - 'visit.your-mc-server.com:25565'
+      - 'visit2.your-mc-server.com:25565'
+
+  # AuthMe
+  auto-register-AuthMe: true # 为参观账户自动注册, 相当于 `authme register <playerName> <password>`, 但不会踢出玩家
+  auto-login-AuthMe: true # 为参观账户自动登录, 相当于 `/authme forcelogin <playerName>`
+  auto-register-AuthMe-password: 'complexPassword' # 需要在这里填写一个复杂的密码
+
+  # 这些指令只是示例, 请根据自己的需求修改
+
+  # 参观账户事件程序
+  # command 和 message 中可使用的变量: %playerName%, %playerUUID%
+  event:
+    onNewVisitPlayerLoginEvent: # 参观账户第一次登录服务器 (第一次登录也会触发 onVisitPlayerLoginEvent 事件)
+      command:
+        - 'lp user %playerUUID% parent add visit' # 将玩家添加到 visit 用户组
+        - 'gamemode spectator %playerName%' # 将玩家设置为观察模式
+
+    onVisitPlayerLoginEvent: # 参观账户登录服务器
+      command: []
+
+    onVisitPlayerJoinEvent: # 参观账户加入服务器
+      command: []
+      message:
+        - '§6IpacEL §f> §a您正在使用参观账户=w='
+
+    onVisitPlayerQuitEvent: # 参观账户退出服务器
+      command: []
+
+
+  # 参观账户被添加到白名单时执行一些指令 `/wl add <playerName> [playerUUID]`
+  # 可用变量: %playerName%, %playerUUID% (如果指令中不包含 UUID, 则会从数据库中查找)
+  wl-add:
+    command:
+      - 'lp user %playerUUID% parent remove visit' # 将玩家移出 visit 用户组
+
+  # 参观账户被添加到白名单后执行一些指令, 如果参观账户现在不在线, 则推迟到下一次上线时运行
+  # 可用变量: %playerName%, %playerUUID% (从玩家对象中获取)
+  wl-add-convert:
+    command:
+      - 'spawn %playerName%' # 传送到重生点
+      - 'gamemode survival %playerName%' # 将玩家设置为生存模式
+
+
+# 消息
+message:
+  # 指令消息
+  command:
+    add: '§6IpacEL §f> §b%player% §a已添加到白名单'
+    add-reset: '§6IpacEL §f> §b%player% §a的白名单已重置'
+    add-reset-visit: '§6IpacEL §f> §b%player% §a已从参观账户中重置'
+    del: '§6IpacEL §f> §a%player% §b已移出白名单'
+    ban: '§6IpacEL §f> §a%player% §b已列入黑名单'
+    reload: '§6IpacEL §f> IpacWhitelist重载完成'
+    reconnect-database: '§6IpacEL §f> §a重新加载数据库完成'
+    err: '§6IpacEL §f> §b内部错误'
+    err-length: '§6IpacEL §f> §b名称或UUID长度异常'
+    err-name-length: '§6IpacEL §f> §b名称长度异常'
+    err-uuid-length: '§6IpacEL §f> §bUUID长度异常'
+
+  # 玩家加入
+  join:
+    not: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%player%'
+    expired: '§6IpacEL §f> §b太久没有上线? 请联系管理员恢复白名单§7: §a%player%'
+    black: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
+    black-ip: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
+    err: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'
+    starting: '§6IpacEL §f> §b服务器正在启动'
+
+  # 参观账户加入
+  visit:
+    illegal-hostname: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%player%' # 未使用限定的主机名
+    full: '§6IpacEL §f> §b参观队列已满'
+
+```

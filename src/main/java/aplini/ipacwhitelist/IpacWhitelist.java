@@ -2,7 +2,7 @@ package aplini.ipacwhitelist;
 
 import aplini.ipacwhitelist.Listener.CommandHandler;
 import aplini.ipacwhitelist.Listener.onPlayerJoin;
-import aplini.ipacwhitelist.util.SQL_io;
+import aplini.ipacwhitelist.util.SQL;
 import aplini.ipacwhitelist.Listener.onVisitPlayerJoin;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -27,9 +27,9 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
         plugin.getConfig();
 
         // 连接数据库
-        SQL_io.connection();
+        SQL.connection();
         // 初始化数据库
-        SQL_io.initialize();
+        SQL.initialize();
     }
 
     // 插件启动
@@ -47,7 +47,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
     // 插件禁用
     public void onDisable() {
         // 关闭数据库连接
-        SQL_io.closeConnection();
+        SQL.closeConnection();
     }
 
 

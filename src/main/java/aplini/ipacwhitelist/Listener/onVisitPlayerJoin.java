@@ -1,7 +1,7 @@
 package aplini.ipacwhitelist.Listener;
 
 import aplini.ipacwhitelist.IpacWhitelist;
-import aplini.ipacwhitelist.util.SQL_io;
+import aplini.ipacwhitelist.util.SQL;
 import fr.xephi.authme.api.v3.AuthMeApi;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -36,7 +36,7 @@ public class onVisitPlayerJoin implements Listener {
         if(ifForbiddenJoin(event)){return;}
 
         // 将这个玩家以参观账户的身份添加到数据库中
-        SQL_io.addPlayer(event.getPlayer(), VISIT);
+        SQL.addPlayer(event.getPlayer(), VISIT);
         getLogger().info("[IpacWhitelist] 为新的参观账户创建数据: %s ".formatted(event.getPlayer().getName()));
 
         // 自动注册
@@ -80,8 +80,8 @@ public class onVisitPlayerJoin implements Listener {
         if(plugin.getConfig().getBoolean("visit.limit-hostname.enable")){
             String Hostname = event.getHostname();
             if(!plugin.getConfig().getStringList("visit.limit-hostname.list").contains(Hostname)){
-                getLogger().info("[IpacWhitelist] %s 参观账户未使用专用地址: %s".formatted(event.getPlayer().getName(), Hostname));
-                event.setKickMessage(plugin.getConfig().getString("message.join.not", "").replace("%player%", event.getPlayer().getName()));
+                getLogger().info("[IpacWhitelist] %s 参观账户使用非法主机名: %s".formatted(event.getPlayer().getName(), Hostname));
+                event.setKickMessage(plugin.getConfig().getString("message.visit.illegal-hostname", "").replace("%player%", event.getPlayer().getName()));
                 event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
                 return true;
             }

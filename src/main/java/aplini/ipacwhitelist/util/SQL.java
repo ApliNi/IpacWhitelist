@@ -9,7 +9,7 @@ import static aplini.ipacwhitelist.IpacWhitelist.getPlugin;
 import static aplini.ipacwhitelist.util.Type.*;
 import static org.bukkit.Bukkit.getLogger;
 
-public class SQL_io {
+public class SQL {
 
     public static Connection connection;
 
@@ -90,14 +90,13 @@ public class SQL_io {
 //                connection.prepareStatement("""
 //                    CREATE TABLE IF NOT EXISTS `%s` (
 //                        `ID` bigint(7) NOT NULL,
-//                        `UUID` char(36) NOT NULL,
-//                        `NAME` varchar(16) NOT NULL,
-//                        `TIME` bigint(11) NOT NULL,
-//                        `WHITE` boolean NOT NULL,
 //                        `Type` bigint(2) NOT NULL,
+//                        `UUID` char(36) NOT NULL,
+//                        `Name` varchar(16) NOT NULL,
+//                        `Time` bigint(11) NOT NULL,
 //
 //                        INDEX `IDX_UUID` (`UUID`) USING BTREE,
-//                        INDEX `IDX_NAME` (`NAME`) USING BTREE,
+//                        INDEX `IDX_Name` (`Name`) USING BTREE,
 //                        INDEX `IDX_Type` (`Type`) USING BTREE
 //                    );
 //                    """.formatted(table)
@@ -112,10 +111,10 @@ public class SQL_io {
 
     /**
      * 修改或创建玩家数据
-     * @param name 玩家名称, 可使用 null
-     * @param UUID 玩家 UUID, 可使用 null
-     * @param time 时间戳. -1=始终有效, -2=使用默认值
-     * @param type 白名单类型, 可使用 null
+     * @param name 玩家名称, 为 null 时不修改
+     * @param UUID 玩家 UUID, 为 null 时不修改 (不可同时与名称为空
+     * @param time 时间戳. -1=始终有效, -2=不修改, -3=更新为当前时间
+     * @param type 白名单类型, 为 null 时不修改
      * @return 账户类型枚举 or ERROR
      */
     public static Type setPlayerData(String name, String UUID, long time, Type type){
@@ -146,7 +145,11 @@ public class SQL_io {
                 // 输出账户类型
                 out = Type.getType(results.getInt("Type"));
                 // 处理缺省值
-                time = time == -2 ? results.getLong("Time") : time;
+                if(time == -2){
+                    time = results.getLong("Time");
+                }else if(time == -3){
+                    time = System.currentTimeMillis() / 1000;
+                }
                 int TypeID = type != null ? type.getID() : results.getInt("Type");
 
                 // 已添加, 重置这个ID的 Time Type
@@ -158,7 +161,11 @@ public class SQL_io {
                 // 输出账户类型
                 out = NOT;
                 // 处理缺省值
-                time = time == -2 ? -1 : time;
+                if(time == -2){
+                    time = -1;
+                }else if(time == -3){
+                    time = System.currentTimeMillis() / 1000;
+                }
                 int TypeID = type != null ? type.getID() : NOT.getID();
 
                 // 未添加, 创建记录
@@ -176,6 +183,10 @@ public class SQL_io {
         }
         return out;
     }
+    // 设置或修改数据
+    public static void addPlayer(Player player, long time, Type type){
+        setPlayerData(player.getName(), String.valueOf(player.getUniqueId()), time, type);
+    }
     // 添加玩家
     public static Type addPlayer(String name){
         return setPlayerData(name, null, -1, WHITE);
@@ -183,8 +194,11 @@ public class SQL_io {
     public static Type addPlayer(String name, String UUID){
         return setPlayerData(name, UUID, -1, WHITE);
     }
+    public static void addPlayer(String name, String UUID, Type type){
+        setPlayerData(name, UUID, -1, type);
+    }
     public static void addPlayer(Player player, Type type){
-        setPlayerData(player.getName(), String.valueOf(player.getUniqueId()), -1, type);
+        addPlayer(player, -1, type);
     }
     // 移除玩家
     public static Type delPlayerName(String name){
@@ -267,17 +281,36 @@ public class SQL_io {
         }
     }
 
-    // 获取参观账户的UUID, 通过名称
-    public static String getVisitPlayerUUIDFromName(String name){
+
+    /**
+     * 获取UUID或者名称
+     * @param queryType 查询什么数据 UUID or NAME, 输入则正好相反
+     * @param inpData 输入数据
+     * @return 输出数据. 查询不到或错误时为 ""
+     */
+    public static String getPlayerInfo(Type queryType, String inpData){
         String out = "";
+        String query;
+        String queryTypeName;
+        // 根据输入选择 sql 语句
+        switch(queryType){
+            case UUID -> {
+                query = "SELECT (UUID) FROM `player` WHERE `Name` = ? AND `UUID` != '' ORDER BY ROWID DESC LIMIT 1;";
+                queryTypeName = "UUID";
+            }
+            case NAME -> {
+                query = "SELECT (Name) FROM `player` WHERE `UUID` = ? AND `Name` != '' ORDER BY ROWID DESC LIMIT 1;";
+                queryTypeName = "Name";
+            }
+            default -> {return "";}
+        }
+        // 查询
         try {
-            // 查找指定参观账户一条有uuid的记录
-            PreparedStatement sql = connection.prepareStatement("SELECT * FROM `player` WHERE `Name` = ? AND `Type` = ? AND UUID != '' ORDER BY ROWID DESC LIMIT 1;");
-            sql.setString(1, name);
-            sql.setInt(2, VISIT.getID());
+            PreparedStatement sql = connection.prepareStatement(query);
+            sql.setString(1, inpData);
             ResultSet results = sql.executeQuery();
             if(results.next()){
-                out = results.getString("UUID");
+                out = results.getString(queryTypeName);
             }
             sql.close();
         } catch (Exception e) {

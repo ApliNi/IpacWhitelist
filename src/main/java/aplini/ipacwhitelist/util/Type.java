@@ -10,10 +10,16 @@ public enum Type {
     VISIT(1), // 参观账户
     WHITE(2), // 白名单
     BLACK(3), // 黑名单
+    VISIT_CONVERT(4), // 参观账户需要转为白名单
+    VISIT_BLACK(5), // 参观账户在黑名单中
 
     // 表示方法
     WHITE_EXPIRED(-1), // 白名单过期
     ERROR(-5), // 错误
+
+    // 数据列名称
+    UUID(-2), // UUID
+    NAME(-2), // UUID
 
     ;
 

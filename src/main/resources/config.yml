@@ -79,6 +79,12 @@ visit:
   wl-add:
     command:
       - 'lp user %playerUUID% parent remove visit' # 将玩家移出 visit 用户组
+
+  # 参观账户被添加到白名单后执行一些指令, 如果参观账户现在不在线, 则推迟到下一次上线时运行
+  # 可用变量: %playerName%, %playerUUID% (从玩家对象中获取)
+  wl-add-convert:
+    command:
+      - 'spawn %playerName%' # 传送到重生点
       - 'gamemode survival %playerName%' # 将玩家设置为生存模式
 
 
@@ -88,10 +94,11 @@ message:
   command:
     add: '§6IpacEL §f> §b%player% §a已添加到白名单'
     add-reset: '§6IpacEL §f> §b%player% §a的白名单已重置'
+    add-reset-visit: '§6IpacEL §f> §b%player% §a已从参观账户中重置'
     del: '§6IpacEL §f> §a%player% §b已移出白名单'
     ban: '§6IpacEL §f> §a%player% §b已列入黑名单'
     reload: '§6IpacEL §f> IpacWhitelist重载完成'
-    reconnect-database: '§6IpacEL §f> §a初始化数据库完成'
+    reconnect-database: '§6IpacEL §f> §a重新加载数据库完成'
     err: '§6IpacEL §f> §b内部错误'
     err-length: '§6IpacEL §f> §b名称或UUID长度异常'
     err-name-length: '§6IpacEL §f> §b名称长度异常'
@@ -102,10 +109,11 @@ message:
     not: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%player%'
     expired: '§6IpacEL §f> §b太久没有上线? 请联系管理员恢复白名单§7: §a%player%'
     black: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
+    black-ip: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
     err: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'
     starting: '§6IpacEL §f> §b服务器正在启动'
 
-  # 参观账户
+  # 参观账户加入
   visit:
+    illegal-hostname: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%player%' # 未使用限定的主机名
     full: '§6IpacEL §f> §b参观队列已满'
-
