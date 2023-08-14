@@ -35,11 +35,10 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
             // 重新连接数据库
             case "reconnect_database" -> {
                 allowJoin = false;
-                SQL_io.closeConnection();
-                SQL_io.connection();
+                SQL_io.reconnect();
                 SQL_io.initialize();
-                allowJoin = true;
                 sender.sendMessage(plugin.getConfig().getString("message.command.reconnect-database", ""));
+                allowJoin = true;
             }
 
             // 添加一个账户

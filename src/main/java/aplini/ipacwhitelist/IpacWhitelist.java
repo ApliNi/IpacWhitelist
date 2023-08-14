@@ -4,11 +4,13 @@ import aplini.ipacwhitelist.Listener.CommandHandler;
 import aplini.ipacwhitelist.Listener.onPlayerJoin;
 import aplini.ipacwhitelist.util.SQL_io;
 import aplini.ipacwhitelist.Listener.onVisitPlayerJoin;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +37,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
         // 注册监听器
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new onPlayerJoin(this), this);
-        getServer().getPluginManager().registerEvents(new CommandHandler(this), this);
+        Objects.requireNonNull(Bukkit.getPluginCommand("wl")).setExecutor(new CommandHandler(this));
 
         if(plugin.getConfig().getBoolean("visit.enable", false)){
             getServer().getPluginManager().registerEvents(new onVisitPlayerJoin(this), this);
@@ -61,7 +63,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
                 throw new RuntimeException(e);
             }
 
-            getLogger().info("[IpacWhitelist] 启动等待结束");
+            getLogger().info("启动等待结束");
             // 允许加入
             allowJoin = true;
         });

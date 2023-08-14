@@ -55,7 +55,7 @@ public class onPlayerJoin implements Listener {
             case WHITE -> // 白名单
                     event.setResult(PlayerLoginEvent.Result.ALLOWED);
 
-            // 不存在or已移出白名单, 参观账户
+            // 不存在/已移出白名单, 参观账户
             case NOT, VISIT -> { // 不在白名单中
                 // 是否启用参观账户
                 if(plugin.getConfig().getBoolean("visit.enable", false)){
@@ -73,8 +73,8 @@ public class onPlayerJoin implements Listener {
             }
 
             case WHITE_EXPIRED -> { // 白名单已过期
-                getLogger().info("[IpacWhitelist] %s 白名单已过期或不在白名单中".formatted(event.getPlayer().getName()));
-                event.setKickMessage(plugin.getConfig().getString("message.join.not", "").replace("%player%", event.getPlayer().getName()));
+                getLogger().info("[IpacWhitelist] %s 白名单已过期".formatted(event.getPlayer().getName()));
+                event.setKickMessage(plugin.getConfig().getString("message.join.expired", "").replace("%player%", event.getPlayer().getName()));
                 event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
             }
 

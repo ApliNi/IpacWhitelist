@@ -43,6 +43,12 @@ public class SQL_io {
             throw new RuntimeException(e);
         }
     }
+    // 重连
+    public static synchronized void reconnect() {
+        closeConnection();
+        connection();
+    }
+
     // 初始化数据库
     public static synchronized void initialize() {
         try {
@@ -54,6 +60,18 @@ public class SQL_io {
 
             // SQLITE
             if(db.equalsIgnoreCase("sqlite")){
+
+                // 使用 WAL 模式. 自动复用碎片空间
+                connection.prepareStatement("""
+                        PRAGMA journal_mode = WAL;
+                        PRAGMA auto_vacuum = 2;
+                        """
+                ).execute();
+
+                // 重新连接数据库
+                reconnect();
+
+                // 加载数据表
                 connection.prepareStatement("""
                         CREATE TABLE IF NOT EXISTS "%s" (
                             "ID" INTEGER NOT NULL,
