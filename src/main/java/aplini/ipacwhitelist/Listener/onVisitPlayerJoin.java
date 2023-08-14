@@ -1,9 +1,10 @@
-package aplini.ipacwhitelist.visit;
+package aplini.ipacwhitelist.Listener;
 
 import aplini.ipacwhitelist.IpacWhitelist;
-import aplini.ipacwhitelist.util.SQL;
+import aplini.ipacwhitelist.util.SQL_io;
 import fr.xephi.authme.api.v3.AuthMeApi;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
@@ -14,28 +15,28 @@ import java.util.List;
 import java.util.UUID;
 
 import static aplini.ipacwhitelist.util.Type.*;
-import static aplini.ipacwhitelist.visit.EventFunc.startAsyncEventFunc;
+import static aplini.ipacwhitelist.util.EventFunc.startAsyncEventFunc;
 import static org.bukkit.Bukkit.getLogger;
 
-public class Visit implements Listener {
+public class onVisitPlayerJoin implements Listener {
     private static IpacWhitelist plugin;
-    // AuthmeAPI
     private static AuthMeApi AuthmeAPI;
     // 当前在线的参观账户uuid列表
     private static final List<UUID> visitList = new ArrayList<>();
-    public Visit(IpacWhitelist plugin){
-        Visit.plugin = plugin;
+
+    public onVisitPlayerJoin(IpacWhitelist plugin){
+        onVisitPlayerJoin.plugin = plugin;
         if(plugin.getConfig().getBoolean("visit.auto-register-AuthMe")){
-            Visit.AuthmeAPI = AuthMeApi.getInstance();
+            onVisitPlayerJoin.AuthmeAPI = AuthMeApi.getInstance();
         }
     }
 
-    // 新参观账户第一次登录服务器
+    // 参观账户第一次登录服务器
     public static void onNewVisitPlayerLoginEvent(PlayerLoginEvent event) {
         if(ifForbiddenJoin(event)){return;}
 
         // 将这个玩家以参观账户的身份添加到数据库中
-        SQL.addPlayer(event.getPlayer(), VISIT);
+        SQL_io.addPlayer(event.getPlayer(), VISIT);
         getLogger().info("[IpacWhitelist] 为新的参观账户创建数据: %s ".formatted(event.getPlayer().getName()));
 
         // 自动注册
@@ -96,7 +97,7 @@ public class Visit implements Listener {
         return false;
     }
 
-    @EventHandler // 玩家加入
+    @EventHandler(priority = EventPriority.HIGH) // 玩家加入
     public void onVisitPlayerJoinEvent(PlayerJoinEvent event) {
         UUID playerUUID = event.getPlayer().getUniqueId();
 
@@ -107,7 +108,7 @@ public class Visit implements Listener {
         }
     }
 
-    @EventHandler // 玩家退出
+    @EventHandler(priority = EventPriority.HIGH) // 玩家退出
     public void onVisitPlayerQuitEvent(PlayerQuitEvent event) {
         UUID playerUUID = event.getPlayer().getUniqueId();
 

@@ -44,8 +44,8 @@ visit:
   limit-hostname:
     enable: false
     list:
-      - 'visit.your-mc-server.com'
-      - 'visit2.your-mc-server.com'
+      - 'visit.your-mc-server.com:25565'
+      - 'visit2.your-mc-server.com:25565'
 
   # AuthMe
   auto-register-AuthMe: true # 为参观账户自动注册, 相当于 `authme register <playerName> <password>`, 但不会踢出玩家
@@ -59,8 +59,8 @@ visit:
   event:
     onNewVisitPlayerLoginEvent: # 参观账户第一次登录服务器 (第一次登录也会触发 onVisitPlayerLoginEvent 事件)
       command:
-        - 'lp user %playerUUID% parent add visit'
-        - 'gamemode spectator %playerName%'
+        - 'lp user %playerUUID% parent add visit' # 将玩家添加到 visit 用户组
+        - 'gamemode spectator %playerName%' # 将玩家设置为观察模式
 
     onVisitPlayerLoginEvent: # 参观账户登录服务器
       command: []
@@ -75,12 +75,11 @@ visit:
 
 
   # 参观账户被添加到白名单时执行一些指令 `/wl add <playerName> [playerUUID]`
-  # 可用变量: %playerName%, %playerUUID%
-  # 如果指令中不包含 UUID, 则会从数据库中查找
+  # 可用变量: %playerName%, %playerUUID% (如果指令中不包含 UUID, 则会从数据库中查找)
   wl-add:
     command:
-      - 'lp user %playerUUID% parent remove visit'
-      - 'gamemode survival %playerName%'
+      - 'lp user %playerUUID% parent remove visit' # 将玩家移出 visit 用户组
+      - 'gamemode survival %playerName%' # 将玩家设置为生存模式
 
 
 # 消息
@@ -107,4 +106,5 @@ message:
 
   # 参观账户
   visit:
-    full: '§6IpacEL §f> §b参观账户队列已满'
+    full: '§6IpacEL §f> §b参观队列已满'
+

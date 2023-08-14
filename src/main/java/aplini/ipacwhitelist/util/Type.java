@@ -18,9 +18,7 @@ public enum Type {
     ;
 
     private final int key;
-    private Type(int key) {
-        this.key = key;
-    }
+    Type(int key){this.key = key;}
 
     // 将枚举存入 HashMap
     private static final Map<Integer, Type> TypeMap = new HashMap<>();

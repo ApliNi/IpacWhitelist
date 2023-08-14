@@ -9,7 +9,7 @@ import static aplini.ipacwhitelist.IpacWhitelist.getPlugin;
 import static aplini.ipacwhitelist.util.Type.*;
 import static org.bukkit.Bukkit.getLogger;
 
-public class SQL {
+public class SQL_io {
 
     public static Connection connection;
 
