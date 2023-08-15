@@ -32,8 +32,12 @@ whitelist:
   # 简易的 ip 黑名单. 在这里添加正则表达式, 匹配的ip不允许加入服务器 (也不允许使用参观账户
   # 使用 /wl reload 重载配置即可应用
   ip-blacklist: []
-#    - '^192\.168\.100\..+$'
-#    - '^fe80::1234:.+$' # ipv6没有方括号
+  #    - '^192\.168\.100\..+$'
+  #    - '^fe80::1234:.+$' # ipv6没有方括号
+
+  # 限定玩家可以使用的用户名正则
+  name-rule: '^\.?[a-zA-Z0-9_]+$' # 白名单中的玩家
+  name-rule-visit: '^\.?[a-zA-Z0-9_]+$' # 参观账户
 
   # 玩家在线时, 对其使用 /wl del 或 /wl ban 等指令是否需要踢出玩家
   kick-on-del: true # del
@@ -130,6 +134,7 @@ message:
     black: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
     black-ip: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
     err: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'
+    err-name: '§6IpacEL §f> §b无效的名称: §a%player%'
     starting: '§6IpacEL §f> §b服务器正在启动'
 
   # 参观账户加入

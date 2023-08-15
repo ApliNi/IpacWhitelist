@@ -31,11 +31,15 @@ public class onPlayerJoin implements Listener {
             return;
         }
 
+        // 玩家名称
+        String playerName = event.getPlayer().getName();
+        // 玩家IP地址
+        String playerIP = event.getRealAddress().toString();
+        playerIP = playerIP.substring(playerIP.lastIndexOf("/") +1);
+
         // ip 黑名单
         // 原始ip格式: ipv4: /127.0.0.1, ipv6: /0:0:0:0:0:0:0:1 没有方括号
         boolean inBlacklist = false;
-        String playerIP = event.getRealAddress().toString();
-        playerIP = playerIP.substring(playerIP.lastIndexOf("/") +1);
         for(String li : plugin.getConfig().getStringList("whitelist.ip-blacklist")){
             if(Pattern.matches(li, playerIP)){
                 inBlacklist = true;
@@ -53,10 +57,13 @@ public class onPlayerJoin implements Listener {
         Type state = SQL.isWhitelisted(event.getPlayer());
         switch(state){
 
-            case WHITE -> // 白名单
-                    event.setResult(PlayerLoginEvent.Result.ALLOWED);
-
-            case NOT, VISIT -> { // 不存在/参观账户
+            case NOT, VISIT -> { // 不存在 / 参观账户
+                // 检查用户名
+                if(!Pattern.matches(plugin.getConfig().getString("whitelist.name-rule-visit", ".*"), playerName)){
+                    event.setKickMessage(plugin.getConfig().getString("message.join.err-name", ""));
+                    event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
+                    return;
+                }
                 // 是否启用参观账户
                 if(plugin.getConfig().getBoolean("visit.enable", false)){
                     // 如果是新账户, 则需要运行 onNewVisitPlayerLoginEvent
@@ -72,12 +79,24 @@ public class onPlayerJoin implements Listener {
                 }
             }
 
-            case VISIT_CONVERT -> { // 需要转换
-                // 运行 wl-add-convert
-                Player player = event.getPlayer();
-                startVisitConvertFunc(plugin, player, "visit.wl-add-convert.command");
-                // 修改 Type 为 WHITE, 同时更新时间
-                SQL.addPlayer(player, -3, Type.WHITE);
+            case WHITE, VISIT_CONVERT -> { // 白名单 / 正在将 VISIT 转换为 WHITE
+                // 检查用户名
+                if(!Pattern.matches(plugin.getConfig().getString("whitelist.name-rule", ".*"), playerName)){
+                    event.setKickMessage(plugin.getConfig().getString("message.join.err-name", ""));
+                    event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
+                    return;
+                }
+
+                if(state == Type.VISIT_CONVERT){
+                    // 运行 wl-add-convert
+                    Player player = event.getPlayer();
+                    startVisitConvertFunc(plugin, player, "visit.wl-add-convert.command");
+                    // 修改 Type 为 WHITE, 同时更新时间
+                    SQL.addPlayer(player, -3, Type.WHITE);
+                }
+//                else if(state == Type.WHITE){
+//                    event.setResult(PlayerLoginEvent.Result.ALLOWED); // 可能其他插件需要拒绝玩家加入
+//                }
             }
 
             case WHITE_EXPIRED -> { // 白名单已过期
@@ -86,7 +105,7 @@ public class onPlayerJoin implements Listener {
                 event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
             }
 
-            case BLACK, VISIT_BLACK -> { // 黑名单/被封禁的参观账户
+            case BLACK, VISIT_BLACK -> { // 黑名单 / 被封禁的参观账户
                 getLogger().info("[IpacWhitelist] %s 在黑名单中".formatted(event.getPlayer().getName()));
                 event.setKickMessage(plugin.getConfig().getString("message.join.black", "").replace("%player%", event.getPlayer().getName()));
                 event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
