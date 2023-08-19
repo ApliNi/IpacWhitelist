@@ -1,6 +1,7 @@
 package aplini.ipacwhitelist;
 
 import aplini.ipacwhitelist.Listener.CommandHandler;
+import aplini.ipacwhitelist.Listener.PlayerJoinMessage;
 import aplini.ipacwhitelist.Listener.onPlayerJoin;
 import aplini.ipacwhitelist.util.SQL;
 import aplini.ipacwhitelist.Listener.onVisitPlayerJoin;
@@ -42,6 +43,10 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
         if(plugin.getConfig().getBoolean("visit.enable", false)){
             getServer().getPluginManager().registerEvents(new onVisitPlayerJoin(this), this);
         }
+
+        if(plugin.getConfig().getBoolean("playerJoinMessage.enable")){
+            getServer().getPluginManager().registerEvents(new PlayerJoinMessage(this), this);
+        }
     }
 
     // 插件禁用
@@ -59,9 +64,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
             // 等待时间
             try {
                 TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("whitelist.late-join-time", 4000));
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            } catch (InterruptedException ignored) {}
 
             getLogger().info("启动等待结束");
             // 允许加入

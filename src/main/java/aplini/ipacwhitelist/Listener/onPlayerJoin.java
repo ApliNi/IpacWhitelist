@@ -8,7 +8,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static aplini.ipacwhitelist.IpacWhitelist.allowJoin;
@@ -17,6 +24,7 @@ import static org.bukkit.Bukkit.getLogger;
 
 public class onPlayerJoin implements Listener {
     private static IpacWhitelist plugin;
+    private static final List<UUID> playerDisconnectList = new ArrayList<>();
     public onPlayerJoin(IpacWhitelist plugin){
         onPlayerJoin.plugin = plugin;
     }
@@ -27,6 +35,15 @@ public class onPlayerJoin implements Listener {
         // 服务器启动等待
         if(!allowJoin){
             event.setKickMessage(plugin.getConfig().getString("message.join.starting", ""));
+            event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
+            return;
+        }
+
+        UUID playerUUID = event.getPlayer().getUniqueId();
+
+        // 玩家是否在断开连接的列表中
+        if(playerDisconnectList.contains(playerUUID)){
+            event.setKickMessage(plugin.getConfig().getString("message.join.limiter-reconnection-time", ""));
             event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
             return;
         }
@@ -117,5 +134,23 @@ public class onPlayerJoin implements Listener {
                 event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
             }
         }
+    }
+
+
+    @EventHandler(priority = EventPriority.MONITOR) // 玩家退出
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        // 保存断开连接的玩家的uuid
+        UUID playerUUID = event.getPlayer().getUniqueId();
+        playerDisconnectList.add(playerUUID);
+
+        // 定时移除这个uuid
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            try {
+                TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("whitelist.playerDisconnectToReconnectMinTime", 1500));
+            } catch (InterruptedException ignored) {}
+            playerDisconnectList.remove(playerUUID);
+        });
+        executor.shutdown();
     }
 }

@@ -35,6 +35,9 @@ whitelist:
   # 服务器启动完成后等待多少毫秒才能允许玩家加入
   late-join-time: 4000 # 4秒
 
+  # 玩家因任何原因断开连接后需要等待多长时间才能再次加入 (毫秒
+  playerDisconnectToReconnectMinTime: 1500
+
 
 # 参观账户
 # 参观账户允许不在白名单中的玩家加入服务器, 可以限制其功能
@@ -94,6 +97,41 @@ visit:
       - 'gamemode survival %playerName%' # 将玩家设置为生存模式
 
 
+
+# 玩家加入消息广播
+playerJoinMessage:
+  enable: true # 修改这个需要重启服务器
+
+  # 事件触发时将发出广播消息
+  # 如果 message 留空, 则忽略这个事件
+  # 如果 terminate: true, 本次玩家加入/退出将不再运行其他事件的广播. 默认为 true, 可以不需要填写
+
+  # 一次加入或退出的锁在多长时间后释放 (毫秒
+  lockFreedTime: 1500
+
+  # 玩家加入
+  playerJoin:
+    # IpacWL 参观账户登录服务器
+    onVisitPlayerJoin:
+      message: '§6IpacEL §f> §a%player% §b使用参观账户加入游戏'
+    # AuthMe 玩家登录或注册成功
+    onAuthMeLoginEvent:
+      message: '§6IpacEL §f> §a%player% §b加入游戏'
+    # 玩家加入事件
+    onPlayerJoinEvent:
+      message: '' # 防止离线账户因登录重复触发事件
+
+  # 玩家退出
+  playerQuit:
+    # AuthMe 登录密码错误
+    onAuthMeFailedLoginEvent:
+      message: '§6IpacEL §f> §a%player% §b断开连接: §8密码错误'
+    # 玩家退出事件
+    onPlayerQuitEvent:
+      message: '§6IpacEL §f> §a%player% §b跑了'
+
+
+
 # 消息
 message:
   # 指令消息
@@ -115,6 +153,7 @@ message:
     add: '§6IpacEL §f> §a您的白名单已重置, 请重新加入服务器'
     not: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%player%'
     expired: '§6IpacEL §f> §b太久没有上线? 请联系管理员恢复白名单§7: §a%player%'
+    limiter-reconnection-time: '§6IpacEL §f> §b连接受限'
     black: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
     black-ip: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
     err: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'

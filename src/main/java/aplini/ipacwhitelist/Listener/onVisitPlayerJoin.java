@@ -103,6 +103,10 @@ public class onVisitPlayerJoin implements Listener {
 
         // 是参观账户
         if(visitList.contains(playerUUID)){
+            // 运行 玩家加入消息显示 :: 参观账户加入服务器
+            if(plugin.getConfig().getBoolean("playerJoinMessage.enable")){
+                PlayerJoinMessage.onVisitPlayerJoin(event.getPlayer());
+            }
             // 参观账户事件程序
             startAsyncEventFunc("onVisitPlayerJoinEvent", plugin, event.getPlayer());
         }
