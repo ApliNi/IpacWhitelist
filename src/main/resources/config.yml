@@ -36,7 +36,7 @@ whitelist:
   late-join-time: 4000 # 4秒
 
   # 玩家因任何原因断开连接后需要等待多长时间才能再次加入 (毫秒
-  playerDisconnectToReconnectMinTime: 1500
+  playerDisconnectToReconnectMinTime: 1000
 
 
 # 参观账户
@@ -107,7 +107,7 @@ playerJoinMessage:
   # 如果 terminate: true, 本次玩家加入/退出将不再运行其他事件的广播. 默认为 true, 可以不需要填写
 
   # 一次加入或退出的锁在多长时间后释放 (毫秒
-  lockFreedTime: 1500
+  lockFreedTime: 1000
 
   # 玩家加入
   playerJoin:
@@ -155,7 +155,7 @@ message:
     expired: '§6IpacEL §f> §b太久没有上线? 请联系管理员恢复白名单§7: §a%player%'
     limiter-reconnection-time: '§6IpacEL §f> §b连接受限'
     black: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
-    black-ip: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
+    black-ip: '§6IpacEL §f> §b您被列入黑名单: §a%player%' # %ip%
     err: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'
     err-name: '§6IpacEL §f> §b无效的名称: §a%player%'
     starting: '§6IpacEL §f> §b服务器正在启动'

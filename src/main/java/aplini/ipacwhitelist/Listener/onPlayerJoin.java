@@ -64,8 +64,10 @@ public class onPlayerJoin implements Listener {
             }
         }
         if(inBlacklist){
-            getLogger().info("[IpacWhitelist] %s 在IP黑名单中: %s".formatted(event.getPlayer().getName(), playerIP));
-            event.setKickMessage(plugin.getConfig().getString("message.join.black-ip", "").replace("%player%", event.getPlayer().getName()));
+            getLogger().info("[IpacWhitelist] %s 在IP黑名单中: %s".formatted(playerName, playerIP));
+            event.setKickMessage(plugin.getConfig().getString("message.join.black-ip", "")
+                    .replace("%player%",playerName)
+                    .replace("%ip%", playerIP));
             event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
             return;
         }
@@ -77,7 +79,8 @@ public class onPlayerJoin implements Listener {
             case NOT, VISIT -> { // 不存在 / 参观账户
                 // 检查用户名
                 if(!Pattern.matches(plugin.getConfig().getString("whitelist.name-rule-visit", ".*"), playerName)){
-                    event.setKickMessage(plugin.getConfig().getString("message.join.err-name", ""));
+                    event.setKickMessage(plugin.getConfig().getString("message.join.err-name", "")
+                            .replace("%player%", playerName));
                     event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
                     return;
                 }
@@ -91,7 +94,7 @@ public class onPlayerJoin implements Listener {
                     }
                 }else{
                     getLogger().info("[IpacWhitelist] %s 不在白名单中".formatted(event.getPlayer().getName()));
-                    event.setKickMessage(plugin.getConfig().getString("message.join.not", "").replace("%player%", event.getPlayer().getName()));
+                    event.setKickMessage(plugin.getConfig().getString("message.join.not", "").replace("%player%", playerName));
                     event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
                 }
             }
@@ -99,7 +102,8 @@ public class onPlayerJoin implements Listener {
             case WHITE, VISIT_CONVERT -> { // 白名单 / 正在将 VISIT 转换为 WHITE
                 // 检查用户名
                 if(!Pattern.matches(plugin.getConfig().getString("whitelist.name-rule", ".*"), playerName)){
-                    event.setKickMessage(plugin.getConfig().getString("message.join.err-name", ""));
+                    event.setKickMessage(plugin.getConfig().getString("message.join.err-name", "")
+                            .replace("%player%", playerName));
                     event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
                     return;
                 }
@@ -117,19 +121,19 @@ public class onPlayerJoin implements Listener {
             }
 
             case WHITE_EXPIRED -> { // 白名单已过期
-                getLogger().info("[IpacWhitelist] %s 白名单已过期".formatted(event.getPlayer().getName()));
-                event.setKickMessage(plugin.getConfig().getString("message.join.expired", "").replace("%player%", event.getPlayer().getName()));
+                getLogger().info("[IpacWhitelist] %s 白名单已过期".formatted(playerName));
+                event.setKickMessage(plugin.getConfig().getString("message.join.expired", "").replace("%player%", playerName));
                 event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
             }
 
             case BLACK, VISIT_BLACK -> { // 黑名单 / 被封禁的参观账户
-                getLogger().info("[IpacWhitelist] %s 在黑名单中".formatted(event.getPlayer().getName()));
-                event.setKickMessage(plugin.getConfig().getString("message.join.black", "").replace("%player%", event.getPlayer().getName()));
+                getLogger().info("[IpacWhitelist] %s 在黑名单中".formatted(playerName));
+                event.setKickMessage(plugin.getConfig().getString("message.join.black", "").replace("%player%", playerName));
                 event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
             }
 
             default -> { // 内部错误
-                getLogger().warning("[IpacWhitelist] %s 触发内部错误".formatted(event.getPlayer().getName()));
+                getLogger().warning("[IpacWhitelist] %s 触发内部错误".formatted(playerName));
                 event.setKickMessage(plugin.getConfig().getString("message.join.err", ""));
                 event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
             }
