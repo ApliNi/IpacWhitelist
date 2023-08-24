@@ -39,8 +39,8 @@ public class onPlayerJoin implements Listener {
             return;
         }
 
+        // 玩家 UUID
         UUID playerUUID = event.getPlayer().getUniqueId();
-
         // 玩家是否在断开连接的列表中
         if(playerDisconnectList.contains(playerUUID)){
             event.setKickMessage(plugin.getConfig().getString("message.join.limiter-reconnection-time", ""));
@@ -50,10 +50,10 @@ public class onPlayerJoin implements Listener {
 
         // 玩家名称
         String playerName = event.getPlayer().getName();
+
         // 玩家IP地址
         String playerIP = event.getRealAddress().toString();
         playerIP = playerIP.substring(playerIP.lastIndexOf("/") +1);
-
         // ip 黑名单
         // 原始ip格式: ipv4: /127.0.0.1, ipv6: /0:0:0:0:0:0:0:1 没有方括号
         boolean inBlacklist = false;
@@ -79,7 +79,7 @@ public class onPlayerJoin implements Listener {
             case NOT, VISIT -> { // 不存在 / 参观账户
                 // 检查用户名
                 if(!Pattern.matches(plugin.getConfig().getString("whitelist.name-rule-visit", ".*"), playerName)){
-                    event.setKickMessage(plugin.getConfig().getString("message.join.err-name", "")
+                    event.setKickMessage(plugin.getConfig().getString("message.join.err-name-visit", "")
                             .replace("%player%", playerName));
                     event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
                     return;
@@ -107,7 +107,6 @@ public class onPlayerJoin implements Listener {
                     event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
                     return;
                 }
-
                 if(state == Type.VISIT_CONVERT){
                     // 运行 wl-add-convert
                     Player player = event.getPlayer();
@@ -115,9 +114,8 @@ public class onPlayerJoin implements Listener {
                     // 修改 Type 为 WHITE, 同时更新时间
                     SQL.addPlayer(player, -3, Type.WHITE);
                 }
-//                else if(state == Type.WHITE){
-//                    event.setResult(PlayerLoginEvent.Result.ALLOWED); // 可能其他插件需要拒绝玩家加入
-//                }
+                // 通过白名单, 无需处理
+                // else if(state == Type.WHITE) event.setResult(PlayerLoginEvent.Result.ALLOWED); // 可能其他插件需要拒绝玩家加入
             }
 
             case WHITE_EXPIRED -> { // 白名单已过期

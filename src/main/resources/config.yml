@@ -158,6 +158,7 @@ message:
     black-ip: '§6IpacEL §f> §b您被列入黑名单: §a%player%' # %ip%
     err: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'
     err-name: '§6IpacEL §f> §b无效的名称: §a%player%'
+    err-name-visit: '§6IpacEL §f> §b无效的名称: §a%player%'
     starting: '§6IpacEL §f> §b服务器正在启动'
 
   # 参观账户加入
