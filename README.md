@@ -72,6 +72,7 @@ visit:
       - 'visit2.your-mc-server.com:25565'
 
   # AuthMe
+  # 自动注册和登录都在运行完事件程序后运行
   auto-register-AuthMe: true # 为参观账户自动注册, 相当于 `authme register <playerName> <password>`, 但不会踢出玩家
   auto-login-AuthMe: true # 为参观账户自动登录, 相当于 `/authme forcelogin <playerName>`
   auto-register-AuthMe-password: 'complexPassword' # 需要在这里填写一个复杂的密码
@@ -120,10 +121,10 @@ playerJoinMessage:
 
   # 事件触发时将发出广播消息
   # 如果 message 留空, 则忽略这个事件
-  # 如果 terminate: true, 本次玩家加入/退出将不再运行其他事件的广播. 默认为 true, 可以不需要填写
+  # 如果 terminate: true, 运行后将不再运行其他事件的广播. 默认为 true, 可以不需要填写
 
-  # 一次加入或退出的锁在多长时间后释放 (毫秒
-  lockFreedTime: 1000
+  # 退出的锁在多长时间后释放 (毫秒
+  quitLockFreedTime: 2000
 
   # 玩家加入
   playerJoin:
@@ -135,7 +136,7 @@ playerJoinMessage:
       message: '§6IpacEL §f> §a%player% §b加入游戏'
     # 玩家加入事件
     onPlayerJoinEvent:
-      message: '' # 防止离线账户因登录重复触发事件
+      message: '§6IpacEL §f> §a%player% §b加入游戏'
 
   # 玩家退出
   playerQuit:
@@ -174,6 +175,7 @@ message:
     black-ip: '§6IpacEL §f> §b您被列入黑名单: §a%player%' # %ip%
     err: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'
     err-name: '§6IpacEL §f> §b无效的名称: §a%player%'
+    err-name-visit: '§6IpacEL §f> §b无效的名称: §a%player%'
     starting: '§6IpacEL §f> §b服务器正在启动'
 
   # 参观账户加入
