@@ -32,19 +32,20 @@ public class PlayerJoinMessage implements Listener {
 
 
     // 加入和退出事件处理
-    public static void playerJoinMessage(String cp, Player player, List<UUID> _Lock){
+    public static void playerJoinMessage(String cp, Player player, boolean isJoin){
         // 事件是否禁用
         if(plugin.getConfig().getString(cp + ".message", "").isEmpty()) {
             return;
         }
+        List<UUID> Lock = isJoin ? joinLock : quitLock;
         // 是否需要 Lock
         UUID playerUUID = player.getUniqueId();
         if(plugin.getConfig().getBoolean(cp +".terminate", true)){
             // 是否被添加到 Lock
-            if(_Lock.contains(playerUUID)){
+            if(Lock.contains(playerUUID)){
                 return;
             }
-            _Lock.add(playerUUID);
+            Lock.add(playerUUID);
         }
 
         // 广播消息
@@ -52,15 +53,23 @@ public class PlayerJoinMessage implements Listener {
                 plugin.getConfig().getString(cp +".message", "")
                         .replace("%player%", player.getName()));
 
-        // 异步等待并释放锁
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
-            try {
-                TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("playerJoinMessage.lockFreedTime", 1500));
-            } catch (InterruptedException ignored) {}
-            _Lock.remove(playerUUID);
-        });
-        executor.shutdown();
+        // 如果是加入, 则立即释放退出的lock, 反之亦然
+        if(isJoin){
+            quitLock.remove(playerUUID);
+        }else{
+            joinLock.remove(playerUUID);
+
+            // 我们可以一直持有加入的lock, 直到玩家退出后再慢慢处理. 因为退出事件在瞬间完成, 而加入事件会有几秒的延迟
+            // 异步等待并释放锁
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor.submit(() -> {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("playerJoinMessage.quitLockFreedTime", 2000));
+                } catch (InterruptedException ignored) {}
+                Lock.remove(playerUUID);
+            });
+            executor.shutdown();
+        }
     }
 
 
@@ -70,19 +79,19 @@ public class PlayerJoinMessage implements Listener {
 
     // 参观账户登录服务器
     public static void onVisitPlayerJoin(Player player) {
-        playerJoinMessage("playerJoinMessage.playerJoin.onVisitPlayerJoin", player, joinLock);
+        playerJoinMessage("playerJoinMessage.playerJoin.onVisitPlayerJoin", player, true);
     }
 
     // AuthMe 玩家登录事件
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAuthMeLoginEvent(LoginEvent event) {
-        playerJoinMessage("playerJoinMessage.playerJoin.onAuthMeLoginEvent", event.getPlayer(), joinLock);
+        playerJoinMessage("playerJoinMessage.playerJoin.onAuthMeLoginEvent", event.getPlayer(), true);
     }
 
     // 玩家加入事件
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoinEvent(PlayerJoinEvent event) {
-        playerJoinMessage("playerJoinMessage.playerJoin.onPlayerJoinEvent", event.getPlayer(), joinLock);
+        playerJoinMessage("playerJoinMessage.playerJoin.onPlayerJoinEvent", event.getPlayer(), true);
     }
 
 
@@ -93,13 +102,13 @@ public class PlayerJoinMessage implements Listener {
     // AuthMe 玩家输入错误密码
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAuthMeFailedLoginEvent(FailedLoginEvent event) {
-        playerJoinMessage("playerJoinMessage.playerQuit.onAuthMeFailedLoginEvent", event.getPlayer(), quitLock);
+        playerJoinMessage("playerJoinMessage.playerQuit.onAuthMeFailedLoginEvent", event.getPlayer(), false);
     }
 
     // 玩家退出事件
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuitEvent(PlayerQuitEvent event) {
-        playerJoinMessage("playerJoinMessage.playerQuit.onPlayerQuitEvent", event.getPlayer(), quitLock);
+        playerJoinMessage("playerJoinMessage.playerQuit.onPlayerQuitEvent", event.getPlayer(), false);
     }
 
 }

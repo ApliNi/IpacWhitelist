@@ -105,10 +105,10 @@ playerJoinMessage:
 
   # 事件触发时将发出广播消息
   # 如果 message 留空, 则忽略这个事件
-  # 如果 terminate: true, 本次玩家加入/退出将不再运行其他事件的广播. 默认为 true, 可以不需要填写
+  # 如果 terminate: true, 运行后将不再运行其他事件的广播. 默认为 true, 可以不需要填写
 
-  # 一次加入或退出的锁在多长时间后释放 (毫秒
-  lockFreedTime: 1000
+  # 退出的锁在多长时间后释放 (毫秒
+  quitLockFreedTime: 2000
 
   # 玩家加入
   playerJoin:
@@ -120,7 +120,7 @@ playerJoinMessage:
       message: '§6IpacEL §f> §a%player% §b加入游戏'
     # 玩家加入事件
     onPlayerJoinEvent:
-      message: '' # 防止离线账户因登录重复触发事件
+      message: '§6IpacEL §f> §a%player% §b加入游戏'
 
   # 玩家退出
   playerQuit:
