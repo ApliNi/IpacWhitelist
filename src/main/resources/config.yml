@@ -56,6 +56,7 @@ visit:
       - 'visit2.your-mc-server.com:25565'
 
   # AuthMe
+  # 自动注册和登录都在运行完事件程序后运行
   auto-register-AuthMe: true # 为参观账户自动注册, 相当于 `authme register <playerName> <password>`, 但不会踢出玩家
   auto-login-AuthMe: true # 为参观账户自动登录, 相当于 `/authme forcelogin <playerName>`
   auto-register-AuthMe-password: 'complexPassword' # 需要在这里填写一个复杂的密码

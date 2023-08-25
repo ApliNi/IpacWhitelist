@@ -39,6 +39,9 @@ public class onVisitPlayerJoin implements Listener {
         SQL.addPlayer(event.getPlayer(), VISIT);
         getLogger().info("[IpacWhitelist] 为新的参观账户创建数据: %s ".formatted(event.getPlayer().getName()));
 
+        // 参观账户事件程序
+        startAsyncEventFunc("onNewVisitPlayerLoginEvent", plugin, event.getPlayer());
+
         // 自动注册
         if(plugin.getConfig().getBoolean("visit.auto-register-AuthMe")){
             // 如果已注册则跳过
@@ -46,9 +49,6 @@ public class onVisitPlayerJoin implements Listener {
                 AuthmeAPI.forceRegister(event.getPlayer(), plugin.getConfig().getString("visit.auto-register-AuthMe-password"));
             }
         }
-
-        // 参观账户事件程序
-        startAsyncEventFunc("onNewVisitPlayerLoginEvent", plugin, event.getPlayer());
 
         // 触发 参观账户加入服务器 事件
         onVisitPlayerLoginEvent(event);
@@ -63,13 +63,13 @@ public class onVisitPlayerJoin implements Listener {
         // 添加到 visitList
         visitList.add(playerUUID);
 
+        // 参观账户事件程序
+        startAsyncEventFunc("onVisitPlayerLoginEvent", plugin, event.getPlayer());
+
         // 自动登录
         if(plugin.getConfig().getBoolean("visit.auto-login-AuthMe")){
             AuthmeAPI.forceLogin(event.getPlayer());
         }
-
-        // 参观账户事件程序
-        startAsyncEventFunc("onVisitPlayerLoginEvent", plugin, event.getPlayer());
 
         getLogger().info("[IpacWhitelist] %s 以参观模式加入服务器".formatted(event.getPlayer().getName()));
     }
