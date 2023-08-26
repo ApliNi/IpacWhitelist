@@ -125,12 +125,17 @@ visit:
 playerJoinMessage:
   enable: true # 修改这个需要重启服务器
 
+  # 退出的锁在多长时间后释放 (毫秒
+  quitLockFreedTime: 2000
+
+  # 参观账户是否可以收到自己加入的消息
+  visitOwnJoinMessage: false
+  # 玩家是否可以收到自己的加入消息
+  ownJoinMessage: true
+
   # 事件触发时将发出广播消息
   # 如果 message 留空, 则忽略这个事件
   # 如果 terminate: true, 运行后将不再运行其他事件的广播. 默认为 true, 可以不需要填写
-
-  # 退出的锁在多长时间后释放 (毫秒
-  quitLockFreedTime: 2000
 
   # 玩家加入
   playerJoin:
