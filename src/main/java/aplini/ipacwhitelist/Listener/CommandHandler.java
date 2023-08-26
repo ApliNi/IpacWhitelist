@@ -21,16 +21,32 @@ import static aplini.ipacwhitelist.util.SQL.getPlayerInfo;
 
 public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
     private static IpacWhitelist plugin;
+    private static List<String> commandList;
     public CommandHandler(IpacWhitelist plugin){
         CommandHandler.plugin = plugin;
+        commandList = List.of(
+                "reload",
+                "add",
+                "del",
+                "ban",
+                "unban",
+                "reconnect_database"
+        );
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+
+        if(args.length == 0){
+            sender.sendMessage("/wl ... "+ String.join(", ", commandList));
+            return true;
+        }
+
         switch(args[0]){
             case "reload" -> {
                 plugin.reloadConfig();
                 sender.sendMessage(plugin.getConfig().getString("message.command.reload", ""));
+                return true;
             }
 
             // 重新连接数据库
@@ -40,6 +56,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 SQL.initialize();
                 sender.sendMessage(plugin.getConfig().getString("message.command.reconnect-database", ""));
                 allowJoin = true;
+                return true;
             }
 
             // 添加一个账户
@@ -121,7 +138,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
             // 删除一个账户
             case "del", "unban" -> {
                 if(args.length != 2){
-                    sender.sendMessage("/wl del <Name|UUID>");
+                    sender.sendMessage("/wl "+ args[0] +" <Name|UUID>");
                     return true;
                 }
 
@@ -162,7 +179,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
             // 封禁一个账户
             case "ban" -> {
                 if(args.length != 2){
-                    sender.sendMessage("/wl del <Name|UUID>");
+                    sender.sendMessage("/wl ban <Name|UUID>");
                     return true;
                 }
 
@@ -207,20 +224,14 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
             }
         }
 
+        sender.sendMessage("/wl ... "+ String.join(", ", commandList));
         return true;
     }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull org.bukkit.command.Command command, @NotNull String label, String[] args) {
         if(args.length == 1){
-            return List.of(
-                    "reload",
-                    "add",
-                    "del",
-                    "ban",
-                    "unban",
-                    "reconnect_database"
-            );
+            return commandList;
         }
         return null;
     }

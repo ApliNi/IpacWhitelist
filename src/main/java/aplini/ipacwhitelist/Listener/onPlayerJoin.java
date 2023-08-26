@@ -29,7 +29,7 @@ public class onPlayerJoin implements Listener {
         onPlayerJoin.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.HIGH) // 玩家加入
+    @EventHandler(priority = EventPriority.HIGH) // 玩家登录服务器
     public void onPlayerLogin(PlayerLoginEvent event) {
 
         // 服务器启动等待

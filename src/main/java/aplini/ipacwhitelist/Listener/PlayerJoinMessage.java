@@ -1,8 +1,6 @@
 package aplini.ipacwhitelist.Listener;
 
 import aplini.ipacwhitelist.IpacWhitelist;
-import fr.xephi.authme.events.FailedLoginEvent;
-import fr.xephi.authme.events.LoginEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -83,9 +81,8 @@ public class PlayerJoinMessage implements Listener {
     }
 
     // AuthMe 玩家登录事件
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onAuthMeLoginEvent(LoginEvent event) {
-        playerJoinMessage("playerJoinMessage.playerJoin.onAuthMeLoginEvent", event.getPlayer(), true);
+    static public void onAuthMeLoginEvent(Player player) {
+        playerJoinMessage("playerJoinMessage.playerJoin.onAuthMeLoginEvent", player, true);
     }
 
     // 玩家加入事件
@@ -100,9 +97,9 @@ public class PlayerJoinMessage implements Listener {
 
 
     // AuthMe 玩家输入错误密码
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onAuthMeFailedLoginEvent(FailedLoginEvent event) {
-        playerJoinMessage("playerJoinMessage.playerQuit.onAuthMeFailedLoginEvent", event.getPlayer(), false);
+//    @EventHandler(priority = EventPriority.MONITOR)
+    static public void onAuthMeFailedLoginEvent(Player player) {
+        playerJoinMessage("playerJoinMessage.playerQuit.onAuthMeFailedLoginEvent", player, false);
     }
 
     // 玩家退出事件

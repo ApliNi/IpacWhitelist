@@ -2,7 +2,6 @@ package aplini.ipacwhitelist.Listener;
 
 import aplini.ipacwhitelist.IpacWhitelist;
 import aplini.ipacwhitelist.util.SQL;
-import fr.xephi.authme.api.v3.AuthMeApi;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -14,21 +13,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static aplini.ipacwhitelist.hook.hookAuthMe.*;
 import static aplini.ipacwhitelist.util.Type.*;
 import static aplini.ipacwhitelist.util.EventFunc.startAsyncEventFunc;
 import static org.bukkit.Bukkit.getLogger;
 
 public class onVisitPlayerJoin implements Listener {
     private static IpacWhitelist plugin;
-    private static AuthMeApi AuthmeAPI;
     // 当前在线的参观账户uuid列表
     private static final List<UUID> visitList = new ArrayList<>();
 
     public onVisitPlayerJoin(IpacWhitelist plugin){
         onVisitPlayerJoin.plugin = plugin;
-        if(plugin.getConfig().getBoolean("visit.auto-register-AuthMe")){
-            onVisitPlayerJoin.AuthmeAPI = AuthMeApi.getInstance();
-        }
     }
 
     // 参观账户第一次登录服务器
@@ -43,11 +39,8 @@ public class onVisitPlayerJoin implements Listener {
         startAsyncEventFunc("onNewVisitPlayerLoginEvent", plugin, event.getPlayer());
 
         // 自动注册
-        if(plugin.getConfig().getBoolean("visit.auto-register-AuthMe")){
-            // 如果已注册则跳过
-            if(!AuthmeAPI.isRegistered(event.getPlayer().getName())){
-                AuthmeAPI.forceRegister(event.getPlayer(), plugin.getConfig().getString("visit.auto-register-AuthMe-password"));
-            }
+        if(plugin.getConfig().getBoolean("visit.AuthMe.autoRegister")){
+            autoRegister(event.getPlayer(), plugin.getConfig().getString("visit.AuthMe.autoRegisterPassword"));
         }
 
         // 触发 参观账户加入服务器 事件
@@ -67,8 +60,8 @@ public class onVisitPlayerJoin implements Listener {
         startAsyncEventFunc("onVisitPlayerLoginEvent", plugin, event.getPlayer());
 
         // 自动登录
-        if(plugin.getConfig().getBoolean("visit.auto-login-AuthMe")){
-            AuthmeAPI.forceLogin(event.getPlayer());
+        if(plugin.getConfig().getBoolean("visit.AuthMe.autoLogin")){
+            autoLogin(event.getPlayer());
         }
 
         getLogger().info("[IpacWhitelist] %s 以参观模式加入服务器".formatted(event.getPlayer().getName()));

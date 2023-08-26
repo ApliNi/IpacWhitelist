@@ -3,6 +3,7 @@ package aplini.ipacwhitelist;
 import aplini.ipacwhitelist.Listener.CommandHandler;
 import aplini.ipacwhitelist.Listener.PlayerJoinMessage;
 import aplini.ipacwhitelist.Listener.onPlayerJoin;
+import aplini.ipacwhitelist.hook.hookAuthMe;
 import aplini.ipacwhitelist.util.SQL;
 import aplini.ipacwhitelist.Listener.onVisitPlayerJoin;
 import org.bukkit.Bukkit;
@@ -40,10 +41,17 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new onPlayerJoin(this), this);
         Objects.requireNonNull(Bukkit.getPluginCommand("wl")).setExecutor(new CommandHandler(this));
 
-        if(plugin.getConfig().getBoolean("visit.enable", false)){
+        // hook
+        if(plugin.getConfig().getBoolean("hook.AuthMe")){
+            getServer().getPluginManager().registerEvents(new hookAuthMe(), this);
+        }
+
+        // 参观账户功能
+        if(plugin.getConfig().getBoolean("visit.enable")){
             getServer().getPluginManager().registerEvents(new onVisitPlayerJoin(this), this);
         }
 
+        // 玩家加入消息功能
         if(plugin.getConfig().getBoolean("playerJoinMessage.enable")){
             getServer().getPluginManager().registerEvents(new PlayerJoinMessage(this), this);
         }

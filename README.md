@@ -26,6 +26,11 @@ sql:
   password: password
   database: IpacWhitelist
 
+# 连接到其他插件, 修改此处需要重启服务器
+hook:
+  AuthMe: false
+
+
 
 # 白名单功能
 whitelist:
@@ -71,11 +76,12 @@ visit:
       - 'visit.your-mc-server.com:25565'
       - 'visit2.your-mc-server.com:25565'
 
-  # AuthMe
+  # 需要启用 hook.AuthMe
   # 自动注册和登录都在运行完事件程序后运行
-  auto-register-AuthMe: true # 为参观账户自动注册, 相当于 `authme register <playerName> <password>`, 但不会踢出玩家
-  auto-login-AuthMe: true # 为参观账户自动登录, 相当于 `/authme forcelogin <playerName>`
-  auto-register-AuthMe-password: 'complexPassword' # 需要在这里填写一个复杂的密码
+  AuthMe:
+    autoRegisterPassword: 'complexPassword' # 需要在这里填写一个复杂的密码
+    autoRegister: true # 为参观账户自动注册, 相当于 `authme register <playerName> <password>`, 但不会踢出玩家
+    autoLogin: true # 为参观账户自动登录, 相当于 `/authme forcelogin <playerName>`
 
   # 这些指令只是示例, 请根据自己的需求修改
 
@@ -132,7 +138,7 @@ playerJoinMessage:
     onVisitPlayerJoin:
       message: '§6IpacEL §f> §a%player% §b使用参观账户加入游戏'
     # AuthMe 玩家登录或注册成功
-    onAuthMeLoginEvent:
+    onAuthMeLoginEvent: # 需要启用 hook.AuthMe
       message: '§6IpacEL §f> §a%player% §b加入游戏'
     # 玩家加入事件
     onPlayerJoinEvent:
@@ -141,7 +147,7 @@ playerJoinMessage:
   # 玩家退出
   playerQuit:
     # AuthMe 登录密码错误
-    onAuthMeFailedLoginEvent:
+    onAuthMeFailedLoginEvent: # 需要启用 hook.AuthMe
       message: '§6IpacEL §f> §a%player% §b断开连接: §8密码错误'
     # 玩家退出事件
     onPlayerQuitEvent:
