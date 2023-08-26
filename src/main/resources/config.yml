@@ -112,7 +112,7 @@ playerJoinMessage:
   # 退出的锁在多长时间后释放 (毫秒
   quitLockFreedTime: 2000
 
-  # 参观账户是否可以收到自己加入的消息
+  # 参观账户是否可以收到自己的加入消息
   visitOwnJoinMessage: false
   # 玩家是否可以收到自己的加入消息
   ownJoinMessage: true
