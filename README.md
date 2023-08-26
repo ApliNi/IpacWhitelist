@@ -9,7 +9,8 @@
 - `/wl add <playerName|playerUUID>` - 添加到白名单, uuid为空时自动获取
 - `/wl del|unban <playerName|playerUUID>` - 取消玩家的白名单, 如果玩家被封禁则解除
 - `/wl ban <playerName|playerUUID>` - 封禁玩家
-- `/wl info <playerName|playerUUID>` - 查看玩家状态
+- `/wl info <playerName|playerUUID>` - 查看玩家数据
+- `/wl list <VISIT|WHITE|BLACK|VISIT_CONVERT|VISIT_BLACK|*> <num|ALL>` - 列出玩家数据
 - `/wl reconnect_database` - 重新连接数据库
 
 > 支持使用 32 或 36 位的 UUID

@@ -15,7 +15,10 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import static aplini.ipacwhitelist.IpacWhitelist.allowJoin;
 import static aplini.ipacwhitelist.util.EventFunc.startVisitConvertFunc;
@@ -33,7 +36,8 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 "del",
                 "ban",
                 "unban",
-                "info"
+                "info",
+                "list"
         );
     }
 
@@ -260,6 +264,51 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                 return true;
             }
+
+            case "list" -> {
+                if (args.length != 3) {
+                    sender.sendMessage("/wl list <VISIT|WHITE|BLACK|VISIT_CONVERT|VISIT_BLACK|*> <num|ALL>");
+                    return true;
+                }
+
+                // 获取选择的 Type
+                String inp1 = args[1].toUpperCase();
+                if(inp1.equals("*")){inp1 = "ALL";}
+                if(!Pattern.compile("^(?:VISIT|WHITE|BLACK|VISIT_CONVERT|VISIT_BLACK|ALL)$").matcher(inp1).matches()){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-parameter", "")
+                            .replace("%i%", inp1));
+                    return true;
+                }
+
+                // 获取最大输出数量
+                String inp2 = args[2].toUpperCase();
+                if(!Pattern.compile("^[0-9]{1,8}$|^ALL$").matcher(inp2).matches()){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-parameter", "")
+                            .replace("%i%", inp2));
+                    return true;
+                }
+                if(inp2.equals("ALL")){inp2 = "-1";}
+
+                // 准备查询
+                Type type = Type.valueOf(inp1);
+                int maxLine = Integer.parseInt(inp2);
+
+                AtomicInteger i = new AtomicInteger();
+                whileDataForList(type, maxLine, (results) -> {
+                    try {
+                        sender.sendMessage(plugin.getConfig().getString("message.command.list", "")
+                                .replace("%num%", i.toString())
+                                .replace("%ID%", String.valueOf(results.getInt("ID")))
+                                .replace("%Type%", Type.getType(results.getInt("Type")).getName())
+                                .replace("%UUID%", results.getString("UUID"))
+                                .replace("%Name%", results.getString("Name"))
+                                .replace("%Time%", String.valueOf(results.getLong("Time"))));
+                    } catch (SQLException ignored) {}
+                    i.getAndIncrement();
+                });
+
+                return true;
+            }
         }
 
         sender.sendMessage("/wl ... "+ String.join(", ", commandList));
@@ -268,8 +317,29 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull org.bukkit.command.Command command, @NotNull String label, String[] args) {
-        if(args.length == 1){
-            return commandList;
+        switch(args.length){
+            case 1 -> {
+                return commandList;
+            }
+            case 2 -> {
+                if(args[0].equalsIgnoreCase("list")){
+                    // VISIT|WHITE|BLACK|VISIT_CONVERT|VISIT_BLACK|*
+                    return List.of(
+                            "VISIT",
+                            "WHITE",
+                            "BLACK",
+                            "VISIT_CONVERT",
+                            "VISIT_BLACK",
+                            "*"
+                    );
+                }
+            }
+            case 3 -> {
+                if(args[0].equalsIgnoreCase("list")){
+                    // num|ALL
+                    return List.of("10", "100", "ALL");
+                }
+            }
         }
         return null;
     }

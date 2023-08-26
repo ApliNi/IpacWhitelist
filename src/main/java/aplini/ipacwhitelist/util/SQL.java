@@ -4,6 +4,8 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.sql.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static aplini.ipacwhitelist.IpacWhitelist.getPlugin;
 import static aplini.ipacwhitelist.util.Type.*;
@@ -128,15 +130,15 @@ public class SQL {
 
             // 检查是否有 name 和 uuid 匹配的记录
             if(name != null && UUID != null){
-                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `Name` = ? AND `UUID` = ? ORDER BY ROWID DESC LIMIT 1;");
+                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `Name` = ? AND `UUID` = ? LIMIT 1;");
                 sql.setString(1, name);
                 sql.setString(2, UUID);
             }else if(name != null){
-                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `Name` = ? ORDER BY ROWID DESC LIMIT 1;");
+                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `Name` = ? LIMIT 1;");
                 sql.setString(1, name);
                 UUID = "";
             }else if(UUID != null){
-                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `UUID` = ? ORDER BY ROWID DESC LIMIT 1;");
+                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `UUID` = ? LIMIT 1;");
                 sql.setString(1, UUID);
                 name = "";
             }else{
@@ -224,7 +226,7 @@ public class SQL {
             ResultSet results;
 
             // 如果UUID匹配
-            sql = connection.prepareStatement("SELECT * FROM `player` WHERE `UUID` = ?;");
+            sql = connection.prepareStatement("SELECT * FROM `player` WHERE `UUID` = ? LIMIT 1;");
             sql.setString(1, playerUUID);
             results = sql.executeQuery();
             if(results.next()){
@@ -248,7 +250,7 @@ public class SQL {
             }
 
             // 如果名称匹配
-            sql = connection.prepareStatement("SELECT * FROM `player` WHERE `Name` = ?;");
+            sql = connection.prepareStatement("SELECT * FROM `player` WHERE `Name` = ? LIMIT 1;");
             sql.setString(1, playerName);
             results = sql.executeQuery();
             if(results.next()){
@@ -290,8 +292,8 @@ public class SQL {
         String query;
 
         switch(inpDataType){
-            case UUID -> query = "SELECT * FROM `player` WHERE `UUID` = ? ORDER BY ROWID DESC LIMIT 1;";
-            case NAME -> query = "SELECT * FROM `player` WHERE `Name` = ? ORDER BY ROWID DESC LIMIT 1;";
+            case UUID -> query = "SELECT * FROM `player` WHERE `UUID` = ? LIMIT 1;";
+            case NAME -> query = "SELECT * FROM `player` WHERE `Name` = ? LIMIT 1;";
             default -> {return null;}
         }
 
@@ -341,6 +343,38 @@ public class SQL {
             getLogger().warning(e.getMessage());
         }
         return null;
+    }
+
+
+    // 遍历数据
+    public interface whileDataForListInterface {
+        void test(ResultSet results);
+    }
+    public static void whileDataForList(Type type, int maxLine, whileDataForListInterface whileDataForListInterface){
+        String query;
+        String limit = maxLine != -1 ? ("LIMIT "+ maxLine) : "";
+
+        if(type == ALL){
+            query = "SELECT * FROM `player` %s;".formatted(limit);
+        }else{
+            query = "SELECT * FROM `player` WHERE (`Type` = %s) %s;".formatted(type.getID(), limit);
+        }
+
+        // 查询
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            try {
+                PreparedStatement sql = connection.prepareStatement(query);
+                ResultSet results = sql.executeQuery();
+                while(results.next()){
+                    whileDataForListInterface.test(results);
+                }
+                sql.close();
+            } catch (Exception e) {
+                getLogger().warning(e.getMessage());
+            }
+        });
+        executor.shutdown();
     }
 
 }

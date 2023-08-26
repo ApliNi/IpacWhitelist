@@ -16,6 +16,7 @@ public enum Type {
     // 表示方法
     WHITE_EXPIRED(-1, "WHITE_EXPIRED"), // 白名单过期
     ERROR(-5, "ERROR"), // 错误
+    ALL(-1, "ALL"),
 
     // 数据列名称
     UUID(-2, "UUID"), // UUID
