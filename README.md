@@ -167,9 +167,12 @@ message:
     ban: '§6IpacEL §f> §a%player% §b已列入黑名单'
     reload: '§6IpacEL §f> IpacWhitelist 配置和数据库重载完成'
     info: '§6IpacEL §f> §a%player%§7: §b{ID: %ID%, Type: "%Type%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
+    list: '§6IpacEL §f> §a%num% §7-> §b{ID: %ID%, Type: "%Type%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
     err: '§6IpacEL §f> §b内部错误'
     err-length: '§6IpacEL §f> §b名称或UUID长度异常'
+    err-parameter: '§6IpacEL §f> §b无效参数: §a%i%'
     err-note-exist: '§6IpacEL §f> §a%player% §b不存在'
+    err-permission: '§6IpacEL §f> §b权限不足'
 
   # 玩家加入
   join:
