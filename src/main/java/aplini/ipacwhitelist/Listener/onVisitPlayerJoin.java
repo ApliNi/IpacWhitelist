@@ -21,7 +21,7 @@ import static org.bukkit.Bukkit.getLogger;
 public class onVisitPlayerJoin implements Listener {
     private static IpacWhitelist plugin;
     // 当前在线的参观账户uuid列表
-    private static final List<UUID> visitList = new ArrayList<>();
+    static final List<UUID> visitList = new ArrayList<>();
 
     public onVisitPlayerJoin(IpacWhitelist plugin){
         onVisitPlayerJoin.plugin = plugin;

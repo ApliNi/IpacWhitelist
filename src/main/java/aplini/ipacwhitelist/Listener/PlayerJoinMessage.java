@@ -16,6 +16,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static aplini.ipacwhitelist.Listener.onVisitPlayerJoin.visitList;
+
 public class PlayerJoinMessage implements Listener {
     private static IpacWhitelist plugin;
     private static final List<UUID> joinLock = new ArrayList<>();
@@ -46,16 +48,42 @@ public class PlayerJoinMessage implements Listener {
             Lock.add(playerUUID);
         }
 
-        // 广播消息
-        Bukkit.getServer().broadcastMessage(
-                plugin.getConfig().getString(cp +".message", "")
-                        .replace("%player%", player.getName()));
-
         // 如果是加入, 则立即释放退出的lock, 反之亦然
         if(isJoin){
             quitLock.remove(playerUUID);
+
+            // 这个玩家将收不到加入消息
+            Player mutePlayer = null;
+
+            // 如果是参观账户 && 关闭 visitOwnJoinMessage
+            if(visitList.contains(player.getUniqueId())){
+                // 如果关闭 visitOwnJoinMessage
+                if(!plugin.getConfig().getBoolean("playerJoinMessage.visitOwnJoinMessage")){
+                    mutePlayer = player;
+                }
+            }else{
+                // 如果关闭 ownJoinMessage
+                if(!plugin.getConfig().getBoolean("playerJoinMessage.ownJoinMessage")){
+                    mutePlayer = player;
+                }
+            }
+            // 创建消息
+            String message = plugin.getConfig().getString(cp +".message", "")
+                    .replace("%player%", player.getName());
+            // 向控制台发送消息
+            Bukkit.getConsoleSender().sendMessage(message);
+            // 向可以收到消息的玩家广播消息
+            for(Player li : Bukkit.getOnlinePlayers()){
+                if(li != mutePlayer){li.sendMessage(message);}
+            }
+
         }else{
             joinLock.remove(playerUUID);
+
+            // 广播消息
+            Bukkit.getServer().broadcastMessage(
+                    plugin.getConfig().getString(cp +".message", "")
+                            .replace("%player%", player.getName()));
 
             // 我们可以一直持有加入的lock, 直到玩家退出后再慢慢处理. 因为退出事件在瞬间完成, 而加入事件会有几秒的延迟
             // 异步等待并释放锁
