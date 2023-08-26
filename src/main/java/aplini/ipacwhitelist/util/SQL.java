@@ -52,11 +52,9 @@ public class SQL {
     // 初始化数据库
     public static synchronized void initialize() {
         try {
-            // uuid 不能唯一, 因为需要留空等待玩家加入时填充
 
 //            String db = getPlugin().getConfig().getString("sql.db", "sqlite");
             String db = "sqlite";
-            String table = getPlugin().getConfig().getString("sql.table");
 
             // SQLITE
             if(db.equalsIgnoreCase("sqlite")){
@@ -78,7 +76,7 @@ public class SQL {
 
                 // 加载数据表
                 connection.prepareStatement("""
-                        CREATE TABLE IF NOT EXISTS "%s" (
+                        CREATE TABLE IF NOT EXISTS "player" (
                             "ID" INTEGER NOT NULL,
                             "Type" INTEGER NOT NULL,
                             "UUID" TEXT NOT NULL,
@@ -86,10 +84,10 @@ public class SQL {
                             "Time" INTEGER NOT NULL,
                             PRIMARY KEY("ID" AUTOINCREMENT)
                         );
-                        CREATE INDEX IF NOT EXISTS IDX_Type ON %s (Type);
-                        CREATE INDEX IF NOT EXISTS IDX_UUID ON %s (UUID);
-                        CREATE INDEX IF NOT EXISTS IDX_Name ON %s (Name);
-                        """.formatted(table, Name_COLLATE_NOCASE, table, table, table)
+                        CREATE INDEX IF NOT EXISTS IDX_Type ON "player" (Type);
+                        CREATE INDEX IF NOT EXISTS IDX_UUID ON "player" (UUID);
+                        CREATE INDEX IF NOT EXISTS IDX_Name ON "player" (Name);
+                        """.formatted(Name_COLLATE_NOCASE)
                 ).execute();
             }else{
 //                connection.prepareStatement("""

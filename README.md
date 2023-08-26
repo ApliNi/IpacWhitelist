@@ -21,10 +21,8 @@
 sql:
   # sqlite, 暂不支持 mysql
   db: sqlite
-  # 使 Name 大小写不敏感, 同时影响白名单和指令. 仅在建表时可修改
+  # 使 Name 大小写不敏感, 同时影响白名单和指令. 仅可在建表时修改
   Name_COLLATE_NOCASE: true
-  # 数据表名称
-  table: 'player'
 
 # 连接到其他插件, 修改此处需要重启服务器
 hook:
@@ -167,7 +165,7 @@ message:
     del: '§6IpacEL §f> §a%player% §b已移出白名单'
     ban: '§6IpacEL §f> §a%player% §b已列入黑名单'
     reload: '§6IpacEL §f> IpacWhitelist 配置和数据库重载完成'
-    info: '§6IpacEL §f> §a%player%§7: §b{ID: %ID%, Type: "%Type%", UUID: "%UUID%", Name: "%Name%", Time: "%Time%"}'
+    info: '§6IpacEL §f> §a%player%§7: §b{ID: %ID%, Type: "%Type%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
     err: '§6IpacEL §f> §b内部错误'
     err-length: '§6IpacEL §f> §b名称或UUID长度异常'
     err-note-exist: '§6IpacEL §f> §a%player% §b不存在'

@@ -247,7 +247,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                     return true;
                 }
 
-                // {ID: %ID%, Type: "%Type%", UUID: "%UUID%", Name: "%Name%", Time: "%Time%"}
+                // {ID: %ID%, Type: "%Type%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}
                 try {
                     sender.sendMessage(plugin.getConfig().getString("message.command.info", "")
                             .replace("%player%", inpData)
