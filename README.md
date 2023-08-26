@@ -6,10 +6,13 @@
 **指令列表**
 - `/wl` - 主命令
 - `/wl reload` - 重载配置
-- `/wl add <playerName> [playerUUID]` - 添加到白名单, uuid为空时自动获取
+- `/wl add <playerName|playerUUID>` - 添加到白名单, uuid为空时自动获取
 - `/wl del|unban <playerName|playerUUID>` - 取消玩家的白名单, 如果玩家被封禁则解除
 - `/wl ban <playerName|playerUUID>` - 封禁玩家
+- `/wl info <playerName|playerUUID>` - 查看玩家状态
 - `/wl reconnect_database` - 重新连接数据库
+
+> 支持使用 32 或 36 位的 UUID
 
 
 **config.yml**
@@ -18,18 +21,14 @@
 sql:
   # sqlite, 暂不支持 mysql
   db: sqlite
-
-  # mysql
-  host: localhost
-  port: 3306
-  user: root
-  password: password
-  database: IpacWhitelist
+  # 使 Name 大小写不敏感, 同时影响白名单和指令. 仅在建表时可修改
+  Name_COLLATE_NOCASE: true
+  # 数据表名称
+  table: 'player'
 
 # 连接到其他插件, 修改此处需要重启服务器
 hook:
   AuthMe: false
-
 
 
 # 白名单功能
@@ -120,7 +119,6 @@ visit:
       - 'gamemode survival %playerName%' # 将玩家设置为生存模式
 
 
-
 # 玩家加入消息广播
 playerJoinMessage:
   enable: true # 修改这个需要重启服务器
@@ -145,7 +143,7 @@ playerJoinMessage:
     # AuthMe 玩家登录或注册成功
     onAuthMeLoginEvent: # 需要启用 hook.AuthMe
       message: '§6IpacEL §f> §a%player% §b加入游戏'
-    # 玩家加入事件
+    # 玩家加入事件. 如果使用 AuthMe, 同时这里留空, 就能在玩家登录后显示加入游戏
     onPlayerJoinEvent:
       message: '§6IpacEL §f> §a%player% §b加入游戏'
 
@@ -153,11 +151,10 @@ playerJoinMessage:
   playerQuit:
     # AuthMe 登录密码错误
     onAuthMeFailedLoginEvent: # 需要启用 hook.AuthMe
-      message: '§6IpacEL §f> §a%player% §b断开连接: §8密码错误'
+      message: '§6IpacEL §f> §a%player% §b断开连接: §7密码错误'
     # 玩家退出事件
     onPlayerQuitEvent:
       message: '§6IpacEL §f> §a%player% §b跑了'
-
 
 
 # 消息
@@ -169,12 +166,11 @@ message:
     add-reset-visit: '§6IpacEL §f> §b%player% §a已从参观账户中重置'
     del: '§6IpacEL §f> §a%player% §b已移出白名单'
     ban: '§6IpacEL §f> §a%player% §b已列入黑名单'
-    reload: '§6IpacEL §f> IpacWhitelist重载完成'
-    reconnect-database: '§6IpacEL §f> §a重新加载数据库完成'
+    reload: '§6IpacEL §f> IpacWhitelist 配置和数据库重载完成'
+    info: '§6IpacEL §f> §a%player%§7: §b{ID: %ID%, Type: "%Type%", UUID: "%UUID%", Name: "%Name%", Time: "%Time%"}'
     err: '§6IpacEL §f> §b内部错误'
     err-length: '§6IpacEL §f> §b名称或UUID长度异常'
-    err-name-length: '§6IpacEL §f> §b名称长度异常'
-    err-uuid-length: '§6IpacEL §f> §bUUID长度异常'
+    err-note-exist: '§6IpacEL §f> §a%player% §b不存在'
 
   # 玩家加入
   join:

@@ -12,12 +12,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
 import static aplini.ipacwhitelist.IpacWhitelist.allowJoin;
 import static aplini.ipacwhitelist.util.EventFunc.startVisitConvertFunc;
-import static aplini.ipacwhitelist.util.SQL.getPlayerInfo;
+import static aplini.ipacwhitelist.util.SQL.*;
+import static aplini.ipacwhitelist.util.Util.ifIsUUID32toUUID36;
 
 public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
     private static IpacWhitelist plugin;
@@ -30,7 +33,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 "del",
                 "ban",
                 "unban",
-                "reconnect_database"
+                "info"
         );
     }
 
@@ -44,68 +47,53 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
         switch(args[0]){
             case "reload" -> {
-                plugin.reloadConfig();
-                sender.sendMessage(plugin.getConfig().getString("message.command.reload", ""));
-                return true;
-            }
-
-            // 重新连接数据库
-            case "reconnect_database" -> {
                 allowJoin = false;
+                // 重载配置
+                plugin.reloadConfig();
+                // 重载数据库
                 SQL.reconnect();
                 SQL.initialize();
-                sender.sendMessage(plugin.getConfig().getString("message.command.reconnect-database", ""));
+                sender.sendMessage(plugin.getConfig().getString("message.command.reload", ""));
                 allowJoin = true;
                 return true;
             }
 
             // 添加一个账户
             case "add" -> {
+                if(args.length != 2){
+                    sender.sendMessage("/wl add <playerName|playerUUID>");
+                    return true;
+                }
 
+                String inpData = ifIsUUID32toUUID36(args[1]);
                 String playerName;
                 String playerUUID;
                 Type state;
 
-                if(args.length == 2){
-                    // 检查参数
-                    if(args[1].length() > 16){
-                        sender.sendMessage(plugin.getConfig().getString("message.command.err-name-length", ""));
-                        return true;
-                    }
 
-                    playerName = args[1];
-                    playerUUID = getPlayerInfo(Type.UUID, playerName); // 如果不存在则输出 null
-                    state = SQL.addPlayer(playerName);
+                if(inpData.length() == 36){ // uuid
+                    playerUUID = inpData;
+                    playerName = getPlayerName(playerUUID); // 如果不存在则输出 null
+                    state = SQL.addPlayer(null, playerUUID);
 
-                }else if(args.length >= 3){
-                    // 检查参数
-                    if(args[1].length() > 16){
-                        sender.sendMessage(plugin.getConfig().getString("message.command.err-name-length", ""));
-                        return true;
-                    }
-                    if(args[2].length() != 36){
-                        sender.sendMessage(plugin.getConfig().getString("message.command.err-uuid-length", ""));
-                        return true;
-                    }
-
-                    playerName = args[1];
-                    playerUUID = args[2];
-                    state = SQL.addPlayer(playerName, playerUUID);
+                }else if(inpData.length() <= 16){ // name
+                    playerName = inpData;
+                    playerUUID = getPlayerUUID(playerName); // 如果不存在则输出 null
+                    state = SQL.addPlayer(playerName, null);
 
                 }else{
-                    sender.sendMessage("/wl add <playerName> [playerUUID]");
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-length", ""));
                     return true;
                 }
 
-
-
                 // 根据添加前的 Type
                 switch(state){
+                    // 如果为这些 Type, 数据库中一定有名称和 UUID
                     case VISIT, VISIT_CONVERT, VISIT_BLACK -> { // 参观账户/需要转换的参观账户/被封禁的参观账户
                         // 运行 wl-add
                         startVisitConvertFunc(plugin, playerName, playerUUID, "visit.wl-add.command");
                         // 获取玩家对象, 如果不在线则为 null
-                        Player player = Bukkit.getPlayer(playerName);
+                        Player player = playerName != null ? Bukkit.getPlayer(playerName) : null;
                         // 是否需要踢出玩家
                         if(plugin.getConfig().getBoolean("whitelist.kick-on-add-visit") && player != null){
                             player.kickPlayer(plugin.getConfig().getString("message.join.add"));
@@ -122,12 +110,14 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                             SQL.addPlayer(playerName, playerUUID, Type.VISIT_CONVERT);
                         }
                         // WHITE, BLACK ->
-                        sender.sendMessage(plugin.getConfig().getString("message.command.add-reset-visit", "").replace("%player%", playerName));
+                        sender.sendMessage(plugin.getConfig().getString("message.command.add-reset-visit", "").replace("%player%", inpData));
                     }
+
+                    // 如果为这些 Type, 数据库中可能缺失名称或 UUID
                     case WHITE, BLACK -> // 在 白名单/黑名单 中
-                            sender.sendMessage(plugin.getConfig().getString("message.command.add-reset", "").replace("%player%",playerName));
+                            sender.sendMessage(plugin.getConfig().getString("message.command.add-reset", "").replace("%player%", inpData));
                     case NOT -> // 没有账户
-                            sender.sendMessage(plugin.getConfig().getString("message.command.add", "").replace("%player%", playerName));
+                            sender.sendMessage(plugin.getConfig().getString("message.command.add", "").replace("%player%", inpData));
                     default ->
                             sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
                 }
@@ -138,28 +128,36 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
             // 删除一个账户
             case "del", "unban" -> {
                 if(args.length != 2){
-                    sender.sendMessage("/wl "+ args[0] +" <Name|UUID>");
+                    sender.sendMessage("/wl "+ args[0] +" <playerName|playerUUID>");
                     return true;
                 }
 
-                Type state;
-                String playerName;
+                String inpData = ifIsUUID32toUUID36(args[1]);
                 Player player;
+                Type state;
 
-                // uuid
-                if(args[1].length() == 36){
-                    playerName = SQL.getPlayerInfo(Type.NAME, args[1]);
-                    state = SQL.delPlayerUUID(args[1]);
-                    player = Bukkit.getPlayer(UUID.fromString(args[1]));
-                }
-                // name
-                else if(args[1].length() <= 16){
-                    playerName = args[1];
-                    state = SQL.delPlayerName(playerName);
-                    player = Bukkit.getPlayer(playerName);
-                }
 
-                else{
+                if(args[1].length() == 36){ // uuid
+                    // 检查这个玩家是否存在
+                    if(getPlayerType(Type.UUID, inpData) == Type.NOT){
+                        sender.sendMessage(plugin.getConfig().getString("message.command.err-note-exist", "")
+                                .replace("%player%", inpData));
+                        return true;
+                    }
+                    state = SQL.delPlayerUUID(inpData);
+                    player = Bukkit.getPlayer(UUID.fromString(inpData));
+
+                }else if(inpData.length() <= 16){ // name
+                    // 检查这个玩家是否存在
+                    if(getPlayerType(Type.NAME, inpData) == Type.NOT){
+                        sender.sendMessage(plugin.getConfig().getString("message.command.err-note-exist", "")
+                                .replace("%player%", inpData));
+                        return true;
+                    }
+                    state = SQL.delPlayerName(inpData);
+                    player = Bukkit.getPlayer(inpData);
+
+                }else{
                     sender.sendMessage(plugin.getConfig().getString("message.command.err-length", ""));
                     return true;
                 }
@@ -167,9 +165,9 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 if(state != Type.ERROR){
                     // 踢出玩家
                     if(plugin.getConfig().getBoolean("whitelist.kick-on-del") && player != null){
-                        player.kickPlayer(plugin.getConfig().getString("message.join.not", "").replace("%player%", playerName));
+                        player.kickPlayer(plugin.getConfig().getString("message.join.not", "").replace("%player%", player.getName()));
                     }
-                    sender.sendMessage(plugin.getConfig().getString("message.command.del", "").replace("%player%", playerName));
+                    sender.sendMessage(plugin.getConfig().getString("message.command.del", "").replace("%player%", inpData));
                 }else{
                     sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
                 }
@@ -179,34 +177,33 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
             // 封禁一个账户
             case "ban" -> {
                 if(args.length != 2){
-                    sender.sendMessage("/wl ban <Name|UUID>");
+                    sender.sendMessage("/wl ban <playerName|playerUUID>");
                     return true;
                 }
 
-                Type state;
+                String inpData = ifIsUUID32toUUID36(args[1]);
                 String playerUUID;
                 Player player;
+                Type state;
 
-                // uuid
-                if(args[1].length() == 36){
-                    playerUUID = args[1];
-                    state = SQL.banPlayerUUID(args[1]);
-                    player = Bukkit.getPlayer(UUID.fromString(args[1]));
-                }
-                // name
-                else if(args[1].length() <= 16){
-                    playerUUID = SQL.getPlayerInfo(Type.UUID, args[1]);
-                    state = SQL.banPlayerName(args[1]);
-                    player = Bukkit.getPlayer(args[1]);
-                }
 
-                else{
+                if(inpData.length() == 36){ // uuid
+                    playerUUID = inpData;
+                    state = SQL.banPlayerUUID(inpData);
+                    player = Bukkit.getPlayer(UUID.fromString(inpData));
+
+                }else if(inpData.length() <= 16){ // name
+                    playerUUID = SQL.getPlayerUUID(inpData);
+                    state = SQL.banPlayerName(inpData);
+                    player = Bukkit.getPlayer(inpData);
+
+                }else{
                     sender.sendMessage(plugin.getConfig().getString("message.command.err-length", ""));
                     return true;
                 }
 
                 if(state != Type.ERROR){
-                    sender.sendMessage(plugin.getConfig().getString("message.command.ban", "").replace("%player%", args[1]));
+                    sender.sendMessage(plugin.getConfig().getString("message.command.ban", "").replace("%player%", inpData));
                     // 如果玩家被封禁前是参观账户
                     if(state == Type.VISIT){
                         // 修改 Type 为 VISIT_BLACK
@@ -219,6 +216,47 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 }else{
                     sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
                 }
+
+                return true;
+            }
+
+            case "info" -> {
+                if(args.length != 2){
+                    sender.sendMessage("/wl info <playerName|playerUUID>");
+                    return true;
+                }
+
+                String inpData = ifIsUUID32toUUID36(args[1]);
+                ResultSet results;
+
+
+                if(inpData.length() == 36){ // uuid
+                    results = getPlayerData(Type.UUID, inpData);
+
+                }else if(inpData.length() <= 16){ // name
+                    results = getPlayerData(Type.NAME, inpData);
+
+                }else{
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-length", ""));
+                    return true;
+                }
+
+                if(results == null){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-note-exist", "")
+                            .replace("%player%", inpData));
+                    return true;
+                }
+
+                // {ID: %ID%, Type: "%Type%", UUID: "%UUID%", Name: "%Name%", Time: "%Time%"}
+                try {
+                    sender.sendMessage(plugin.getConfig().getString("message.command.info", "")
+                            .replace("%player%", inpData)
+                            .replace("%ID%", String.valueOf(results.getInt("ID")))
+                            .replace("%Type%", Type.getType(results.getInt("Type")).getName())
+                            .replace("%UUID%", results.getString("UUID"))
+                            .replace("%Name%", results.getString("Name"))
+                            .replace("%Time%", String.valueOf(results.getLong("Time"))));
+                } catch (SQLException ignored) {}
 
                 return true;
             }

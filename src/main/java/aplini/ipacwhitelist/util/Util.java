@@ -12,9 +12,22 @@ public class Util {
         if(dbPlayerTime == -1){
             return false;
         }
-        if((System.currentTimeMillis() / 1000) - dbPlayerTime > configTime){
-            return true;
+        return (System.currentTimeMillis() / 1000) - dbPlayerTime > configTime;
+    }
+
+    // 将 32 位 UUID 转换为 36 位
+    public static String ifIsUUID32toUUID36(String UUID){
+        if(UUID.length() != 32){
+            return UUID;
         }
-        return false;
+
+        // 添加横杠
+        StringBuilder UUID36 = new StringBuilder(UUID);
+        UUID36.insert(8,"-");
+        UUID36.insert(12,"-");
+        UUID36.insert(16,"-");
+        UUID36.insert(20,"-");
+
+        return UUID36.toString();
     }
 }

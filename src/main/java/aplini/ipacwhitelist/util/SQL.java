@@ -54,8 +54,8 @@ public class SQL {
         try {
             // uuid 不能唯一, 因为需要留空等待玩家加入时填充
 
-            String db = getPlugin().getConfig().getString("sql.db", "sqlite");
-            db = "sqlite";
+//            String db = getPlugin().getConfig().getString("sql.db", "sqlite");
+            String db = "sqlite";
             String table = getPlugin().getConfig().getString("sql.table");
 
             // SQLITE
@@ -71,20 +71,25 @@ public class SQL {
                 // 重新连接数据库
                 reconnect();
 
+                // 是否启用大小写不敏感
+                String Name_COLLATE_NOCASE =
+                        getPlugin().getConfig().getBoolean("sql.Name_COLLATE_NOCASE", true)
+                                ? "COLLATE NOCASE" : "";
+
                 // 加载数据表
                 connection.prepareStatement("""
                         CREATE TABLE IF NOT EXISTS "%s" (
                             "ID" INTEGER NOT NULL,
                             "Type" INTEGER NOT NULL,
                             "UUID" TEXT NOT NULL,
-                            "Name" TEXT NOT NULL,
+                            "Name" TEXT NOT NULL %s,
                             "Time" INTEGER NOT NULL,
                             PRIMARY KEY("ID" AUTOINCREMENT)
                         );
                         CREATE INDEX IF NOT EXISTS IDX_Type ON %s (Type);
                         CREATE INDEX IF NOT EXISTS IDX_UUID ON %s (UUID);
                         CREATE INDEX IF NOT EXISTS IDX_Name ON %s (Name);
-                        """.formatted(table, table, table, table)
+                        """.formatted(table, Name_COLLATE_NOCASE, table, table, table)
                 ).execute();
             }else{
 //                connection.prepareStatement("""
@@ -188,9 +193,6 @@ public class SQL {
         setPlayerData(player.getName(), String.valueOf(player.getUniqueId()), time, type);
     }
     // 添加玩家
-    public static Type addPlayer(String name){
-        return setPlayerData(name, null, -1, WHITE);
-    }
     public static Type addPlayer(String name, String UUID){
         return setPlayerData(name, UUID, -1, WHITE);
     }
@@ -218,14 +220,14 @@ public class SQL {
 
     // 是否在白名单中
     // 除基础数据外, 还会输出 WHITE_EXPIRED
-    public static Type isWhitelisted(Player player){
+    public static Type isWhitelisted(String playerName, String playerUUID){
         try {
             PreparedStatement sql;
             ResultSet results;
 
             // 如果UUID匹配
             sql = connection.prepareStatement("SELECT * FROM `player` WHERE `UUID` = ?;");
-            sql.setString(1, player.getUniqueId().toString());
+            sql.setString(1, playerUUID);
             results = sql.executeQuery();
             if(results.next()){
 
@@ -236,7 +238,7 @@ public class SQL {
 
                     // 更新名称和最后加入时间
                     PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `Name` = ?, `Time` = ? WHERE `ID` = ?;");
-                    update.setString(1, player.getName());
+                    update.setString(1, playerName);
                     update.setLong(2, (System.currentTimeMillis() / 1000));
                     update.setInt(3, results.getInt("ID"));
                     update.executeUpdate();
@@ -249,7 +251,7 @@ public class SQL {
 
             // 如果名称匹配
             sql = connection.prepareStatement("SELECT * FROM `player` WHERE `Name` = ?;");
-            sql.setString(1, player.getName());
+            sql.setString(1, playerName);
             results = sql.executeQuery();
             if(results.next()){
 
@@ -263,8 +265,8 @@ public class SQL {
 
                     // 更新UUID/名称和最后加入时间
                     PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `UUID` = ?, `Name` = ?, `Time` = ? WHERE `ID` = ?;");
-                    update.setString(1, player.getUniqueId().toString());
-                    update.setString(2, player.getName()); // 在第一次加入时处理名称大小写不匹配
+                    update.setString(1, playerUUID);
+                    update.setString(2, playerName); // 在第一次加入时处理名称大小写不匹配
                     update.setLong(3, (System.currentTimeMillis() / 1000));
                     update.setInt(4, results.getInt("ID"));
                     update.executeUpdate();
@@ -280,42 +282,67 @@ public class SQL {
             return ERROR;
         }
     }
+    public static Type isWhitelisted(Player player){
+        return isWhitelisted(player.getName(), player.getUniqueId().toString());
+    }
 
 
-    /**
-     * 获取UUID或者名称
-     * @param queryType 查询什么数据 UUID or NAME, 输入则正好相反
-     * @param inpData 输入数据
-     * @return 输出数据. 查询不到或错误时为 ""
-     */
-    public static String getPlayerInfo(Type queryType, String inpData){
-        String out = "";
+    // 获取一个玩家的所有数据
+    public static ResultSet getPlayerData(Type inpDataType, String inpData){
         String query;
-        String queryTypeName;
-        // 根据输入选择 sql 语句
-        switch(queryType){
-            case UUID -> {
-                query = "SELECT (UUID) FROM `player` WHERE `Name` = ? AND `UUID` != '' ORDER BY ROWID DESC LIMIT 1;";
-                queryTypeName = "UUID";
-            }
-            case NAME -> {
-                query = "SELECT (Name) FROM `player` WHERE `UUID` = ? AND `Name` != '' ORDER BY ROWID DESC LIMIT 1;";
-                queryTypeName = "Name";
-            }
-            default -> {return "";}
+
+        switch(inpDataType){
+            case UUID -> query = "SELECT * FROM `player` WHERE `UUID` = ? ORDER BY ROWID DESC LIMIT 1;";
+            case NAME -> query = "SELECT * FROM `player` WHERE `Name` = ? ORDER BY ROWID DESC LIMIT 1;";
+            default -> {return null;}
         }
+
         // 查询
         try {
             PreparedStatement sql = connection.prepareStatement(query);
             sql.setString(1, inpData);
             ResultSet results = sql.executeQuery();
             if(results.next()){
-                out = results.getString(queryTypeName);
+                return results;
             }
             sql.close();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            getLogger().warning(e.getMessage());
         }
-        return out;
+        return null;
     }
+    // 获取玩家 Type
+    public static Type getPlayerType(Type inpDataType, String inpData){
+        ResultSet results = getPlayerData(inpDataType, inpData);
+        if(results == null){return NOT;}
+        try {
+            return Type.getType(results.getInt("Type"));
+        } catch (Exception e) {
+            getLogger().warning(e.getMessage());
+        }
+        return NOT;
+    }
+    // 获取玩家 NAME
+    public static String getPlayerName(String UUID){
+        ResultSet results = getPlayerData(Type.UUID, UUID);
+        if(results == null){return null;}
+        try {
+            return results.getString("Name");
+        } catch (Exception e) {
+            getLogger().warning(e.getMessage());
+        }
+        return null;
+    }
+    // 获取玩家 UUID
+    public static String getPlayerUUID(String Name){
+        ResultSet results = getPlayerData(Type.NAME, Name);
+        if(results == null){return null;}
+        try {
+            return results.getString("UUID");
+        } catch (Exception e) {
+            getLogger().warning(e.getMessage());
+        }
+        return null;
+    }
+
 }

@@ -6,25 +6,29 @@ import java.util.Map;
 public enum Type {
 
     // 账户类型数值
-    NOT(0), // 未定义 or 不在白名单中
-    VISIT(1), // 参观账户
-    WHITE(2), // 白名单
-    BLACK(3), // 黑名单
-    VISIT_CONVERT(4), // 参观账户需要转为白名单
-    VISIT_BLACK(5), // 参观账户在黑名单中
+    NOT(0, "NOT"), // 未定义 or 不在白名单中
+    VISIT(1, "VISIT"), // 参观账户
+    WHITE(2, "WHITE"), // 白名单
+    BLACK(3, "BLACK"), // 黑名单
+    VISIT_CONVERT(4, "VISIT_CONVERT"), // 参观账户需要转为白名单
+    VISIT_BLACK(5, "VISIT_BLACK"), // 参观账户在黑名单中
 
     // 表示方法
-    WHITE_EXPIRED(-1), // 白名单过期
-    ERROR(-5), // 错误
+    WHITE_EXPIRED(-1, "WHITE_EXPIRED"), // 白名单过期
+    ERROR(-5, "ERROR"), // 错误
 
     // 数据列名称
-    UUID(-2), // UUID
-    NAME(-2), // UUID
+    UUID(-2, "UUID"), // UUID
+    NAME(-2, "NAME"), // UUID
 
     ;
 
     private final int key;
-    Type(int key){this.key = key;}
+    private final String name;
+    Type(int key, String name){
+        this.key = key;
+        this.name = name;
+    }
 
     // 将枚举存入 HashMap
     private static final Map<Integer, Type> TypeMap = new HashMap<>();
@@ -37,6 +41,11 @@ public enum Type {
     // 获取枚举对应的id
     public int getID() {
         return key;
+    }
+
+    // 获取名称
+    public String getName() {
+        return name;
     }
 
     // 获取id对应的枚举
