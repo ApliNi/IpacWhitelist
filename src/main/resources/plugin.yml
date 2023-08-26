@@ -11,3 +11,28 @@ commands:
     description: 白名单
     usage: /<command>
     aliases: [ipacwhitelist]
+
+permissions:
+  IpacWhitelist.command.reload:
+    description: '使用 /wl reload 指令'
+    default: op
+
+  IpacWhitelist.command.add:
+    description: '使用 /wl add 指令'
+    default: op
+
+  IpacWhitelist.command.del:
+    description: '使用 /wl del|unban 指令'
+    default: op
+
+  IpacWhitelist.command.ban:
+    description: '使用 /wl ban 指令'
+    default: op
+
+  IpacWhitelist.command.info:
+    description: '使用 /wl info 指令'
+    default: op
+
+  IpacWhitelist.command.list:
+    description: '使用 /wl list 指令'
+    default: op

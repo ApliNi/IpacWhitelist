@@ -15,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -51,6 +50,11 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
         switch(args[0]){
             case "reload" -> {
+                if(!sender.hasPermission("IpacWhitelist.command.reload")){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-permission", ""));
+                    return true;
+                }
+
                 allowJoin = false;
                 // 重载配置
                 plugin.reloadConfig();
@@ -64,6 +68,11 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
             // 添加一个账户
             case "add" -> {
+                if(!sender.hasPermission("IpacWhitelist.command.add")){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-permission", ""));
+                    return true;
+                }
+
                 if(args.length != 2){
                     sender.sendMessage("/wl add <playerName|playerUUID>");
                     return true;
@@ -131,6 +140,11 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
             // 删除一个账户
             case "del", "unban" -> {
+                if(!sender.hasPermission("IpacWhitelist.command.del")){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-permission", ""));
+                    return true;
+                }
+
                 if(args.length != 2){
                     sender.sendMessage("/wl "+ args[0] +" <playerName|playerUUID>");
                     return true;
@@ -180,6 +194,11 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
             // 封禁一个账户
             case "ban" -> {
+                if(!sender.hasPermission("IpacWhitelist.command.ban")){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-permission", ""));
+                    return true;
+                }
+
                 if(args.length != 2){
                     sender.sendMessage("/wl ban <playerName|playerUUID>");
                     return true;
@@ -225,6 +244,11 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
             }
 
             case "info" -> {
+                if(!sender.hasPermission("IpacWhitelist.command.info")){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-permission", ""));
+                    return true;
+                }
+
                 if(args.length != 2){
                     sender.sendMessage("/wl info <playerName|playerUUID>");
                     return true;
@@ -266,6 +290,11 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
             }
 
             case "list" -> {
+                if(!sender.hasPermission("IpacWhitelist.command.list")){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-permission", ""));
+                    return true;
+                }
+
                 if (args.length != 3) {
                     sender.sendMessage("/wl list <VISIT|WHITE|BLACK|VISIT_CONVERT|VISIT_BLACK|*> <num|ALL>");
                     return true;
@@ -337,7 +366,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
             case 3 -> {
                 if(args[0].equalsIgnoreCase("list")){
                     // num|ALL
-                    return List.of("10", "100", "ALL");
+                    return List.of("5", "32", "ALL");
                 }
             }
         }

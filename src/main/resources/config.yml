@@ -152,6 +152,7 @@ message:
     err-length: '§6IpacEL §f> §b名称或UUID长度异常'
     err-parameter: '§6IpacEL §f> §b无效参数: §a%i%'
     err-note-exist: '§6IpacEL §f> §a%player% §b不存在'
+    err-permission: '§6IpacEL §f> §b权限不足'
 
   # 玩家加入
   join:
