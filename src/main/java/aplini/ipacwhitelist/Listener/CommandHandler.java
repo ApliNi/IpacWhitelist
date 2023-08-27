@@ -324,6 +324,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                 AtomicInteger i = new AtomicInteger();
                 whileDataForList(type, maxLine, (results) -> {
+                    i.getAndIncrement();
                     try {
                         sender.sendMessage(plugin.getConfig().getString("message.command.list", "")
                                 .replace("%num%", i.toString())
@@ -333,7 +334,6 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                                 .replace("%Name%", results.getString("Name"))
                                 .replace("%Time%", String.valueOf(results.getLong("Time"))));
                     } catch (SQLException ignored) {}
-                    i.getAndIncrement();
                 });
 
                 return true;
