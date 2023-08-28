@@ -13,9 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static aplini.ipacwhitelist.hook.hookAuthMe.*;
-import static aplini.ipacwhitelist.util.Type.*;
+import static aplini.ipacwhitelist.hook.hookAuthMe.autoLogin;
+import static aplini.ipacwhitelist.hook.hookAuthMe.autoRegister;
 import static aplini.ipacwhitelist.util.EventFunc.startAsyncEventFunc;
+import static aplini.ipacwhitelist.util.Type.VISIT;
 import static org.bukkit.Bukkit.getLogger;
 
 public class onVisitPlayerJoin implements Listener {
