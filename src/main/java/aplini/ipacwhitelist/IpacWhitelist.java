@@ -3,9 +3,9 @@ package aplini.ipacwhitelist;
 import aplini.ipacwhitelist.Listener.CommandHandler;
 import aplini.ipacwhitelist.Listener.PlayerJoinMessage;
 import aplini.ipacwhitelist.Listener.onPlayerJoin;
+import aplini.ipacwhitelist.Listener.onVisitPlayerJoin;
 import aplini.ipacwhitelist.hook.hookAuthMe;
 import aplini.ipacwhitelist.util.SQL;
-import aplini.ipacwhitelist.Listener.onVisitPlayerJoin;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,8 +13,7 @@ import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class IpacWhitelist extends JavaPlugin implements Listener {
@@ -67,8 +66,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
     @EventHandler // 服务器启动完成
     public void onServerLoad(ServerLoadEvent event) {
         // 异步
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
+        CompletableFuture.runAsync(() -> {
             // 等待时间
             try {
                 TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("whitelist.late-join-time", 4000));
@@ -78,7 +76,6 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
             // 允许加入
             allowJoin = true;
         });
-        executor.shutdown();
     }
 
 

@@ -12,8 +12,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static aplini.ipacwhitelist.Listener.onVisitPlayerJoin.visitList;
@@ -87,14 +86,12 @@ public class PlayerJoinMessage implements Listener {
 
             // 我们可以一直持有加入的lock, 直到玩家退出后再慢慢处理. 因为退出事件在瞬间完成, 而加入事件会有几秒的延迟
             // 异步等待并释放锁
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.submit(() -> {
+            CompletableFuture.runAsync(() -> {
                 try {
                     TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("playerJoinMessage.quitLockFreedTime", 2000));
                 } catch (InterruptedException ignored) {}
                 Lock.remove(playerUUID);
             });
-            executor.shutdown();
         }
     }
 

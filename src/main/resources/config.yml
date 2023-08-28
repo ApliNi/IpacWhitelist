@@ -62,6 +62,7 @@ visit:
     autoLogin: true # 为参观账户自动登录, 相当于 `/authme forcelogin <playerName>`
 
   # 这些指令只是示例, 请根据自己的需求修改
+  # 关于 LuckPerms. 使用 lp 命令操作权限时, 需要保证用户至少有一个权限组. 也就是先添加权限组再删除权限组
 
   # 参观账户事件程序
   # command 和 message 中可使用的变量: %playerName%, %playerUUID%

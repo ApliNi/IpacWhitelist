@@ -4,8 +4,7 @@ import aplini.ipacwhitelist.IpacWhitelist;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.CompletableFuture;
 
 public class EventFunc {
 
@@ -37,9 +36,7 @@ public class EventFunc {
     }
     // 异步运行
     public static void startAsyncEventFunc(String eventName, IpacWhitelist plugin, Player player) {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> startEventFunc(eventName, plugin, player));
-        executor.shutdown();
+        CompletableFuture.runAsync(() -> startEventFunc(eventName, plugin, player));
     }
 
 

@@ -13,8 +13,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -146,13 +145,11 @@ public class onPlayerJoin implements Listener {
         playerDisconnectList.add(playerUUID);
 
         // 定时移除这个uuid
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
+        CompletableFuture.runAsync(() -> {
             try {
                 TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("whitelist.playerDisconnectToReconnectMinTime", 1500));
             } catch (InterruptedException ignored) {}
             playerDisconnectList.remove(playerUUID);
         });
-        executor.shutdown();
     }
 }
