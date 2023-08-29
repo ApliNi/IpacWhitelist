@@ -22,11 +22,15 @@ permissions:
     default: op
 
   IpacWhitelist.command.del:
-    description: '使用 /wl del|unban 指令'
+    description: '使用 /wl del 指令'
     default: op
 
   IpacWhitelist.command.ban:
     description: '使用 /wl ban 指令'
+    default: op
+
+  IpacWhitelist.command.unban:
+    description: '使用 /wl unban 指令'
     default: op
 
   IpacWhitelist.command.info:

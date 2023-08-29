@@ -4,7 +4,7 @@ import static aplini.ipacwhitelist.IpacWhitelist.getPlugin;
 
 public class Util {
     // 是否超时
-    public static boolean isWhitelistedTimeout(Long dbPlayerTime){
+    public static boolean isWhitelistedExpired(Long dbPlayerTime){
         long configTime = getPlugin().getConfig().getLong("whitelist.timeout", -1);
         if(configTime == -1){
             return false;
@@ -29,5 +29,19 @@ public class Util {
         UUID36.insert(20,"-");
 
         return UUID36.toString();
+    }
+
+    // 获取玩家数据的封装, 支持直接输入 Name, UUID32, UUID36
+    public static PlayerData getPlayerData(String inp){
+        if(inp.isEmpty()){return null;}
+        // 转换 UUID 格式
+        inp = ifIsUUID32toUUID36(inp);
+        // 检查数据
+        if(inp.length() == 36){ // uuid
+            return SQL.getPlayerData(Type.DATA_UUID, inp);
+        }else if(inp.length() <= 16){ // name
+            return SQL.getPlayerData(Type.DATA_NAME, inp);
+        }
+        return null;
     }
 }

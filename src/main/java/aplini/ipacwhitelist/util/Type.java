@@ -9,9 +9,13 @@ public enum Type {
     NOT(0, "NOT"), // 未定义 or 不在白名单中
     VISIT(1, "VISIT"), // 参观账户
     WHITE(2, "WHITE"), // 白名单
-    BLACK(3, "BLACK"), // 黑名单
+//    BLACK(3, "BLACK"), // 黑名单
     VISIT_CONVERT(4, "VISIT_CONVERT"), // 参观账户需要转为白名单
-    VISIT_BLACK(5, "VISIT_BLACK"), // 参观账户在黑名单中
+//    VISIT_BLACK(5, "VISIT_BLACK"), // 参观账户在黑名单中
+
+    // Ban 列
+    NOT_BAN(0, "NOT"),
+    BAN(1, "BAN"),
 
     // 表示方法
     WHITE_EXPIRED(-1, "WHITE_EXPIRED"), // 白名单过期
@@ -54,8 +58,16 @@ public enum Type {
         return TypeMap.get(id);
     }
 
+    // 获取 Ban 列的对应枚举
+    public static Type getBan(int id){
+        if(id == NOT_BAN.key){
+            return NOT_BAN;
+        }
+        return BAN;
+    }
+
     // 是否为参观账户
     public static boolean isVisit(Type type){
-        return type == VISIT || type == VISIT_CONVERT || type == VISIT_BLACK;
+        return type == VISIT || type == VISIT_CONVERT;
     }
 }

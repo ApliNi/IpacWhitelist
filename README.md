@@ -7,8 +7,9 @@
 - `/wl` - 主命令
 - `/wl reload` - 重载配置
 - `/wl add <playerName|playerUUID>` - 添加到白名单, uuid为空时自动获取
-- `/wl del|unban <playerName|playerUUID>` - 取消玩家的白名单, 如果玩家被封禁则解除
+- `/wl del <playerName|playerUUID>` - 取消玩家的白名单
 - `/wl ban <playerName|playerUUID>` - 封禁玩家
+- `/wl unban <playerName|playerUUID>` - 解封玩家
 - `/wl info <playerName|playerUUID>` - 查看玩家数据
 - `/wl list <VISIT|WHITE|BLACK|VISIT_CONVERT|VISIT_BLACK|*> <num|ALL>` - 列出玩家数据
 - `/wl reconnect_database` - 重新连接数据库

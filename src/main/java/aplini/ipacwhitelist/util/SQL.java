@@ -79,14 +79,16 @@ public class SQL {
                 // 加载数据表
                 connection.prepareStatement("""
                         CREATE TABLE IF NOT EXISTS "player" (
-                            "ID" INTEGER NOT NULL,
+                            "ID"   INTEGER NOT NULL,
                             "Type" INTEGER NOT NULL,
-                            "UUID" TEXT NOT NULL,
-                            "Name" TEXT NOT NULL %s,
+                            "Ban"  INTEGER NOT NULL,
+                            "UUID" TEXT    NOT NULL,
+                            "Name" TEXT    NOT NULL %s,
                             "Time" INTEGER NOT NULL,
                             PRIMARY KEY("ID" AUTOINCREMENT)
                         );
                         CREATE INDEX IF NOT EXISTS IDX_Type ON "player" (Type);
+                        CREATE INDEX IF NOT EXISTS IDX_Ban  ON "player" (Ban );
                         CREATE INDEX IF NOT EXISTS IDX_UUID ON "player" (UUID);
                         CREATE INDEX IF NOT EXISTS IDX_Name ON "player" (Name);
                         CREATE INDEX IF NOT EXISTS IDX_Time ON "player" (Time);
@@ -121,27 +123,26 @@ public class SQL {
      * @param UUID 玩家 UUID, 为 null 时不修改 (不可同时与名称为空
      * @param time 时间戳. -1=始终有效, -2=不修改, -3=更新为当前时间
      * @param type 白名单类型, 为 null 时不修改
-     * @return 账户类型枚举 or ERROR
+     * @param ban  是否被封禁, 为 null 时不修改
+     * @return 修改前的账户类型枚举 or ERROR
      */
-    public static Type setPlayerData(String name, String UUID, long time, Type type){
+    public static Type setPlayerData(String name, String UUID, long time, Type type, Type ban){
         Type out;
         try {
             PreparedStatement sql;
             ResultSet results;
 
             // 检查是否有 name 和 uuid 匹配的记录
-            if(name != null && UUID != null){
-                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `Name` = ? AND `UUID` = ? LIMIT 1;");
-                sql.setString(1, name);
-                sql.setString(2, UUID);
+            if(UUID != null){
+                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `UUID` = ? LIMIT 1;");
+                sql.setString(1, UUID);
+                if(name == null){
+                    name = "";
+                }
             }else if(name != null){
                 sql = connection.prepareStatement("SELECT * FROM `player` WHERE `Name` = ? LIMIT 1;");
                 sql.setString(1, name);
                 UUID = "";
-            }else if(UUID != null){
-                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `UUID` = ? LIMIT 1;");
-                sql.setString(1, UUID);
-                name = "";
             }else{
                 return ERROR;
             }
@@ -156,13 +157,15 @@ public class SQL {
                 }else if(time == -3){
                     time = System.currentTimeMillis() / 1000;
                 }
-                int TypeID = type != null ? type.getID() : results.getInt("Type");
+                int typeID = type != null ? type.getID() : results.getInt("Type");
+                int banID = ban != null ? ban.getID() : results.getInt("Ban");
 
                 // 已添加, 重置这个ID的 Time Type
-                sql = connection.prepareStatement("UPDATE `player` SET `Time` = ?, `Type` = ? WHERE `ID` = ?;");
+                sql = connection.prepareStatement("UPDATE `player` SET `Time` = ?, `Type` = ?, `Ban` = ? WHERE `ID` = ?;");
                 sql.setLong(1, time);
-                sql.setInt(2, TypeID);
-                sql.setInt(3, results.getInt("ID"));
+                sql.setInt(2, typeID);
+                sql.setInt(3, banID);
+                sql.setInt(4, results.getInt("ID"));
             }else{
                 // 输出账户类型
                 out = NOT;
@@ -172,14 +175,16 @@ public class SQL {
                 }else if(time == -3){
                     time = System.currentTimeMillis() / 1000;
                 }
-                int TypeID = type != null ? type.getID() : NOT.getID();
+                int typeID = type != null ? type.getID() : NOT.getID();
+                int banID = ban != null ? ban.getID() : NOT_BAN.getID();
 
                 // 未添加, 创建记录
-                sql = connection.prepareStatement("REPLACE INTO `player` (`UUID`, `Name`, `Time`, `Type`) VALUES (?, ?, ?, ?);");
+                sql = connection.prepareStatement("REPLACE INTO `player` (`UUID`, `Name`, `Time`, `Type`, `banID`) VALUES (?, ?, ?, ?, ?);");
                 sql.setString(1, UUID);
                 sql.setString(2, name);
                 sql.setLong(3, time);
-                sql.setInt(4, TypeID);
+                sql.setInt(4, typeID);
+                sql.setInt(5, banID);
             }
             sql.execute();
             sql.close();
@@ -191,25 +196,11 @@ public class SQL {
     }
 
     // 添加玩家
-    public static Type addPlayer(String name, String UUID, Type type){
-        return setPlayerData(name, UUID, -3, type);
+    public static void addPlayer(String name, String UUID, Type type){
+        setPlayerData(name, UUID, -3, type, null);
     }
     public static void addPlayer(Player player, Type type){
         addPlayer(player.getName(), String.valueOf(player.getUniqueId()), type);
-    }
-    // 移除玩家
-    public static Type delPlayerName(String name){
-        return setPlayerData(name, null, -2, NOT);
-    }
-    public static Type delPlayerUUID(String UUID){
-        return setPlayerData(null, UUID, -2, NOT);
-    }
-    // 封禁玩家
-    public static Type banPlayerName(String name){
-        return setPlayerData(name, null, -2, BLACK);
-    }
-    public static Type banPlayerUUID(String UUID){
-        return setPlayerData(null, UUID, -2, BLACK);
     }
 
 
@@ -226,11 +217,16 @@ public class SQL {
             results = sql.executeQuery();
             if(results.next()){
 
+                // 黑名单
+                if(getType(results.getInt("Ban")) == BAN){
+                    return BAN;
+                }
+
                 // 白名单
                 Type type = getType(results.getInt("Type"));
                 if(type == WHITE){
                     // 不是参观账户 && 白名单上的玩家超时
-                    if(!isVisit(type) && Util.isWhitelistedTimeout(results.getLong("Time"))){return WHITE_EXPIRED;}
+                    if(!isVisit(type) && Util.isWhitelistedExpired(results.getLong("Time"))){return WHITE_EXPIRED;}
 
                     // 更新名称和最后加入时间
                     PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `Name` = ?, `Time` = ? WHERE `ID` = ?;");
@@ -255,11 +251,16 @@ public class SQL {
                 // 上面的 "如果UUID匹配" 已经确认没有相同的 UUID, 如果这里的 UUID 不为空, 则不是同一个玩家
                 if(!results.getString("UUID").isEmpty()){return NOT;}
 
+                // 黑名单
+                if(getType(results.getInt("Ban")) == BAN){
+                    return BAN;
+                }
+
                 // 白名单
                 Type type = getType(results.getInt("Type"));
                 if(type == WHITE){
                     // 白名单上的玩家是否超时
-                    if(!isVisit(type) && Util.isWhitelistedTimeout(results.getLong("Time"))){return WHITE_EXPIRED;}
+                    if(!isVisit(type) && Util.isWhitelistedExpired(results.getLong("Time"))){return WHITE_EXPIRED;}
 
                     // 更新UUID/名称和最后加入时间
                     PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `UUID` = ?, `Name` = ?, `Time` = ? WHERE `ID` = ?;");
@@ -286,7 +287,7 @@ public class SQL {
 
 
     // 获取一个玩家的所有数据
-    public static ResultSet getPlayerData(Type inpDataType, String inpData){
+    public static ResultSet getPlayerDataResultSet(Type inpDataType, String inpData){
         String query;
 
         switch(inpDataType){
@@ -309,39 +310,70 @@ public class SQL {
         }
         return null;
     }
-    // 获取玩家 Type
-    public static Type getPlayerType(Type inpDataType, String inpData){
-        ResultSet results = getPlayerData(inpDataType, inpData);
-        if(results == null){return NOT;}
+    // 将获取到的数据打包到 Map 中
+    public static PlayerData getPlayerData(Type inpDataType, String inpData){
+        ResultSet results = getPlayerDataResultSet(inpDataType, inpData);
+        PlayerData pd = new PlayerData();
+        if(results == null){return pd;}
+
         try {
-            return Type.getType(results.getInt("Type"));
+            pd.available = true;
+            pd.ID = results.getInt("ID");
+            pd.Type = getType(results.getInt("Type"));
+            pd.Ban = getBan(results.getInt("Ban"));
+            pd.UUID = results.getString("UUID");
+            pd.Name = results.getString("Name");
+            pd.Time = results.getLong("Time");
         } catch (Exception e) {
             getLogger().warning(e.getMessage());
         }
-        return NOT;
+
+        return pd;
     }
-    // 获取玩家 NAME
-    public static String getPlayerName(String UUID){
-        ResultSet results = getPlayerData(Type.DATA_UUID, UUID);
-        if(results == null){return null;}
-        try {
-            return results.getString("Name");
-        } catch (Exception e) {
-            getLogger().warning(e.getMessage());
-        }
-        return null;
-    }
-    // 获取玩家 UUID
-    public static String getPlayerUUID(String Name){
-        ResultSet results = getPlayerData(Type.DATA_NAME, Name);
-        if(results == null){return null;}
-        try {
-            return results.getString("UUID");
-        } catch (Exception e) {
-            getLogger().warning(e.getMessage());
-        }
-        return null;
-    }
+//    // 获取玩家 Type
+//    public static Type getPlayerType(Type inpDataType, String inpData){
+//        ResultSet results = getPlayerDataResultSet(inpDataType, inpData);
+//        if(results == null){return NOT;}
+//        try {
+//            return Type.getType(results.getInt("Type"));
+//        } catch (Exception e) {
+//            getLogger().warning(e.getMessage());
+//        }
+//        return NOT;
+//    }
+//    // 获取玩家被封禁的状态
+//    public static Type getPlayerBan(Type inpDataType, String inpData){
+//        ResultSet results = getPlayerDataResultSet(inpDataType, inpData);
+//        if(results == null){return NOT_BAN;}
+//        try {
+//            return Type.getBan(results.getInt("Ban"));
+//        } catch (Exception e) {
+//            getLogger().warning(e.getMessage());
+//        }
+//        return NOT_BAN;
+//    }
+//    // 获取玩家 NAME
+//    public static String getPlayerName(String UUID){
+//        ResultSet results = getPlayerDataResultSet(Type.DATA_UUID, UUID);
+//        if(results == null){return null;}
+//        try {
+//            return results.getString("Name");
+//        } catch (Exception e) {
+//            getLogger().warning(e.getMessage());
+//        }
+//        return null;
+//    }
+//    // 获取玩家 UUID
+//    public static String getPlayerUUID(String Name){
+//        ResultSet results = getPlayerDataResultSet(Type.DATA_NAME, Name);
+//        if(results == null){return null;}
+//        try {
+//            return results.getString("UUID");
+//        } catch (Exception e) {
+//            getLogger().warning(e.getMessage());
+//        }
+//        return null;
+//    }
 
 
     // 遍历数据

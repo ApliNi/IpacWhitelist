@@ -64,7 +64,7 @@ public class onPlayerJoin implements Listener {
         }
         if(inBlacklist){
             getLogger().info("[IpacWhitelist] %s 在IP黑名单中: %s".formatted(playerName, playerIP));
-            event.setKickMessage(plugin.getConfig().getString("message.join.black-ip", "")
+            event.setKickMessage(plugin.getConfig().getString("message.join.ban-ip", "")
                     .replace("%player%",playerName)
                     .replace("%ip%", playerIP));
             event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
@@ -123,9 +123,9 @@ public class onPlayerJoin implements Listener {
                 event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
             }
 
-            case BLACK, VISIT_BLACK -> { // 黑名单 / 被封禁的参观账户
+            case BAN -> { // 黑名单
                 getLogger().info("[IpacWhitelist] %s 在黑名单中".formatted(playerName));
-                event.setKickMessage(plugin.getConfig().getString("message.join.black", "").replace("%player%", playerName));
+                event.setKickMessage(plugin.getConfig().getString("message.join.ban", "").replace("%player%", playerName));
                 event.setResult(PlayerLoginEvent.Result.KICK_BANNED);
             }
 

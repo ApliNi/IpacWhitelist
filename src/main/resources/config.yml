@@ -147,13 +147,17 @@ message:
     add-reset-visit: '§6IpacEL §f> §b%player% §a已从参观账户中重置'
     del: '§6IpacEL §f> §a%player% §b已移出白名单'
     ban: '§6IpacEL §f> §a%player% §b已列入黑名单'
+    ban-exist: '§6IpacEL §f> §a%player% §b在黑名单中'
+    unban: '§6IpacEL §f> §b%player% §a已移出黑名单'
+    unban-exist: '§6IpacEL §f> §a%player% §b不在黑名单中'
     reload: '§6IpacEL §f> IpacWhitelist 配置和数据库重载完成'
-    info: '§6IpacEL §f> §a%player%§7: §b{ID: %ID%, Type: "%Type%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
-    list: '§6IpacEL §f> §a%num% §7-> §b{ID: %ID%, Type: "%Type%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
+    info: '§6IpacEL §f> §a%player%§7: §b{ID: %ID%, Type: "%Type%", Ban: "%Ban%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
+    list: '§6IpacEL §f> §a%num% §7-> §b{ID: %ID%, Type: "%Type%", Ban: "%Ban%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
     err: '§6IpacEL §f> §b内部错误'
+    err-ban: '§6IpacEL §f> §b此账户被封禁, 执行此操作需要解封'
     err-length: '§6IpacEL §f> §b名称或UUID长度异常'
     err-parameter: '§6IpacEL §f> §b无效参数: §a%i%'
-    err-note-exist: '§6IpacEL §f> §a%player% §b不存在'
+    err-note-exist: '§6IpacEL §f> §b玩家 §a%player% §b不存在'
     err-permission: '§6IpacEL §f> §b权限不足'
 
   # 玩家加入
@@ -162,8 +166,8 @@ message:
     not: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%player%'
     expired: '§6IpacEL §f> §b太久没有上线? 请联系管理员恢复白名单§7: §a%player%'
     limiter-reconnection-time: '§6IpacEL §f> §b连接受限'
-    black: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
-    black-ip: '§6IpacEL §f> §b您被列入黑名单: §a%player%' # %ip%
+    ban: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
+    ban-ip: '§6IpacEL §f> §b您被列入黑名单: §a%player%' # %ip%
     err: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'
     err-name: '§6IpacEL §f> §b无效的名称: §a%player%'
     err-name-visit: '§6IpacEL §f> §b无效的名称: §a%player%'
