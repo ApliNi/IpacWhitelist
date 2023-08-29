@@ -1,5 +1,7 @@
 package aplini.ipacwhitelist.util;
 
+import org.bukkit.entity.Player;
+
 import static aplini.ipacwhitelist.util.Type.NOT;
 import static aplini.ipacwhitelist.util.Type.NOT_BAN;
 import static aplini.ipacwhitelist.util.Util.ifIsUUID32toUUID36;
@@ -10,9 +12,11 @@ public class PlayerData {
     public int ID = -1;
     public Type Type = NOT;
     public Type Ban = NOT_BAN;
-    public String UUID = null;
-    public String Name = null;
+    public String UUID = "";
+    public String Name = "";
     public long Time = -1;
+
+    public Type __whitelistedState = null;
 
 
     // 数据是否为空
@@ -24,14 +28,27 @@ public class PlayerData {
     public void addPlayerAuto(String inpData){
         inpData = ifIsUUID32toUUID36(inpData);
         if(inpData.length() == 36){ // uuid
-            UUID = inpData;
+            this.UUID = inpData;
         }else if(inpData.length() <= 16){ // name
-            Name = inpData;
+            this.Name = inpData;
         }
     }
 
+    // 设置玩家数据
+    public void setPlayerInfo(Player player){
+        this.UUID = player.getUniqueId().toString();
+        this.Name = player.getName();
+    }
+
     // 保存数据到数据库
-    public Type save(){
-        return SQL.setPlayerData(Name, UUID, Time, Type, Ban);
+    public void save(){
+        SQL.savePlayerData(this);
+//        return SQL.setPlayerData(Name, UUID, Time, Type, Ban);
+    }
+
+    // 设置白名单状态, 并返回 this
+    public PlayerData whitelistedState(Type type){
+        this.__whitelistedState = type;
+        return this;
     }
 }

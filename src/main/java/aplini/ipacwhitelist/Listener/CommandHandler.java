@@ -21,7 +21,8 @@ import java.util.regex.Pattern;
 
 import static aplini.ipacwhitelist.IpacWhitelist.allowJoin;
 import static aplini.ipacwhitelist.util.EventFunc.startVisitConvertFunc;
-import static aplini.ipacwhitelist.util.SQL.*;
+import static aplini.ipacwhitelist.util.SQL.whileDataForList;
+import static aplini.ipacwhitelist.util.Util.ifIsUUID32toUUID36;
 
 public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
     private static IpacWhitelist plugin;
@@ -78,7 +79,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 }
 
                 // 获取玩家数据
-                String inpData = args[1];
+                String inpData = ifIsUUID32toUUID36(args[1]);
                 PlayerData pd = Util.getPlayerData(inpData);
                 // 输入数据错误
                 if(pd == null){
@@ -88,7 +89,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                 // 如果已被封禁
                 if(pd.Ban == Type.BAN){
-                    sender.sendMessage(plugin.getConfig().getString("message.command.ban-exist", "").replace("%player%", pd.Name));
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-ban", "").replace("%player%", pd.Name));
                     return true;
                 }
 
@@ -150,17 +151,11 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 }
 
                 // 获取玩家数据
-                String inpData = args[1];
+                String inpData = ifIsUUID32toUUID36(args[1]);
                 PlayerData pd = Util.getPlayerData(inpData);
                 // 输入数据错误
                 if(pd == null){
                     sender.sendMessage(plugin.getConfig().getString("message.command.err-length", ""));
-                    return true;
-                }
-
-                // 检查这个玩家是否存在
-                if(pd.Type == Type.NOT){
-                    sender.sendMessage(plugin.getConfig().getString("message.command.err-note-exist", "").replace("%player%", inpData));
                     return true;
                 }
 
@@ -170,20 +165,22 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                     return true;
                 }
 
+                // 检查这个玩家是否存在
+                if(pd.Type == Type.NOT){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-note-exist", "").replace("%player%", inpData));
+                    return true;
+                }
+
                 // 删除
                 pd.Type = Type.NOT;
-                Type state = pd.save();
+                pd.save();
 
-                if(state != Type.ERROR){
-                    // 踢出玩家
-                    Player player = Bukkit.getPlayer(pd.Name);
-                    if(plugin.getConfig().getBoolean("whitelist.kick-on-del") && player != null){
-                        player.kickPlayer(plugin.getConfig().getString("message.join.not", "").replace("%player%", player.getName()));
-                    }
-                    sender.sendMessage(plugin.getConfig().getString("message.command.del", "").replace("%player%", inpData));
-                }else{
-                    sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
+                // 踢出玩家
+                Player player = Bukkit.getPlayer(pd.Name);
+                if(plugin.getConfig().getBoolean("whitelist.kick-on-del") && player != null){
+                    player.kickPlayer(plugin.getConfig().getString("message.join.not", "").replace("%player%", player.getName()));
                 }
+                sender.sendMessage(plugin.getConfig().getString("message.command.del", "").replace("%player%", inpData));
                 return true;
             }
 
@@ -200,7 +197,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 }
 
                 // 获取玩家数据
-                String inpData = args[1];
+                String inpData = ifIsUUID32toUUID36(args[1]);
                 PlayerData pd = Util.getPlayerData(inpData);
                 // 输入数据错误
                 if(pd == null){
@@ -216,19 +213,14 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                 // ban
                 pd.Ban = Type.BAN;
-                Type state = pd.save();
+                pd.save();
 
-                if(state != Type.ERROR){
-                    // 踢出玩家
-                    Player player = Bukkit.getPlayer(pd.Name);
-                    if(plugin.getConfig().getBoolean("whitelist.kick-on-ban") && player != null){
-                        player.kickPlayer(plugin.getConfig().getString("message.join.ban", "").replace("%player%", player.getName()));
-                    }
-                    sender.sendMessage(plugin.getConfig().getString("message.command.ban", "").replace("%player%", inpData));
-                }else{
-                    sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
+                // 踢出玩家
+                Player player = Bukkit.getPlayer(pd.Name);
+                if(plugin.getConfig().getBoolean("whitelist.kick-on-ban") && player != null){
+                    player.kickPlayer(plugin.getConfig().getString("message.join.ban", "").replace("%player%", player.getName()));
                 }
-
+                sender.sendMessage(plugin.getConfig().getString("message.command.ban", "").replace("%player%", inpData));
                 return true;
             }
 
@@ -245,7 +237,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 }
 
                 // 获取玩家数据
-                String inpData = args[1];
+                String inpData = ifIsUUID32toUUID36(args[1]);
                 PlayerData pd = Util.getPlayerData(inpData);
                 // 输入数据错误
                 if(pd == null){
@@ -253,8 +245,8 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                     return true;
                 }
 
-                // 检查这个玩家是否存在
-                if(pd.Type == Type.NOT){
+                // 检查这个玩家是否存在, 这里不能使用 NOT 来检查, 因为账户可能在 Type=NOT 时被封禁
+                if(pd.ID != -1){
                     sender.sendMessage(plugin.getConfig().getString("message.command.err-note-exist", "").replace("%player%", inpData));
                     return true;
                 }
@@ -267,14 +259,9 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                 // unban
                 pd.Ban = Type.NOT_BAN;
-                Type state = pd.save();
+                pd.save();
 
-                if(state != Type.ERROR){
-                    sender.sendMessage(plugin.getConfig().getString("message.command.unban", "").replace("%player%", inpData));
-                }else{
-                    sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
-                }
-
+                sender.sendMessage(plugin.getConfig().getString("message.command.unban", "").replace("%player%", inpData));
                 return true;
             }
 
@@ -291,7 +278,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 }
 
                 // 获取玩家数据
-                String inpData = args[1];
+                String inpData = ifIsUUID32toUUID36(args[1]);
                 PlayerData pd = Util.getPlayerData(inpData);
                 // 输入数据错误
                 if(pd == null){

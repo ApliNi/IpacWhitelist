@@ -27,6 +27,13 @@ whitelist:
   kick-on-ban: true # ban
   kick-on-add-visit: true # 参观账户被添加到白名单时
 
+  # 自动检查并处理出错的记录
+  # 比如添加玩家 UUID 后又添加了 NAME (此时产生两条记录), 当玩家登录时自动删除其中一条记录
+  autoClean:
+    enable: true
+    # 如果两条记录中的关键数据不一致, 比如记录1是白名单, 而记录2中是黑名单, 则将记录2中的数据迁移到记录1
+    dataByWeight: true
+
   # 如果玩家在指定秒数内没上线过, 则视为不在白名单中. -1 = 禁用
   # 参观账户不受此限制
   timeout: 10368000 # 10368000 = 4个月
@@ -157,7 +164,7 @@ message:
     err-ban: '§6IpacEL §f> §b此账户被封禁, 执行此操作需要解封'
     err-length: '§6IpacEL §f> §b名称或UUID长度异常'
     err-parameter: '§6IpacEL §f> §b无效参数: §a%i%'
-    err-note-exist: '§6IpacEL §f> §b玩家 §a%player% §b不存在'
+    err-note-exist: '§6IpacEL §f> §a%player% §b不存在'
     err-permission: '§6IpacEL §f> §b权限不足'
 
   # 玩家加入

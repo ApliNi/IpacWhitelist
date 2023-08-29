@@ -1,6 +1,7 @@
 package aplini.ipacwhitelist.Listener;
 
 import aplini.ipacwhitelist.IpacWhitelist;
+import aplini.ipacwhitelist.util.PlayerData;
 import aplini.ipacwhitelist.util.SQL;
 import aplini.ipacwhitelist.util.Type;
 import org.bukkit.entity.Player;
@@ -72,8 +73,8 @@ public class onPlayerJoin implements Listener {
         }
 
         // 白名单逻辑
-        Type state = SQL.isInWhitelisted(event.getPlayer());
-        switch(state){
+        PlayerData pd = SQL.isInWhitelisted(event.getPlayer());
+        switch(pd.__whitelistedState){
 
             case NOT, VISIT -> { // 不存在 / 参观账户
                 // 检查用户名
@@ -86,8 +87,9 @@ public class onPlayerJoin implements Listener {
                 // 是否启用参观账户
                 if(plugin.getConfig().getBoolean("visit.enable", false)){
                     // 如果是新账户, 则需要运行 onNewVisitPlayerLoginEvent
-                    if(state == Type.NOT){
-                        onVisitPlayerJoin.onNewVisitPlayerLoginEvent(event);
+                    if(pd.__whitelistedState == Type.NOT){
+                        // 参观账户的数据在这里创建...
+                        onVisitPlayerJoin.onNewVisitPlayerLoginEvent(event, pd);
                     }else{
                         onVisitPlayerJoin.onVisitPlayerLoginEvent(event);
                     }
@@ -106,12 +108,14 @@ public class onPlayerJoin implements Listener {
                     event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
                     return;
                 }
-                if(state == Type.VISIT_CONVERT){
+                // 如果是待转换的参观账户
+                if(pd.__whitelistedState == Type.VISIT_CONVERT){
                     // 运行 wl-add-convert
                     Player player = event.getPlayer();
                     startVisitConvertFunc(plugin, player, "visit.wl-add-convert.command");
-                    // 修改 Type 为 WHITE, 同时更新时间
-                    SQL.addPlayer(player, Type.WHITE);
+                    // 修改 Type 为 WHITE
+                    pd.Type = Type.WHITE;
+                    pd.save();
                 }
                 // 通过白名单, 无需处理
                 // else if(state == Type.WHITE) event.setResult(PlayerLoginEvent.Result.ALLOWED); // 可能其他插件需要拒绝玩家加入
@@ -140,14 +144,18 @@ public class onPlayerJoin implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR) // 玩家退出
     public void onPlayerQuit(PlayerQuitEvent event) {
-        // 保存断开连接的玩家的uuid
         UUID playerUUID = event.getPlayer().getUniqueId();
-        playerDisconnectList.add(playerUUID);
 
-        // 定时移除这个uuid
+        // 更新玩家的最后连接时间
+        PlayerData pd = SQL.getPlayerData(Type.DATA_UUID, playerUUID.toString());
+        pd.Time = -3;
+        pd.save();
+
+        // 玩家退出后等待指定时间才能重新连接
+        playerDisconnectList.add(playerUUID);
         CompletableFuture.runAsync(() -> {
             try {
-                TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("whitelist.playerDisconnectToReconnectMinTime", 1500));
+                TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("whitelist.playerDisconnectToReconnectMinTime", 1000));
             } catch (InterruptedException ignored) {}
             playerDisconnectList.remove(playerUUID);
         });

@@ -118,91 +118,7 @@ public class SQL {
         }
     }
 
-    /**
-     * 修改或创建玩家数据
-     * @param name 玩家名称, 为 null 时不修改
-     * @param UUID 玩家 UUID, 为 null 时不修改 (不可同时与名称为空
-     * @param time 时间戳. -1=始终有效, -2=不修改, -3=更新为当前时间
-     * @param type 白名单类型, 为 null 时不修改
-     * @param ban  是否被封禁, 为 null 时不修改
-     * @return 修改前的账户类型枚举 or ERROR
-     */
-    public static Type setPlayerData(String name, String UUID, long time, Type type, Type ban){
-        Type out;
-        try {
-            PreparedStatement sql;
-            ResultSet results;
 
-            // 检查是否有 name 和 uuid 匹配的记录
-            if(UUID != null){
-                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `UUID` = ? LIMIT 1;");
-                sql.setString(1, UUID);
-                if(name == null){
-                    name = "";
-                }
-            }else if(name != null){
-                sql = connection.prepareStatement("SELECT * FROM `player` WHERE `Name` = ? LIMIT 1;");
-                sql.setString(1, name);
-                UUID = "";
-            }else{
-                return ERROR;
-            }
-
-            results = sql.executeQuery();
-            if(results.next()){
-                // 输出账户类型
-                out = Type.getType(results.getInt("Type"));
-                // 处理缺省值
-                if(time == -2){
-                    time = results.getLong("Time");
-                }else if(time == -3){
-                    time = System.currentTimeMillis() / 1000;
-                }
-                int typeID = type != null ? type.getID() : results.getInt("Type");
-                int banID = ban != null ? ban.getID() : results.getInt("Ban");
-
-                // 已添加, 重置这个ID的 Time Type
-                sql = connection.prepareStatement("UPDATE `player` SET `Time` = ?, `Type` = ?, `Ban` = ? WHERE `ID` = ?;");
-                sql.setLong(1, time);
-                sql.setInt(2, typeID);
-                sql.setInt(3, banID);
-                sql.setInt(4, results.getInt("ID"));
-            }else{
-                // 输出账户类型
-                out = NOT;
-                // 处理缺省值
-                if(time == -2){
-                    time = -1;
-                }else if(time == -3){
-                    time = System.currentTimeMillis() / 1000;
-                }
-                int typeID = type != null ? type.getID() : NOT.getID();
-                int banID = ban != null ? ban.getID() : NOT_BAN.getID();
-
-                // 未添加, 创建记录
-                sql = connection.prepareStatement("REPLACE INTO `player` (`UUID`, `Name`, `Time`, `Type`, `Ban`) VALUES (?, ?, ?, ?, ?);");
-                sql.setString(1, UUID);
-                sql.setString(2, name);
-                sql.setLong(3, time);
-                sql.setInt(4, typeID);
-                sql.setInt(5, banID);
-            }
-            sql.execute();
-            sql.close();
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return out;
-    }
-
-    // 添加玩家
-    public static void addPlayer(String name, String UUID, Type type){
-        setPlayerData(name, UUID, -3, type, null);
-    }
-    public static void addPlayer(Player player, Type type){
-        addPlayer(player.getName(), String.valueOf(player.getUniqueId()), type);
-    }
 
     // 获取一个玩家的所有数据
     public static PlayerData getPlayerData(Type inpDataType, String inpData){
@@ -212,6 +128,7 @@ public class SQL {
         switch(inpDataType){
             case DATA_UUID -> query = "SELECT * FROM `player` WHERE `UUID` = ? LIMIT 1;";
             case DATA_NAME -> query = "SELECT * FROM `player` WHERE `Name` = ? LIMIT 1;";
+            case DATA_NAME_LIMIT_EMPTY_UUID -> query = "SELECT * FROM `player` WHERE `UUID` = '' AND `Name` = ? LIMIT 1;";
             default -> {return pd;}
         }
 
@@ -235,8 +152,21 @@ public class SQL {
         return pd;
     }
 
+    // 删除指定 ID 的数据
+    public static void delPlayerData(int id){
+        try {
+            PreparedStatement sql = connection.prepareStatement("DELETE FROM `player` WHERE `ID` = ?;");
+            sql.setInt(1, id);
+            sql.execute();
+            sql.close();
+        } catch (Exception e) {
+            getLogger().warning(e.getMessage());
+        }
+    }
+
     // 是否在白名单中
-    public static Type isInWhitelisted(String playerName, String playerUUID){
+    // 如果数据库中有数据, 才会更新 Time/UUID/Name. 否则返回 NOT
+    public static PlayerData isInWhitelisted(String playerName, String playerUUID){
 
         PlayerData pd;
 
@@ -244,41 +174,47 @@ public class SQL {
         pd = getPlayerData(DATA_UUID, playerUUID);
         if(!pd.isNull()){
             // 黑名单
-            if(pd.Ban == BAN){return BAN;}
-            // 白名单
-            if(pd.Type == WHITE){
-                // 不是参观账户 && 白名单上的玩家超时
-                if(!isVisit(pd.Type) && Util.isWhitelistedExpired(pd.Time)){return WHITE_EXPIRED;}
-                // 更新数据
-                pd.Name = playerName;
-                pd.Time = getTime();
-                pd.save();
+            if(pd.Ban == BAN){return pd.whitelistedState(BAN);}
+            // 非参观账户 && 白名单过期
+            if(!isVisit(pd.Type) && Util.isWhitelistedExpired(pd.Time)){return pd.whitelistedState(WHITE_EXPIRED);}
+            // 如果启用错误检查
+            if(getPlugin().getConfig().getBoolean("whitelist.autoClean.enable", true)){
+                // 检查是否存在一个 UUID 为空, 名称相同的数据
+                PlayerData pd2 = getPlayerData(DATA_NAME_LIMIT_EMPTY_UUID, playerName);
+                if(pd2.ID != -1){
+                    // 如果启用按权重转移数据
+                    if(getPlugin().getConfig().getBoolean("whitelist.autoClean.dataByWeight", true)){
+                        // 比较这两条记录的关键数据, 保留 int 最大的一方
+                        pd.Type = pd2.Type.getID() > pd.Type.getID() ? pd2.Type : pd.Type;
+                        pd.Ban = pd2.Ban.getID() > pd.Ban.getID() ? pd2.Ban : pd.Ban;
+                    }
+                    delPlayerData(pd2.ID);
+                }
             }
-            return pd.Type;
+            // 更新数据
+            pd.Name = playerName;
+            pd.Time = getTime();
+            pd.save();
+            return pd.whitelistedState(pd.Type);
         }
 
-        // 如果 Name 匹配
-        pd = getPlayerData(DATA_NAME, playerName);
+        // 如果 Name 匹配, 且 UUID 为空
+        pd = getPlayerData(DATA_NAME_LIMIT_EMPTY_UUID, playerName);
         if(!pd.isNull()){
-            // 如果UUID不为空: 是同名的其他玩家
-            if(!pd.UUID.isEmpty()){return NOT;}
             // 黑名单
-            if(pd.Ban == BAN){return BAN;}
-            // 白名单
-            if(pd.Type == WHITE){
-                // 不是参观账户 && 白名单上的玩家超时
-                if(!isVisit(pd.Type) && Util.isWhitelistedExpired(pd.Time)){return WHITE_EXPIRED;}
-                // 更新数据
-                pd.UUID = playerUUID;
-                pd.Time = getTime();
-                pd.save();
-            }
-            return pd.Type;
+            if(pd.Ban == BAN){return pd.whitelistedState(BAN);}
+            // 非参观账户 && 白名单过期
+            if(!isVisit(pd.Type) && Util.isWhitelistedExpired(pd.Time)){return pd.whitelistedState(WHITE_EXPIRED);}
+            // 更新数据
+            pd.UUID = playerUUID;
+            pd.Time = getTime();
+            pd.save();
+            return pd.whitelistedState(pd.Type);
         }
 
-        return NOT;
+        return pd.whitelistedState(NOT);
     }
-    public static Type isInWhitelisted(Player player){
+    public static PlayerData isInWhitelisted(Player player){
         return isInWhitelisted(player.getName(), player.getUniqueId().toString());
     }
 
@@ -312,6 +248,39 @@ public class SQL {
             }
         });
         executor.shutdown();
+    }
+
+
+    // 保存玩家数据
+    public static void savePlayerData(PlayerData pd){
+        // 处理缺省数据
+        pd.Time = pd.Time == -3 ? getTime() : pd.Time;
+
+        try {
+            PreparedStatement sql;
+            int i = 0;
+            // 如果id存在则更新数据, 否则创建新数据
+            if(pd.ID != -1){
+                sql = connection.prepareStatement("UPDATE `player` SET `Type` = ?, `Ban` = ?, `UUID` = ?, `Name` = ?, `Time` = ? WHERE `ID` = ?;");
+                sql.setInt(++i, pd.Type.getID());
+                sql.setInt(++i, pd.Ban.getID());
+                sql.setString(++i, pd.UUID);
+                sql.setString(++i, pd.Name);
+                sql.setLong(++i, pd.Time);
+                sql.setInt(++i, pd.ID);
+            }else{
+                sql = connection.prepareStatement("REPLACE INTO `player` (`Type`, `Ban`, `UUID`, `Name`, `Time`) VALUES (?, ?, ?, ?, ?);");
+                sql.setInt(++i, pd.Type.getID());
+                sql.setInt(++i, pd.Ban.getID());
+                sql.setString(++i, pd.UUID);
+                sql.setString(++i, pd.Name);
+                sql.setLong(++i, pd.Time);
+            }
+            sql.execute();
+            sql.close();
+        } catch (Exception e) {
+            getLogger().warning(e.getMessage());
+        }
     }
 
 }

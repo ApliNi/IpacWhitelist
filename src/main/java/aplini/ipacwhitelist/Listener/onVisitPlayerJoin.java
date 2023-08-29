@@ -1,7 +1,7 @@
 package aplini.ipacwhitelist.Listener;
 
 import aplini.ipacwhitelist.IpacWhitelist;
-import aplini.ipacwhitelist.util.SQL;
+import aplini.ipacwhitelist.util.PlayerData;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -29,11 +29,14 @@ public class onVisitPlayerJoin implements Listener {
     }
 
     // 参观账户第一次登录服务器
-    public static void onNewVisitPlayerLoginEvent(PlayerLoginEvent event) {
+    public static void onNewVisitPlayerLoginEvent(PlayerLoginEvent event, PlayerData pd) {
         if(ifForbiddenJoin(event)){return;}
 
-        // 将这个玩家以参观账户的身份添加到数据库中
-        SQL.addPlayer(event.getPlayer(), VISIT);
+        // 创建参观账户
+        pd.setPlayerInfo(event.getPlayer());
+        pd.Type = VISIT;
+        pd.Time = -3;
+        pd.save();
         getLogger().info("[IpacWhitelist] 为新的参观账户创建数据: %s ".formatted(event.getPlayer().getName()));
 
         // 参观账户事件程序

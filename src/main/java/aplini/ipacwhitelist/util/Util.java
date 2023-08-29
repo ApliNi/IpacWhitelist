@@ -30,18 +30,15 @@ public class Util {
         // 添加横杠
         StringBuilder UUID36 = new StringBuilder(UUID);
         UUID36.insert(8,"-");
-        UUID36.insert(12,"-");
-        UUID36.insert(16,"-");
-        UUID36.insert(20,"-");
-
+        UUID36.insert(13,"-");
+        UUID36.insert(18,"-");
+        UUID36.insert(23,"-");
         return UUID36.toString();
     }
 
-    // 获取玩家数据的封装, 支持直接输入 Name, UUID32, UUID36
+    // 获取玩家数据的封装, 支持直接输入 Name, UUID36
     public static PlayerData getPlayerData(String inp){
         if(inp.isEmpty()){return null;}
-        // 转换 UUID 格式
-        inp = ifIsUUID32toUUID36(inp);
         // 检查数据
         if(inp.length() == 36){ // uuid
             return SQL.getPlayerData(Type.DATA_UUID, inp);

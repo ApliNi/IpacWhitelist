@@ -2,9 +2,6 @@ package aplini.ipacwhitelist.util;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
-
-import static org.bukkit.Bukkit.getLogger;
 
 // Type 的索引
 enum Li {
@@ -31,6 +28,7 @@ public enum Type {
     WHITE_EXPIRED(-1, Li.NOT, "WHITE_EXPIRED"), // 白名单过期
     ERROR(-2, Li.NOT, "ERROR"), // 错误
     ALL(-3, Li.NOT, "ALL"),
+    DATA_NAME_LIMIT_EMPTY_UUID(-4, Li.NOT, "DATA_NAME_LIMIT_EMPTY_UUID"), // 查询数据, 但限定 UUID 为空
 
     // 数据列名称
     DATA_UUID(-1, Li.UUID, "UUID"), // UUID
