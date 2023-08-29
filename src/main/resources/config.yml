@@ -35,6 +35,7 @@ whitelist:
   late-join-time: 4000 # 4秒
 
   # 玩家因任何原因断开连接后需要等待多长时间才能再次加入 (毫秒
+  # 用于防止玩家在短时间内重复加入退出
   playerDisconnectToReconnectMinTime: 1000
 
 

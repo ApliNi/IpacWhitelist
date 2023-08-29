@@ -19,8 +19,8 @@ public enum Type {
     ALL(-1, "ALL"),
 
     // 数据列名称
-    UUID(-2, "UUID"), // UUID
-    NAME(-2, "NAME"), // UUID
+    DATA_UUID(-2, "UUID"), // UUID
+    DATA_NAME(-2, "NAME"), // NAME
 
     ;
 
@@ -52,5 +52,10 @@ public enum Type {
     // 获取id对应的枚举
     public static Type getType(int id){
         return TypeMap.get(id);
+    }
+
+    // 是否为参观账户
+    public static boolean isVisit(Type type){
+        return type == VISIT || type == VISIT_CONVERT || type == VISIT_BLACK;
     }
 }

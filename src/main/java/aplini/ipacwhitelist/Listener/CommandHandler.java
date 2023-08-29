@@ -87,12 +87,12 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 if(inpData.length() == 36){ // uuid
                     playerUUID = inpData;
                     playerName = getPlayerName(playerUUID); // 如果不存在则输出 null
-                    state = SQL.addPlayer(null, playerUUID);
+                    state = SQL.addPlayer(null, playerUUID, Type.WHITE);
 
                 }else if(inpData.length() <= 16){ // name
                     playerName = inpData;
                     playerUUID = getPlayerUUID(playerName); // 如果不存在则输出 null
-                    state = SQL.addPlayer(playerName, null);
+                    state = SQL.addPlayer(playerName, null, Type.WHITE);
 
                 }else{
                     sender.sendMessage(plugin.getConfig().getString("message.command.err-length", ""));
@@ -115,7 +115,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                         // 玩家在线或不在线
                         if(player != null){
                             // 修改 Type 为 WHITE, 同时更新时间
-                            SQL.addPlayer(player, -3, Type.WHITE);
+                            SQL.addPlayer(player, Type.WHITE);
                             // 运行 wl-add-convert
                             startVisitConvertFunc(plugin, playerName, playerUUID, "visit.wl-add-convert.command");
                         }else{
@@ -157,7 +157,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                 if(args[1].length() == 36){ // uuid
                     // 检查这个玩家是否存在
-                    if(getPlayerType(Type.UUID, inpData) == Type.NOT){
+                    if(getPlayerType(Type.DATA_UUID, inpData) == Type.NOT){
                         sender.sendMessage(plugin.getConfig().getString("message.command.err-note-exist", "")
                                 .replace("%player%", inpData));
                         return true;
@@ -167,7 +167,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                 }else if(inpData.length() <= 16){ // name
                     // 检查这个玩家是否存在
-                    if(getPlayerType(Type.NAME, inpData) == Type.NOT){
+                    if(getPlayerType(Type.DATA_NAME, inpData) == Type.NOT){
                         sender.sendMessage(plugin.getConfig().getString("message.command.err-note-exist", "")
                                 .replace("%player%", inpData));
                         return true;
@@ -259,10 +259,10 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
 
                 if(inpData.length() == 36){ // uuid
-                    results = getPlayerData(Type.UUID, inpData);
+                    results = getPlayerData(Type.DATA_UUID, inpData);
 
                 }else if(inpData.length() <= 16){ // name
-                    results = getPlayerData(Type.NAME, inpData);
+                    results = getPlayerData(Type.DATA_NAME, inpData);
 
                 }else{
                     sender.sendMessage(plugin.getConfig().getString("message.command.err-length", ""));

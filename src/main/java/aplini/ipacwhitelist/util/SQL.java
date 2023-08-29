@@ -89,6 +89,7 @@ public class SQL {
                         CREATE INDEX IF NOT EXISTS IDX_Type ON "player" (Type);
                         CREATE INDEX IF NOT EXISTS IDX_UUID ON "player" (UUID);
                         CREATE INDEX IF NOT EXISTS IDX_Name ON "player" (Name);
+                        CREATE INDEX IF NOT EXISTS IDX_Time ON "player" (Time);
                         """.formatted(Name_COLLATE_NOCASE)
                 ).execute();
             }else{
@@ -188,19 +189,13 @@ public class SQL {
         }
         return out;
     }
-    // 设置或修改数据
-    public static void addPlayer(Player player, long time, Type type){
-        setPlayerData(player.getName(), String.valueOf(player.getUniqueId()), time, type);
-    }
+
     // 添加玩家
-    public static Type addPlayer(String name, String UUID){
-        return setPlayerData(name, UUID, -1, WHITE);
-    }
-    public static void addPlayer(String name, String UUID, Type type){
-        setPlayerData(name, UUID, -1, type);
+    public static Type addPlayer(String name, String UUID, Type type){
+        return setPlayerData(name, UUID, -3, type);
     }
     public static void addPlayer(Player player, Type type){
-        addPlayer(player, -1, type);
+        addPlayer(player.getName(), String.valueOf(player.getUniqueId()), type);
     }
     // 移除玩家
     public static Type delPlayerName(String name){
@@ -232,9 +227,10 @@ public class SQL {
             if(results.next()){
 
                 // 白名单
-                if(results.getInt("Type") == WHITE.getID()){
-                    // 白名单上的玩家是否超时
-                    if(Util.isWhitelistedTimeout(results.getLong("Time"))){return WHITE_EXPIRED;}
+                Type type = getType(results.getInt("Type"));
+                if(type == WHITE){
+                    // 不是参观账户 && 白名单上的玩家超时
+                    if(!isVisit(type) && Util.isWhitelistedTimeout(results.getLong("Time"))){return WHITE_EXPIRED;}
 
                     // 更新名称和最后加入时间
                     PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `Name` = ?, `Time` = ? WHERE `ID` = ?;");
@@ -255,13 +251,15 @@ public class SQL {
             results = sql.executeQuery();
             if(results.next()){
 
-                // 如果uuid不为空: 名称相同但uuid不同
+                // 不存在
+                // 上面的 "如果UUID匹配" 已经确认没有相同的 UUID, 如果这里的 UUID 不为空, 则不是同一个玩家
                 if(!results.getString("UUID").isEmpty()){return NOT;}
 
                 // 白名单
-                if(results.getInt("Type") == WHITE.getID()){
+                Type type = getType(results.getInt("Type"));
+                if(type == WHITE){
                     // 白名单上的玩家是否超时
-                    if(Util.isWhitelistedTimeout(results.getLong("Time"))){return WHITE_EXPIRED;}
+                    if(!isVisit(type) && Util.isWhitelistedTimeout(results.getLong("Time"))){return WHITE_EXPIRED;}
 
                     // 更新UUID/名称和最后加入时间
                     PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `UUID` = ?, `Name` = ?, `Time` = ? WHERE `ID` = ?;");
@@ -292,8 +290,8 @@ public class SQL {
         String query;
 
         switch(inpDataType){
-            case UUID -> query = "SELECT * FROM `player` WHERE `UUID` = ? LIMIT 1;";
-            case NAME -> query = "SELECT * FROM `player` WHERE `Name` = ? LIMIT 1;";
+            case DATA_UUID -> query = "SELECT * FROM `player` WHERE `UUID` = ? LIMIT 1;";
+            case DATA_NAME -> query = "SELECT * FROM `player` WHERE `Name` = ? LIMIT 1;";
             default -> {return null;}
         }
 
@@ -324,7 +322,7 @@ public class SQL {
     }
     // 获取玩家 NAME
     public static String getPlayerName(String UUID){
-        ResultSet results = getPlayerData(Type.UUID, UUID);
+        ResultSet results = getPlayerData(Type.DATA_UUID, UUID);
         if(results == null){return null;}
         try {
             return results.getString("Name");
@@ -335,7 +333,7 @@ public class SQL {
     }
     // 获取玩家 UUID
     public static String getPlayerUUID(String Name){
-        ResultSet results = getPlayerData(Type.NAME, Name);
+        ResultSet results = getPlayerData(Type.DATA_NAME, Name);
         if(results == null){return null;}
         try {
             return results.getString("UUID");

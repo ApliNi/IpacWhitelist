@@ -111,7 +111,7 @@ public class onPlayerJoin implements Listener {
                     Player player = event.getPlayer();
                     startVisitConvertFunc(plugin, player, "visit.wl-add-convert.command");
                     // 修改 Type 为 WHITE, 同时更新时间
-                    SQL.addPlayer(player, -3, Type.WHITE);
+                    SQL.addPlayer(player, Type.WHITE);
                 }
                 // 通过白名单, 无需处理
                 // else if(state == Type.WHITE) event.setResult(PlayerLoginEvent.Result.ALLOWED); // 可能其他插件需要拒绝玩家加入
