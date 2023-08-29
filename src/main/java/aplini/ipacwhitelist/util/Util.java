@@ -3,6 +3,12 @@ package aplini.ipacwhitelist.util;
 import static aplini.ipacwhitelist.IpacWhitelist.getPlugin;
 
 public class Util {
+
+    // 获取当前时间
+    public static long getTime(){
+        return System.currentTimeMillis() / 1000;
+    }
+
     // 是否超时
     public static boolean isWhitelistedExpired(Long dbPlayerTime){
         long configTime = getPlugin().getConfig().getLong("whitelist.timeout", -1);

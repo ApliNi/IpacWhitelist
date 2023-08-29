@@ -176,7 +176,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                 if(state != Type.ERROR){
                     // 踢出玩家
-                    Player player = Bukkit.getPlayer(pd.UUID);
+                    Player player = Bukkit.getPlayer(pd.Name);
                     if(plugin.getConfig().getBoolean("whitelist.kick-on-del") && player != null){
                         player.kickPlayer(plugin.getConfig().getString("message.join.not", "").replace("%player%", player.getName()));
                     }
@@ -220,7 +220,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                 if(state != Type.ERROR){
                     // 踢出玩家
-                    Player player = Bukkit.getPlayer(pd.UUID);
+                    Player player = Bukkit.getPlayer(pd.Name);
                     if(plugin.getConfig().getBoolean("whitelist.kick-on-ban") && player != null){
                         player.kickPlayer(plugin.getConfig().getString("message.join.ban", "").replace("%player%", player.getName()));
                     }

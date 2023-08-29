@@ -7,7 +7,6 @@ import static aplini.ipacwhitelist.util.Util.ifIsUUID32toUUID36;
 // 与数据库中的数据结构相同
 // 默认数据表示此数据不可用
 public class PlayerData {
-    public boolean available = false;
     public int ID = -1;
     public Type Type = NOT;
     public Type Ban = NOT_BAN;
@@ -15,6 +14,11 @@ public class PlayerData {
     public String Name = null;
     public long Time = -1;
 
+
+    // 数据是否为空
+    public boolean isNull(){
+        return ID == -1;
+    }
 
     // 自动识别并添加玩家数据
     public void addPlayerAuto(String inpData){

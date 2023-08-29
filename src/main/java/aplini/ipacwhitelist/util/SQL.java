@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 
 import static aplini.ipacwhitelist.IpacWhitelist.getPlugin;
 import static aplini.ipacwhitelist.util.Type.*;
+import static aplini.ipacwhitelist.util.Util.getTime;
 import static org.bukkit.Bukkit.getLogger;
 
 public class SQL {
@@ -179,7 +180,7 @@ public class SQL {
                 int banID = ban != null ? ban.getID() : NOT_BAN.getID();
 
                 // 未添加, 创建记录
-                sql = connection.prepareStatement("REPLACE INTO `player` (`UUID`, `Name`, `Time`, `Type`, `banID`) VALUES (?, ?, ?, ?, ?);");
+                sql = connection.prepareStatement("REPLACE INTO `player` (`UUID`, `Name`, `Time`, `Type`, `Ban`) VALUES (?, ?, ?, ?, ?);");
                 sql.setString(1, UUID);
                 sql.setString(2, name);
                 sql.setLong(3, time);
@@ -203,97 +204,15 @@ public class SQL {
         addPlayer(player.getName(), String.valueOf(player.getUniqueId()), type);
     }
 
-
-    // 是否在白名单中
-    // 除基础数据外, 还会输出 WHITE_EXPIRED
-    public static Type isWhitelisted(String playerName, String playerUUID){
-        try {
-            PreparedStatement sql;
-            ResultSet results;
-
-            // 如果UUID匹配
-            sql = connection.prepareStatement("SELECT * FROM `player` WHERE `UUID` = ? LIMIT 1;");
-            sql.setString(1, playerUUID);
-            results = sql.executeQuery();
-            if(results.next()){
-
-                // 黑名单
-                if(getType(results.getInt("Ban")) == BAN){
-                    return BAN;
-                }
-
-                // 白名单
-                Type type = getType(results.getInt("Type"));
-                if(type == WHITE){
-                    // 不是参观账户 && 白名单上的玩家超时
-                    if(!isVisit(type) && Util.isWhitelistedExpired(results.getLong("Time"))){return WHITE_EXPIRED;}
-
-                    // 更新名称和最后加入时间
-                    PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `Name` = ?, `Time` = ? WHERE `ID` = ?;");
-                    update.setString(1, playerName);
-                    update.setLong(2, (System.currentTimeMillis() / 1000));
-                    update.setInt(3, results.getInt("ID"));
-                    update.executeUpdate();
-                    update.close();
-                    return WHITE;
-                }
-
-                return Type.getType(results.getInt("Type"));
-            }
-
-            // 如果名称匹配
-            sql = connection.prepareStatement("SELECT * FROM `player` WHERE `Name` = ? LIMIT 1;");
-            sql.setString(1, playerName);
-            results = sql.executeQuery();
-            if(results.next()){
-
-                // 不存在
-                // 上面的 "如果UUID匹配" 已经确认没有相同的 UUID, 如果这里的 UUID 不为空, 则不是同一个玩家
-                if(!results.getString("UUID").isEmpty()){return NOT;}
-
-                // 黑名单
-                if(getType(results.getInt("Ban")) == BAN){
-                    return BAN;
-                }
-
-                // 白名单
-                Type type = getType(results.getInt("Type"));
-                if(type == WHITE){
-                    // 白名单上的玩家是否超时
-                    if(!isVisit(type) && Util.isWhitelistedExpired(results.getLong("Time"))){return WHITE_EXPIRED;}
-
-                    // 更新UUID/名称和最后加入时间
-                    PreparedStatement update = connection.prepareStatement("UPDATE `player` SET `UUID` = ?, `Name` = ?, `Time` = ? WHERE `ID` = ?;");
-                    update.setString(1, playerUUID);
-                    update.setString(2, playerName); // 在第一次加入时处理名称大小写不匹配
-                    update.setLong(3, (System.currentTimeMillis() / 1000));
-                    update.setInt(4, results.getInt("ID"));
-                    update.executeUpdate();
-                    update.close();
-                    return WHITE;
-                }
-
-                return Type.getType(results.getInt("Type"));
-            }
-
-            return NOT;
-        } catch (Exception e) {
-            return ERROR;
-        }
-    }
-    public static Type isWhitelisted(Player player){
-        return isWhitelisted(player.getName(), player.getUniqueId().toString());
-    }
-
-
     // 获取一个玩家的所有数据
-    public static ResultSet getPlayerDataResultSet(Type inpDataType, String inpData){
+    public static PlayerData getPlayerData(Type inpDataType, String inpData){
         String query;
+        PlayerData pd = new PlayerData();
 
         switch(inpDataType){
             case DATA_UUID -> query = "SELECT * FROM `player` WHERE `UUID` = ? LIMIT 1;";
             case DATA_NAME -> query = "SELECT * FROM `player` WHERE `Name` = ? LIMIT 1;";
-            default -> {return null;}
+            default -> {return pd;}
         }
 
         // 查询
@@ -302,78 +221,66 @@ public class SQL {
             sql.setString(1, inpData);
             ResultSet results = sql.executeQuery();
             if(results.next()){
-                return results;
+                pd.ID = results.getInt("ID");
+                pd.Type = getType(results.getInt("Type"));
+                pd.Ban = getBan(results.getInt("Ban"));
+                pd.UUID = results.getString("UUID");
+                pd.Name = results.getString("Name");
+                pd.Time = results.getLong("Time");
             }
             sql.close();
         } catch (Exception e) {
             getLogger().warning(e.getMessage());
         }
-        return null;
-    }
-    // 将获取到的数据打包到 Map 中
-    public static PlayerData getPlayerData(Type inpDataType, String inpData){
-        ResultSet results = getPlayerDataResultSet(inpDataType, inpData);
-        PlayerData pd = new PlayerData();
-        if(results == null){return pd;}
-
-        try {
-            pd.available = true;
-            pd.ID = results.getInt("ID");
-            pd.Type = getType(results.getInt("Type"));
-            pd.Ban = getBan(results.getInt("Ban"));
-            pd.UUID = results.getString("UUID");
-            pd.Name = results.getString("Name");
-            pd.Time = results.getLong("Time");
-        } catch (Exception e) {
-            getLogger().warning(e.getMessage());
-        }
-
         return pd;
     }
-//    // 获取玩家 Type
-//    public static Type getPlayerType(Type inpDataType, String inpData){
-//        ResultSet results = getPlayerDataResultSet(inpDataType, inpData);
-//        if(results == null){return NOT;}
-//        try {
-//            return Type.getType(results.getInt("Type"));
-//        } catch (Exception e) {
-//            getLogger().warning(e.getMessage());
-//        }
-//        return NOT;
-//    }
-//    // 获取玩家被封禁的状态
-//    public static Type getPlayerBan(Type inpDataType, String inpData){
-//        ResultSet results = getPlayerDataResultSet(inpDataType, inpData);
-//        if(results == null){return NOT_BAN;}
-//        try {
-//            return Type.getBan(results.getInt("Ban"));
-//        } catch (Exception e) {
-//            getLogger().warning(e.getMessage());
-//        }
-//        return NOT_BAN;
-//    }
-//    // 获取玩家 NAME
-//    public static String getPlayerName(String UUID){
-//        ResultSet results = getPlayerDataResultSet(Type.DATA_UUID, UUID);
-//        if(results == null){return null;}
-//        try {
-//            return results.getString("Name");
-//        } catch (Exception e) {
-//            getLogger().warning(e.getMessage());
-//        }
-//        return null;
-//    }
-//    // 获取玩家 UUID
-//    public static String getPlayerUUID(String Name){
-//        ResultSet results = getPlayerDataResultSet(Type.DATA_NAME, Name);
-//        if(results == null){return null;}
-//        try {
-//            return results.getString("UUID");
-//        } catch (Exception e) {
-//            getLogger().warning(e.getMessage());
-//        }
-//        return null;
-//    }
+
+    // 是否在白名单中
+    public static Type isInWhitelisted(String playerName, String playerUUID){
+
+        PlayerData pd;
+
+        // 如果 UUID 匹配
+        pd = getPlayerData(DATA_UUID, playerUUID);
+        if(!pd.isNull()){
+            // 黑名单
+            if(pd.Ban == BAN){return BAN;}
+            // 白名单
+            if(pd.Type == WHITE){
+                // 不是参观账户 && 白名单上的玩家超时
+                if(!isVisit(pd.Type) && Util.isWhitelistedExpired(pd.Time)){return WHITE_EXPIRED;}
+                // 更新数据
+                pd.Name = playerName;
+                pd.Time = getTime();
+                pd.save();
+            }
+            return pd.Type;
+        }
+
+        // 如果 Name 匹配
+        pd = getPlayerData(DATA_NAME, playerName);
+        if(!pd.isNull()){
+            // 如果UUID不为空: 是同名的其他玩家
+            if(!pd.UUID.isEmpty()){return NOT;}
+            // 黑名单
+            if(pd.Ban == BAN){return BAN;}
+            // 白名单
+            if(pd.Type == WHITE){
+                // 不是参观账户 && 白名单上的玩家超时
+                if(!isVisit(pd.Type) && Util.isWhitelistedExpired(pd.Time)){return WHITE_EXPIRED;}
+                // 更新数据
+                pd.UUID = playerUUID;
+                pd.Time = getTime();
+                pd.save();
+            }
+            return pd.Type;
+        }
+
+        return NOT;
+    }
+    public static Type isInWhitelisted(Player player){
+        return isInWhitelisted(player.getName(), player.getUniqueId().toString());
+    }
 
 
     // 遍历数据

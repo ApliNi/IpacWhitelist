@@ -72,7 +72,7 @@ public class onPlayerJoin implements Listener {
         }
 
         // 白名单逻辑
-        Type state = SQL.isWhitelisted(event.getPlayer());
+        Type state = SQL.isInWhitelisted(event.getPlayer());
         switch(state){
 
             case NOT, VISIT -> { // 不存在 / 参观账户
