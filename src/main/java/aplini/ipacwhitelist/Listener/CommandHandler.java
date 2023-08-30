@@ -23,6 +23,7 @@ import static aplini.ipacwhitelist.IpacWhitelist.allowJoin;
 import static aplini.ipacwhitelist.util.EventFunc.startVisitConvertFunc;
 import static aplini.ipacwhitelist.util.SQL.whileDataForList;
 import static aplini.ipacwhitelist.util.Util.ifIsUUID32toUUID36;
+import static org.bukkit.Bukkit.getLogger;
 
 public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
     private static IpacWhitelist plugin;
@@ -36,7 +37,8 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 "ban",
                 "unban",
                 "info",
-                "list"
+                "list",
+                "clean_visit"
         );
     }
 
@@ -112,6 +114,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                         }else{
                             // 标记为 VISIT_CONVERT, 等待下一次加入时处理 (在 onPlayerJoin 中)
                             pd.Type = Type.VISIT_CONVERT;
+                            getLogger().info("[IpacWhitelist] "+ pd.Name +" 不在线, wl-add-convert 将推迟到玩家重新上线时运行");
                         }
                         sender.sendMessage(plugin.getConfig().getString("message.command.add-reset-visit", "").replace("%player%", pd.Name));
                     }
@@ -347,6 +350,21 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                                 .replace("%Time%", String.valueOf(results.getLong("Time"))));
                     } catch (SQLException ignored) {}
                 });
+
+                return true;
+            }
+
+            // 清理参观账户的数据
+            case "clean_visit" -> {
+                if(!sender.hasPermission("IpacWhitelist.command.clean_visit")){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-permission", ""));
+                    return true;
+                }
+
+                if (args.length != 2) {
+                    sender.sendMessage("/wl clean_visit ");
+                    return true;
+                }
 
                 return true;
             }

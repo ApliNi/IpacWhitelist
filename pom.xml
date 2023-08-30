@@ -6,7 +6,7 @@
 
     <groupId>ApliNi</groupId>
     <artifactId>IpacWhitelist</artifactId>
-    <version>2.2.1</version>
+    <version>3.0.1</version>
     <packaging>jar</packaging>
 
     <name>IpacWhitelist</name>
