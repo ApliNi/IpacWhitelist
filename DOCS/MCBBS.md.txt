@@ -1,3 +1,26 @@
+[markdown]# IpacWhitelist
+
+https://github.com/ApliNi/IpacWhitelist
+
+---
+
+### 指令列表
+- `/wl` - 主命令
+- `/wl reload` - 重载配置
+- `/wl add <playerName|playerUUID>` - 添加到白名单, uuid为空时自动获取
+- `/wl del <playerName|playerUUID>` - 取消玩家的白名单
+- `/wl ban <playerName|playerUUID>` - 封禁玩家
+- `/wl unban <playerName|playerUUID>` - 解封玩家
+- `/wl info <playerName|playerUUID>` - 查看玩家数据
+- `/wl list <VISIT|WHITE|BLACK|VISIT_CONVERT|VISIT_BLACK|*> <num|ALL>` - 列出玩家数据
+- `/wl reconnect_database` - 重新连接数据库
+
+> 支持使用 32 或 36 位的 UUID
+
+---
+
+### 配置
+```yaml
 # IpacWhitelist
 
 [[下载]](https://github.com/ApliNi/IpacWhitelist/actions) - 选择第一个, 滑动到最下方, 下载压缩包文件, 使用压缩包中的第一个.jar即可
@@ -137,9 +160,9 @@ playerJoinMessage:
   quitLockFreedTime: 2000
 
   # 参观账户是否可以收到自己的加入消息
-  visitOwnJoinMessage: false
+  visit**inMessage: false
   # 玩家是否可以收到自己的加入消息
-  ownJoinMessage: true
+  **inMessage: true
 
   # 事件触发时将发出广播消息
   # 如果 message 留空, 则忽略这个事件
@@ -150,7 +173,7 @@ playerJoinMessage:
     # IpacWL 参观账户登录服务器
     onVisitPlayerJoin:
       message: '§6IpacEL §f> §a%player% §b使用参观账户加入游戏'
-    # AuthMe 玩家登录或注册成功
+    # AuthMe 玩家登录或**
     onAuthMeLoginEvent: # 需要启用 hook.AuthMe
       message: '§6IpacEL §f> §a%player% §b加入游戏'
     # 玩家加入事件. 如果使用 AuthMe, 同时这里留空, 就能在玩家登录后显示加入游戏
@@ -244,3 +267,9 @@ permissions:
     description: '使用 /wl clean_visit 指令'
     default: op
 ```
+### MCBBS
+
+本插件所用所有代码均为原创,不存在借用/抄袭等行为
+本插件为非盈利性插件，免费发布，严禁销售和转卖
+
+[/markdown]
