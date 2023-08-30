@@ -1,18 +1,20 @@
 # IpacWhitelist
+带有许多功能的白名单插件. 标签: \[白名单, 参观账户, Ban, AuthMe 集成, SQLite, 离线, 正版, Geyser\]
+- 同时支持正版账号/离线账号/Geyser账号. 
+- 支持查看/导出数据
 
-[[下载]](https://github.com/ApliNi/IpacWhitelist/actions) - 选择第一个, 滑动到最下方, 下载压缩包文件, 使用压缩包中的第一个.jar即可
+下载: [[发布版本]](https://modrinth.com/plugin/ipacwhitelist) -- [[开发版本]](https://github.com/ApliNi/IpacWhitelist/actions)
 
 
 ### 指令列表
 - `/wl` - 主命令
-- `/wl reload` - 重载配置
+- `/wl reload` - 重载配置, 同时重新连接数据库
 - `/wl add <playerName|playerUUID>` - 添加到白名单, uuid为空时自动获取
 - `/wl del <playerName|playerUUID>` - 取消玩家的白名单
 - `/wl ban <playerName|playerUUID>` - 封禁玩家
 - `/wl unban <playerName|playerUUID>` - 解封玩家
 - `/wl info <playerName|playerUUID>` - 查看玩家数据
 - `/wl list <VISIT|WHITE|BLACK|VISIT_CONVERT|VISIT_BLACK|*> <num|ALL>` - 列出玩家数据
-- `/wl reconnect_database` - 重新连接数据库
 
 > 支持使用 32 或 36 位的 UUID
 
