@@ -20,6 +20,15 @@
 
 ---
 
+### 参观账户
+推荐让参观账户使用观察模式加入服务器, 特别是红石服务器. 因为还无法解决生存模式下玩家碰撞实体的问题.  
+
+可以配合这些插件使用: 
+- [[LuckPerms]](https://luckperms.net/) - 权限组插件
+- [[IpacPER]](https://github.com/ApliNi/IpacPER) - 用于防止参观账户获取成就, 使用观察模式传送功能, 修复安装 OpenInv 后无法使用部分箱子菜单
+- [[ProtocolStringReplacer]](https://github.com/Rothes/ProtocolStringReplacer) - 消息过滤/编辑插件. 用于防止参观账户收到不必要的消息, 比如可能出现的登录注册消息
+- [[CommandWhitelist]](https://github.com/YouHaveTrouble/CommandWhitelist) - 命令白名单. 隐藏和防止执行命令
+
 ### 配置
 ```yaml
 # 数据库
