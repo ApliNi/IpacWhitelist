@@ -95,7 +95,7 @@ public class onVisitPlayerJoin implements Listener {
         return false;
     }
 
-    @EventHandler(priority = EventPriority.HIGH) // 玩家加入
+    @EventHandler(priority = EventPriority.LOWEST) // 玩家加入
     public void onVisitPlayerJoinEvent(PlayerJoinEvent event) {
         UUID playerUUID = event.getPlayer().getUniqueId();
 
@@ -110,7 +110,7 @@ public class onVisitPlayerJoin implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH) // 玩家退出
+    @EventHandler(priority = EventPriority.LOWEST) // 玩家退出
     public void onVisitPlayerQuitEvent(PlayerQuitEvent event) {
         UUID playerUUID = event.getPlayer().getUniqueId();
 
