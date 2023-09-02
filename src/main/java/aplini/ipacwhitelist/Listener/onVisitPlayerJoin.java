@@ -78,17 +78,17 @@ public class onVisitPlayerJoin implements Listener {
             String Hostname = event.getHostname();
             if(!plugin.getConfig().getStringList("visit.limit-hostname.list").contains(Hostname)){
                 getLogger().info("[IpacWhitelist] %s 参观账户使用非法主机名: %s".formatted(event.getPlayer().getName(), Hostname));
-                event.setKickMessage(plugin.getConfig().getString("message.visit.illegal-hostname", "")
-                        .replace("%player%", event.getPlayer().getName()));
-                event.setResult(PlayerLoginEvent.Result.KICK_WHITELIST);
+                event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST,
+                        plugin.getConfig().getString("message.visit.illegal-hostname", "")
+                                .replace("%player%", event.getPlayer().getName()));
                 return true;
             }
         }
 
         // 参观账户队列已满
         if(visitList.size() == plugin.getConfig().getInt("visit.max-visit-player")){
-            event.setKickMessage(plugin.getConfig().getString("message.visit.full", ""));
-            event.setResult(PlayerLoginEvent.Result.KICK_FULL);
+            event.disallow(PlayerLoginEvent.Result.KICK_FULL,
+                    plugin.getConfig().getString("message.visit.full", ""));
             return true;
         }
 
