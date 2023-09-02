@@ -344,7 +344,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                                 .replace("%num%", i.toString())
                                 .replace("%ID%", String.valueOf(results.getInt("ID")))
                                 .replace("%Type%", Type.getType(results.getInt("Type")).getName())
-                                .replace("%Ban%", Type.getType(results.getInt("Ban")).getName())
+                                .replace("%Ban%", Type.getBan(results.getInt("Ban")).getName())
                                 .replace("%UUID%", results.getString("UUID"))
                                 .replace("%Name%", results.getString("Name"))
                                 .replace("%Time%", String.valueOf(results.getLong("Time"))));
