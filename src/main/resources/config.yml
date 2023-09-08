@@ -145,6 +145,47 @@ playerJoinMessage:
       message: '§6IpacEL §f> §a%player% §b跑了'
 
 
+
+# 模块配置
+dev:
+  # 删除一个玩家的所有数据
+  deletePlayerDataAll:
+    # 只删除玩家离线超过指定时间的数据, 防止删除后服务器又进行保存 (毫秒
+    deleteDataTimeout: 43200000 # 12小时. 它必须大于数据缓存时间
+    # true=在删除期间锁定正在删除的账户, false=在数据删除期间完全禁用参观账户
+    deletingLockPlayer: true
+    # 删除两个参观账户之间间隔多长时间, 然后取消这个玩家的锁定, 有些插件会使用异步处理删除请求 (毫秒
+    intervalTime: 100
+    # 执行指令与删除文件之间间隔多长时间 (毫秒
+    intervalTime2: 150
+
+    # 执行哪些指令, 来删除其他插件数据. 可用变量: %playerUUID%, %playerName%
+    playerDataCommand:
+#      - 'authme unregister %playerName%' # AuthMe: 取消注册这个玩家
+
+    # 玩家数据文件的路径. 可用变量: %playerUUID%, %playerName%
+    playerDataFilePlugin:
+      # world 存档
+      - 'world/playerdata/%playerUUID%.dat'
+      - 'world/playerdata/%playerUUID%.dat_old'
+      - 'world/advancements/%playerUUID%.json'
+      - 'world/stats/%playerUUID%.json'
+      # Essentials 插件数据
+#      - 'plugins/Essentials/userdata/%playerUUID%.yml'
+
+    # 如果你使用一些会将玩家数据存储在每个world目录里的多世界插件, 则可以使用这个
+    # 玩家存档路径. 可用变量: %worldRoot%, %playerUUID%, %playerName%
+    playerDataFile:
+      # 主世界
+#      - '%worldRoot%/playerdata/%playerUUID%.dat'
+#      - '%worldRoot%/playerdata/%playerUUID%.dat_old'
+#      - '%worldRoot%/advancements/%playerUUID%.json'
+#      - '%worldRoot%/stats/%playerUUID%.json'
+      # 下界和末地
+#      - '%worldRoot%/DIM-1/playerdata/%playerUUID%.dat'
+#      - '%worldRoot%/DIM1/playerdata/%playerUUID%.dat'
+
+
 # 消息
 message:
   # 指令消息
@@ -160,6 +201,8 @@ message:
     reload: '§6IpacEL §f> IpacWhitelist 配置和数据库重载完成'
     info: '§6IpacEL §f> §a%player%§7: §b{ID: %ID%, Type: "%Type%", Ban: "%Ban%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
     list: '§6IpacEL §f> §a%num% §7-> §b{ID: %ID%, Type: "%Type%", Ban: "%Ban%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
+    clean-visit: '§6IpacEL §f> §b数据删除程序将在后台执行'
+    clean-visit-ok: '§6IpacEL §f> §a共删除了 §b%num% §a个参观账户及其数据'
     err: '§6IpacEL §f> §b内部错误'
     err-ban: '§6IpacEL §f> §b此账户被封禁, 执行此操作需要解封'
     err-length: '§6IpacEL §f> §b名称或UUID长度异常'
@@ -179,6 +222,7 @@ message:
     err-name: '§6IpacEL §f> §b无效的名称: §a%player%'
     err-name-visit: '§6IpacEL §f> §b无效的名称: §a%player%'
     starting: '§6IpacEL §f> §b服务器正在启动'
+    clean-visit: '§6IpacEL §f> §b正在清理数据... 请稍后再试'
 
   # 参观账户加入
   visit:

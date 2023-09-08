@@ -15,7 +15,7 @@ import java.util.UUID;
 
 import static aplini.ipacwhitelist.hook.hookAuthMe.autoLogin;
 import static aplini.ipacwhitelist.hook.hookAuthMe.autoRegister;
-import static aplini.ipacwhitelist.util.EventFunc.startAsyncEventFunc;
+import static aplini.ipacwhitelist.Func.EventFunc.startAsyncEventFunc;
 import static aplini.ipacwhitelist.util.Type.VISIT;
 import static org.bukkit.Bukkit.getLogger;
 
@@ -23,6 +23,10 @@ public class onVisitPlayerJoin implements Listener {
     private static IpacWhitelist plugin;
     // 当前在线的参观账户uuid列表
     static final List<UUID> visitList = new ArrayList<>();
+    // 临时禁止登录的参观账户uuid列表
+    static final List<String> cleanVisitList = new ArrayList<>();
+    // 临时禁用参观账户
+    static boolean disabledVisit = false;
 
     public onVisitPlayerJoin(IpacWhitelist plugin){
         onVisitPlayerJoin.plugin = plugin;
@@ -83,6 +87,13 @@ public class onVisitPlayerJoin implements Listener {
                                 .replace("%player%", event.getPlayer().getName()));
                 return true;
             }
+        }
+
+        // 这个参观账户正在清理数据, 全局禁用 or 禁用当前玩家
+        if(disabledVisit || cleanVisitList.contains(event.getPlayer().getUniqueId().toString())){
+            event.disallow(PlayerLoginEvent.Result.KICK_OTHER,
+                    plugin.getConfig().getString("message.visit.clean-visit", ""));
+            return true;
         }
 
         // 参观账户队列已满

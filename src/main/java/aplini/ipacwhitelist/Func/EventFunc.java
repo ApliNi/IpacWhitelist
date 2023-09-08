@@ -1,4 +1,4 @@
-package aplini.ipacwhitelist.util;
+package aplini.ipacwhitelist.Func;
 
 import aplini.ipacwhitelist.IpacWhitelist;
 import org.bukkit.Bukkit;
@@ -43,9 +43,8 @@ public class EventFunc {
     // 参观账户转换相关处理程序
     public static void startVisitConvertFunc(IpacWhitelist plugin, String playerName, String playerUUID, String configPath) {
         for(String li : plugin.getConfig().getStringList(configPath)){
-            Bukkit.getScheduler().callSyncMethod(plugin, () -> Bukkit.dispatchCommand(
-                    Bukkit.getConsoleSender(),
-                    li
+            Bukkit.getScheduler().callSyncMethod(plugin, () ->
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), li
                             .replace("%playerName%", playerName)
                             .replace("%playerUUID%", playerUUID)));
         }

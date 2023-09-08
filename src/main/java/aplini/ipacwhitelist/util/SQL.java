@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.sql.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -119,6 +120,23 @@ public class SQL {
     }
 
 
+    // 打包一个玩家的数据， 从数据库到 PlayerData 类型
+    public static PlayerData packPlayerData(ResultSet results){
+        PlayerData pd = new PlayerData();
+        // 查询
+        try {
+            pd.ID = results.getInt("ID");
+            pd.Type = getType(results.getInt("Type"));
+            pd.Ban = getBan(results.getInt("Ban"));
+            pd.UUID = results.getString("UUID");
+            pd.Name = results.getString("Name");
+            pd.Time = results.getLong("Time");
+        } catch (Exception e) {
+            getLogger().warning(e.getMessage());
+        }
+        return pd;
+    }
+
 
     // 获取一个玩家的所有数据
     public static PlayerData getPlayerData(Type inpDataType, String inpData){
@@ -136,15 +154,7 @@ public class SQL {
         try {
             PreparedStatement sql = connection.prepareStatement(query);
             sql.setString(1, inpData);
-            ResultSet results = sql.executeQuery();
-            if(results.next()){
-                pd.ID = results.getInt("ID");
-                pd.Type = getType(results.getInt("Type"));
-                pd.Ban = getBan(results.getInt("Ban"));
-                pd.UUID = results.getString("UUID");
-                pd.Name = results.getString("Name");
-                pd.Time = results.getLong("Time");
-            }
+            pd = packPlayerData(sql.executeQuery());
             sql.close();
         } catch (Exception e) {
             getLogger().warning(e.getMessage());
@@ -221,33 +231,46 @@ public class SQL {
 
     // 遍历数据
     public interface whileDataForListInterface {
-        void test(ResultSet results);
+        void test(PlayerData pd);
     }
-    public static void whileDataForList(Type type, int maxLine, whileDataForListInterface whileDataForListInterface){
-        String query;
-        String limit = maxLine != -1 ? ("LIMIT "+ maxLine) : "";
-
-        if(type == ALL){
-            query = "SELECT * FROM `player` %s;".formatted(limit);
-        }else{
-            query = "SELECT * FROM `player` WHERE (`Type` = %s) %s;".formatted(type.getID(), limit);
-        }
-
+    public interface whileDataForListInterfaceEnd {
+        void test();
+    }
+    public static void whileDataForList(PreparedStatement sql, whileDataForListInterface func, whileDataForListInterfaceEnd funcEnd){
         // 查询
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             try {
-                PreparedStatement sql = connection.prepareStatement(query);
                 ResultSet results = sql.executeQuery();
                 while(results.next()){
-                    whileDataForListInterface.test(results);
+                    PlayerData pd = packPlayerData(results);
+                    func.test(pd);
                 }
                 sql.close();
             } catch (Exception e) {
                 getLogger().warning(e.getMessage());
             }
         });
-        executor.shutdown();
+        future.join(); // 等待运行完毕
+
+        // 运行结束
+        funcEnd.test();
+    }
+    public static void whileDataForList(Type type, int maxLine, whileDataForListInterface func, whileDataForListInterfaceEnd funcEnd){
+        String query;
+        String limit = maxLine != -1 ? ("LIMIT "+ maxLine) : "";
+
+        query = switch (type) {
+            case ALL -> "SELECT * FROM `player` %s;".formatted(limit);
+            default -> "SELECT * FROM `player` WHERE (`Type` = %s) %s;".formatted(type.getID(), limit);
+        };
+
+        try {
+            PreparedStatement sql = connection.prepareStatement(query);
+            whileDataForList(sql, func, funcEnd);
+
+        } catch (SQLException e) {
+            getLogger().warning(e.getMessage());
+        }
     }
 
 

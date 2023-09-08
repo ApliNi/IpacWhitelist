@@ -43,7 +43,6 @@ public class PlayerData {
     // 保存数据到数据库
     public void save(){
         SQL.savePlayerData(this);
-//        return SQL.setPlayerData(Name, UUID, Time, Type, Ban);
     }
 
     // 设置白名单状态, 并返回 this

@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static aplini.ipacwhitelist.IpacWhitelist.allowJoin;
-import static aplini.ipacwhitelist.util.EventFunc.startVisitConvertFunc;
+import static aplini.ipacwhitelist.Func.EventFunc.startVisitConvertFunc;
 import static org.bukkit.Bukkit.getLogger;
 
 public class onPlayerJoin implements Listener {

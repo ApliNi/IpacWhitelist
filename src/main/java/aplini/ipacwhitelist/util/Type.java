@@ -27,7 +27,7 @@ public enum Type {
     // 表示方法
     WHITE_EXPIRED(-1, Li.NOT, "WHITE_EXPIRED"), // 白名单过期
     ERROR(-2, Li.NOT, "ERROR"), // 错误
-    ALL(-3, Li.NOT, "ALL"),
+    ALL(-3, Li.NOT, "ALL"), // 遍历账户
     DATA_NAME_LIMIT_EMPTY_UUID(-4, Li.NOT, "DATA_NAME_LIMIT_EMPTY_UUID"), // 查询数据, 但限定 UUID 为空
 
     // 数据列名称

@@ -14,14 +14,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
+import static aplini.ipacwhitelist.Func.CleanPlayerData.deletePlayerDataAll;
 import static aplini.ipacwhitelist.IpacWhitelist.allowJoin;
-import static aplini.ipacwhitelist.util.EventFunc.startVisitConvertFunc;
+import static aplini.ipacwhitelist.Func.EventFunc.startVisitConvertFunc;
+import static aplini.ipacwhitelist.Listener.onVisitPlayerJoin.cleanVisitList;
 import static aplini.ipacwhitelist.util.SQL.whileDataForList;
+import static aplini.ipacwhitelist.util.Util.getTime;
 import static aplini.ipacwhitelist.util.Util.ifIsUUID32toUUID36;
 import static org.bukkit.Bukkit.getLogger;
 
@@ -337,18 +345,19 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 int maxLine = Integer.parseInt(inp2);
 
                 AtomicInteger i = new AtomicInteger();
-                whileDataForList(type, maxLine, (results) -> {
-                    i.getAndIncrement();
-                    try {
+                CompletableFuture.runAsync(() -> {
+                    whileDataForList(type, maxLine, (pd) -> {
+                        i.getAndIncrement();
                         sender.sendMessage(plugin.getConfig().getString("message.command.list", "")
                                 .replace("%num%", i.toString())
-                                .replace("%ID%", String.valueOf(results.getInt("ID")))
-                                .replace("%Type%", Type.getType(results.getInt("Type")).getName())
-                                .replace("%Ban%", Type.getBan(results.getInt("Ban")).getName())
-                                .replace("%UUID%", results.getString("UUID"))
-                                .replace("%Name%", results.getString("Name"))
-                                .replace("%Time%", String.valueOf(results.getLong("Time"))));
-                    } catch (SQLException ignored) {}
+                                .replace("%ID%", String.valueOf(pd.ID))
+                                .replace("%Type%", pd.Type.getName())
+                                .replace("%Ban%", pd.Ban.getName())
+                                .replace("%UUID%", pd.UUID)
+                                .replace("%Name%", pd.Name)
+                                .replace("%Time%", String.valueOf(pd.Time)));
+                    }, () -> {
+                    });
                 });
 
                 return true;
@@ -361,10 +370,71 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                     return true;
                 }
 
-                if (args.length != 2) {
-                    sender.sendMessage("/wl clean_visit ");
+                if(args.length != 1){
+                    sender.sendMessage("/wl clean_visit");
                     return true;
                 }
+
+                sender.sendMessage(plugin.getConfig().getString("message.command.clean-visit", ""));
+
+                // 是否禁用参观账户
+                if(!plugin.getConfig().getBoolean("dev.deletePlayerDataAll.deletingLockPlayer", true)){
+                    onVisitPlayerJoin.disabledVisit = true;
+                }
+
+                // 获取参观账户过期的时间位置
+                long visitExpiredTime = getTime() - plugin.getConfig().getLong("dev.deletePlayerDataAll.deleteDataTimeout", 43200000);
+
+                // 匹配 达到可删除时间且没有被封禁的参观账户
+                PreparedStatement sql;
+                try {
+                    sql = SQL.connection.prepareStatement("SELECT * FROM `player` WHERE `Type` = ? AND `Ban` = ? AND `UUID` != '' AND `Time` < ?;");
+                    sql.setInt(1, Type.VISIT.getID());
+                    sql.setInt(2, Type.NOT_BAN.getID());
+                    sql.setLong(3, visitExpiredTime);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+
+                // 遍历所有数据
+                AtomicInteger i = new AtomicInteger();
+                CompletableFuture.runAsync(() -> {
+                    whileDataForList(sql, (pd) -> {
+                        if(Objects.equals(pd.UUID, "")){
+                            return;
+                        }
+                        // 锁定这个参观账户
+                        onVisitPlayerJoin.cleanVisitList.add(pd.UUID);
+
+                        // 开始清理数据 //
+                        i.getAndIncrement();
+                        // 删除文件和运行指令
+                        deletePlayerDataAll(plugin, i, pd);
+                        // 删除账户
+                        pd.Type = Type.NOT;
+                        pd.save();
+
+                        // 清理结束, 等待指定时间
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("dev.deletePlayerDataAll.intervalTime", 100));
+                        } catch (InterruptedException ignored) {
+                        }
+
+                        // 取消锁定
+                        onVisitPlayerJoin.cleanVisitList.remove(pd.UUID);
+
+                    }, () -> {
+                        // 运行结束 //
+
+                        // 恢复参观账户
+                        if (!plugin.getConfig().getBoolean("dev.deletePlayerDataAll.deletingLockPlayer", true)) {
+                            onVisitPlayerJoin.disabledVisit = false;
+                        }
+
+                        sender.sendMessage(plugin.getConfig().getString("message.command.clean-visit-ok", "")
+                                .replace("%num%", i.toString()));
+                    });
+                });
 
                 return true;
             }
