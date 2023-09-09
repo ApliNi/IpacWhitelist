@@ -7,7 +7,6 @@ import aplini.ipacwhitelist.Listener.onVisitPlayerJoin;
 import aplini.ipacwhitelist.hook.hookAuthMe;
 import aplini.ipacwhitelist.util.SQL;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;
@@ -16,8 +15,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-
-import static org.bukkit.Bukkit.getServer;
 
 public class IpacWhitelist extends JavaPlugin implements Listener {
     private static IpacWhitelist plugin;

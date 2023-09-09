@@ -1,7 +1,5 @@
 # 数据库
 sql:
-  # sqlite, 暂不支持 mysql
-  db: sqlite
   # 使 Name 大小写不敏感, 同时影响白名单和指令. 仅可在建表时修改
   Name_COLLATE_NOCASE: true
 

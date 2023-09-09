@@ -18,16 +18,14 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import static aplini.ipacwhitelist.Func.CleanPlayerData.deletePlayerDataAll;
-import static aplini.ipacwhitelist.IpacWhitelist.allowJoin;
 import static aplini.ipacwhitelist.Func.EventFunc.startVisitConvertFunc;
-import static aplini.ipacwhitelist.Listener.onVisitPlayerJoin.cleanVisitList;
+import static aplini.ipacwhitelist.IpacWhitelist.allowJoin;
 import static aplini.ipacwhitelist.util.SQL.whileDataForList;
 import static aplini.ipacwhitelist.util.Util.getTime;
 import static aplini.ipacwhitelist.util.Util.ifIsUUID32toUUID36;
@@ -345,20 +343,19 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 int maxLine = Integer.parseInt(inp2);
 
                 AtomicInteger i = new AtomicInteger();
-                CompletableFuture.runAsync(() -> {
-                    whileDataForList(type, maxLine, (pd) -> {
-                        i.getAndIncrement();
-                        sender.sendMessage(plugin.getConfig().getString("message.command.list", "")
-                                .replace("%num%", i.toString())
-                                .replace("%ID%", String.valueOf(pd.ID))
-                                .replace("%Type%", pd.Type.getName())
-                                .replace("%Ban%", pd.Ban.getName())
-                                .replace("%UUID%", pd.UUID)
-                                .replace("%Name%", pd.Name)
-                                .replace("%Time%", String.valueOf(pd.Time)));
-                    }, () -> {
-                    });
-                });
+                CompletableFuture.runAsync(() ->
+                        whileDataForList(type, maxLine, (pd) -> {
+                            i.getAndIncrement();
+                            sender.sendMessage(plugin.getConfig().getString("message.command.list", "")
+                                    .replace("%num%", i.toString())
+                                    .replace("%ID%", String.valueOf(pd.ID))
+                                    .replace("%Type%", pd.Type.getName())
+                                    .replace("%Ban%", pd.Ban.getName())
+                                    .replace("%UUID%", pd.UUID)
+                                    .replace("%Name%", pd.Name)
+                                    .replace("%Time%", String.valueOf(pd.Time)));
+                }, () -> {
+                }));
 
                 return true;
             }
@@ -398,9 +395,9 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                 // 遍历所有数据
                 AtomicInteger i = new AtomicInteger();
-                CompletableFuture.runAsync(() -> {
-                    whileDataForList(sql, (pd) -> {
-                        if(Objects.equals(pd.UUID, "")){
+                CompletableFuture.runAsync(() ->
+                        whileDataForList(sql, (pd) -> {
+                            if(Objects.equals(pd.UUID, "")){
                             return;
                         }
                         // 锁定这个参观账户
@@ -417,24 +414,22 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                         // 清理结束, 等待指定时间
                         try {
                             TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("dev.deletePlayerDataAll.intervalTime", 100));
-                        } catch (InterruptedException ignored) {
-                        }
+                        } catch (InterruptedException ignored) {}
 
                         // 取消锁定
                         onVisitPlayerJoin.cleanVisitList.remove(pd.UUID);
 
-                    }, () -> {
-                        // 运行结束 //
+                }, () -> {
+                    // 运行结束 //
 
-                        // 恢复参观账户
-                        if (!plugin.getConfig().getBoolean("dev.deletePlayerDataAll.deletingLockPlayer", true)) {
-                            onVisitPlayerJoin.disabledVisit = false;
-                        }
+                    // 恢复参观账户
+                    if (!plugin.getConfig().getBoolean("dev.deletePlayerDataAll.deletingLockPlayer", true)) {
+                        onVisitPlayerJoin.disabledVisit = false;
+                    }
 
-                        sender.sendMessage(plugin.getConfig().getString("message.command.clean-visit-ok", "")
-                                .replace("%num%", i.toString()));
-                    });
-                });
+                    sender.sendMessage(plugin.getConfig().getString("message.command.clean-visit-ok", "")
+                            .replace("%num%", i.toString()));
+                }));
 
                 return true;
             }

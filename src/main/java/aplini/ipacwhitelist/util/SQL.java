@@ -5,8 +5,6 @@ import org.bukkit.entity.Player;
 import java.io.File;
 import java.sql.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static aplini.ipacwhitelist.IpacWhitelist.getPlugin;
 import static aplini.ipacwhitelist.util.Type.*;
@@ -56,63 +54,39 @@ public class SQL {
     // 初始化数据库
     public static synchronized void initialize() {
         try {
+            // 使用 WAL 模式. 自动复用碎片空间
+            connection.prepareStatement("""
+                    PRAGMA journal_mode = WAL;
+                    PRAGMA auto_vacuum = 2;
+                    """
+            ).execute();
 
-//            String db = getPlugin().getConfig().getString("sql.db", "sqlite");
-            String db = "sqlite";
+            // 重新连接数据库
+            reconnect();
 
-            // SQLITE
-            if(db.equalsIgnoreCase("sqlite")){
+            // 是否启用大小写不敏感
+            String Name_COLLATE_NOCASE =
+                    getPlugin().getConfig().getBoolean("sql.Name_COLLATE_NOCASE", true)
+                            ? "COLLATE NOCASE" : "";
 
-                // 使用 WAL 模式. 自动复用碎片空间
-                connection.prepareStatement("""
-                        PRAGMA journal_mode = WAL;
-                        PRAGMA auto_vacuum = 2;
-                        """
-                ).execute();
-
-                // 重新连接数据库
-                reconnect();
-
-                // 是否启用大小写不敏感
-                String Name_COLLATE_NOCASE =
-                        getPlugin().getConfig().getBoolean("sql.Name_COLLATE_NOCASE", true)
-                                ? "COLLATE NOCASE" : "";
-
-                // 加载数据表
-                connection.prepareStatement("""
-                        CREATE TABLE IF NOT EXISTS "player" (
-                            "ID"   INTEGER NOT NULL,
-                            "Type" INTEGER NOT NULL,
-                            "Ban"  INTEGER NOT NULL,
-                            "UUID" TEXT    NOT NULL,
-                            "Name" TEXT    NOT NULL %s,
-                            "Time" INTEGER NOT NULL,
-                            PRIMARY KEY("ID" AUTOINCREMENT)
-                        );
-                        CREATE INDEX IF NOT EXISTS IDX_Type ON "player" (Type);
-                        CREATE INDEX IF NOT EXISTS IDX_Ban  ON "player" (Ban );
-                        CREATE INDEX IF NOT EXISTS IDX_UUID ON "player" (UUID);
-                        CREATE INDEX IF NOT EXISTS IDX_Name ON "player" (Name);
-                        CREATE INDEX IF NOT EXISTS IDX_Time ON "player" (Time);
-                        """.formatted(Name_COLLATE_NOCASE)
-                ).execute();
-            }else{
-//                connection.prepareStatement("""
-//                    CREATE TABLE IF NOT EXISTS `%s` (
-//                        `ID` bigint(7) NOT NULL,
-//                        `Type` bigint(2) NOT NULL,
-//                        `UUID` char(36) NOT NULL,
-//                        `Name` varchar(16) NOT NULL,
-//                        `Time` bigint(11) NOT NULL,
-//
-//                        INDEX `IDX_UUID` (`UUID`) USING BTREE,
-//                        INDEX `IDX_Name` (`Name`) USING BTREE,
-//                        INDEX `IDX_Type` (`Type`) USING BTREE
-//                    );
-//                    """.formatted(table)
-//                ).execute();
-                getLogger().warning("[IpacWhitelist] 暂时移除了非 SQLite 数据库的支持...");
-            }
+            // 加载数据表
+            connection.prepareStatement("""
+                    CREATE TABLE IF NOT EXISTS "player" (
+                        "ID"   INTEGER NOT NULL,
+                        "Type" INTEGER NOT NULL,
+                        "Ban"  INTEGER NOT NULL,
+                        "UUID" TEXT    NOT NULL,
+                        "Name" TEXT    NOT NULL %s,
+                        "Time" INTEGER NOT NULL,
+                        PRIMARY KEY("ID" AUTOINCREMENT)
+                    );
+                    CREATE INDEX IF NOT EXISTS IDX_Type ON "player" (Type);
+                    CREATE INDEX IF NOT EXISTS IDX_Ban  ON "player" (Ban );
+                    CREATE INDEX IF NOT EXISTS IDX_UUID ON "player" (UUID);
+                    CREATE INDEX IF NOT EXISTS IDX_Name ON "player" (Name);
+                    CREATE INDEX IF NOT EXISTS IDX_Time ON "player" (Time);
+                    """.formatted(Name_COLLATE_NOCASE)
+            ).execute();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -154,7 +128,10 @@ public class SQL {
         try {
             PreparedStatement sql = connection.prepareStatement(query);
             sql.setString(1, inpData);
-            pd = packPlayerData(sql.executeQuery());
+            ResultSet results = sql.executeQuery();
+            if(results.next()){
+                pd = packPlayerData(results);
+            }
             sql.close();
         } catch (Exception e) {
             getLogger().warning(e.getMessage());
@@ -259,10 +236,11 @@ public class SQL {
         String query;
         String limit = maxLine != -1 ? ("LIMIT "+ maxLine) : "";
 
-        query = switch (type) {
-            case ALL -> "SELECT * FROM `player` %s;".formatted(limit);
-            default -> "SELECT * FROM `player` WHERE (`Type` = %s) %s;".formatted(type.getID(), limit);
-        };
+        if(type == ALL){
+            query = "SELECT * FROM `player` %s;".formatted(limit);
+        }else{
+            query = "SELECT * FROM `player` WHERE (`Type` = %s) %s;".formatted(type.getID(), limit);
+        }
 
         try {
             PreparedStatement sql = connection.prepareStatement(query);
