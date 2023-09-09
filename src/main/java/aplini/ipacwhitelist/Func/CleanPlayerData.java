@@ -36,7 +36,7 @@ public class CleanPlayerData {
         } catch (InterruptedException ignored) {}
 
         // 删除文件
-        for(String li : plugin.getConfig().getStringList("dev.deletePlayerDataAll.playerDataFilePlugin")){
+        for(String li : plugin.getConfig().getStringList("dev.deletePlayerDataAll.playerDataFile")){
             String filePath = li
                     .replace("%playerUUID%", pd.UUID)
                     .replace("%playerName%", pd.Name);
@@ -52,7 +52,7 @@ public class CleanPlayerData {
             // 获取世界根目录
             String worldRoot = world.getWorldFolder().getPath();
             // 遍历配置
-            for(String li : plugin.getConfig().getStringList("dev.deletePlayerDataAll.playerDataFile")){
+            for(String li : plugin.getConfig().getStringList("dev.deletePlayerDataAll.playerDataFileWorld")){
                 String filePath = li
                         .replace("%worldRoot%", worldRoot)
                         .replace("%playerUUID%", pd.UUID)

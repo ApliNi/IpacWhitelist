@@ -24,7 +24,13 @@ import static org.bukkit.Bukkit.getLogger;
 
 public class onPlayerJoin implements Listener {
     private static IpacWhitelist plugin;
+    // 正在断开连接的玩家列表
     private static final List<UUID> playerDisconnectList = new ArrayList<>();
+    // 数据清理时临时锁定玩家
+    static final List<String> cleanList = new ArrayList<>();
+    // 全局禁用玩家加入
+    static boolean disabled = false;
+
     public onPlayerJoin(IpacWhitelist plugin){
         onPlayerJoin.plugin = plugin;
     }
@@ -45,6 +51,12 @@ public class onPlayerJoin implements Listener {
         if(playerDisconnectList.contains(playerUUID)){
             event.disallow(PlayerLoginEvent.Result.KICK_OTHER,
                     plugin.getConfig().getString("message.join.limiter-reconnection-time", ""));
+            return;
+        }
+        // 是否被数据清理程序锁定
+        if(disabled || cleanList.contains(playerUUID.toString())){
+            event.disallow(PlayerLoginEvent.Result.KICK_OTHER,
+                    plugin.getConfig().getString("message.visit.clean", ""));
             return;
         }
 

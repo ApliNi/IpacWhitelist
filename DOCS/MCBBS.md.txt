@@ -21,6 +21,8 @@ https://github.com/ApliNi/IpacWhitelist
 - `/wl unban <playerName|playerUUID>` - 解封玩家
 - `/wl info <playerName|playerUUID>` - 查看玩家数据
 - `/wl list <VISIT|WHITE|BLACK|VISIT_CONVERT|VISIT_BLACK|*> <num|ALL>` - 列出玩家数据
+- `/wl clean <playerName|playerUUID>` - 清理一个账户的数据, 详见配置
+- `/wl clean_visit` - 清理所有参观账户数据, 详见配置
 
 > 支持使用 32 或 36 位的 UUID
 
@@ -36,12 +38,103 @@ https://github.com/ApliNi/IpacWhitelist
 - [[CommandWhitelist]](https://github.com/YouHaveTrouble/CommandWhitelist) - 命令白名单. 隐藏和防止执行命令
 
 
+### 开发和调试
+
+<details><summary>点击展开这部分内容</summary>
+
+#### 数据表
+
+如果你想了解这个插件的运行方式, 最简单的方法是打开数据库, 然后试试各种指令. (如果数据库软件卡死, 请尝试运行 `/wl reload`)
+
+| ID | Type | Ban | UUID | Name | Time       |
+|----|------|-----|------|------|------------|
+| 1  | 0    | 0   | UUID | Name | 1694231705 |
+
+- `ID` - 唯一的自增ID
+- `Type` - 这个账户的类型:
+  - `0`: `NOT` - 未定义 or 不在白名单中
+  - `1`: `VISIT` - 参观账户. 如果开启参观账户, 那么玩家第一次加入时 Type 会从 NOT 转换为 VISIT
+  - `2`: `WHITE` - 在白名单中.
+    将一些非白名单(WHITE) 类型的玩家通过 `/wl add` 设置为白名单时, 根据当前类型运行不同程序...
+    这一部分的核心代码是这样的:
+    ```java
+    switch(pd.Type){
+        // 如果为这些 Type, 数据库中一定有名称和 UUID
+        case VISIT, VISIT_CONVERT -> { // 参观账户/需要转换的参观账户
+            // 运行 wl-add
+            startVisitConvertFunc(plugin, pd.Name, pd.UUID, "visit.wl-add.command");
+            // 玩家在线
+            Player player = Bukkit.getPlayer(pd.Name);
+            if(player != null){
+                // 是否需要踢出玩家
+                if(plugin.getConfig().getBoolean("whitelist.kick-on-add-visit")){
+                    player.kickPlayer(plugin.getConfig().getString("message.join.add"));
+                }else{
+                    // 运行 wl-add-convert
+                    startVisitConvertFunc(plugin, pd.Name, pd.UUID, "visit.wl-add-convert.command");
+                }
+            }else{
+                // 标记为 VISIT_CONVERT, 等待下一次加入时处理 (在 onPlayerJoin 中)
+                pd.Type = Type.VISIT_CONVERT;
+                getLogger().info("[IpacWhitelist] "+ pd.Name +" 不在线, wl-add-convert 将推迟到玩家重新上线时运行");
+            }
+            sender.sendMessage(plugin.getConfig().getString("message.command.add-reset-visit", "").replace("%player%", pd.Name));
+        }
+
+        // 如果为这些 Type, 数据库中可能缺失名称或 UUID
+
+        case WHITE -> // 白名单, 只需要更新即可
+                sender.sendMessage(plugin.getConfig().getString("message.command.add-reset", "").replace("%player%", inpData));
+        case NOT -> { // 没有账户, 添加到白名单
+            pd.Type = Type.WHITE;
+            sender.sendMessage(plugin.getConfig().getString("message.command.add", "").replace("%player%", inpData));
+        }
+        default -> {
+            sender.sendMessage(plugin.getConfig().getString("message.command.err", ""));
+            return true;
+        }
+    }
+    ```
+  - `4`: `VISIT_CONVERT` - 需要转换的参观账户.
+    当参观账户(VISIT) 被添加到白名单(WHITE) 时, 会为参观账户运行配置中设定的转换程序, 会踢出玩家(此时设置为 VISIT_CONVERT), 并在玩家重新上线后运行剩下的转换程序, 然后再设置为 WHITE. 至此完成参观账户到白名单的转换.
+    [!] 如果为 VISIT_CONVERT 类型的玩家继续运行 `/wl add`, 那么它会重新执行一遍完整的转换程序.
+  - 是的, 没有 `3`.
+
+- `Ban` - 这个账户是否被封禁:
+  - `0`: `NOT_BAN` - 没有被封禁
+  - `1`: `BAN` - 已被封禁:
+    为了防止数据混乱, 所以 Ban 是单独的.
+    如果账户已被封禁, 则会完全绕过加入部分的代码. 也就是无论 Type 如何, 都不能加入.
+    [!] 如果账户处于 BAN 状态, 则涉及其他数据的操作都不能使用! 比如 `/wl add|del|clean`, `/wl clean_visit` 也会绕过处于 Ban 状态的参观账户.
+
+- `UUID` AND `Name` - 存储玩家的 UUID 和名称.
+  - UUID 使用 36 位(带连字符) 的字符串格式保存在数据库中.
+  - Name 只是字符串.
+    可以在建表时通过配置中的 `sql.Name_COLLATE_NOCASE` 切换此列的大小写敏感.
+
+- `Time` - 数据操作的时间戳
+  这是毫秒级时间戳, 在玩家加入/退出和使用 `/wl add` 时都会更新为当前时间.
+  它被用于判断这个账户是否过期(默认4个月), 以及是否达到可以安全删除数据的时间(默认12小时)
+
+
+#### SQLite
+
+直到现在, 我也没有去支持 MySQL 之类的数据库. 我认为它在这个应用里并不实用, 如果我需要去适配群组端, 那么才可能会支持它...
+
+在这个插件里, SQLite 的连接只会在 `/wl reload` 或者关服时被释放, 其余时间都保持连接并且文件被锁定, 同时不会进行提交(当`db-wal`达到一定大小时, SQLite会自动提交它). 所以不要删除 `db-shm` 和 `db-wal` 文件.
+
+```roomsql
+PRAGMA journal_mode = WAL; -- 设置为 WAL 运行模式
+PRAGMA auto_vacuum = 2;    -- 自动复用碎片空间
+```
+
+</details>
+
+
 ### 配置
 ```yaml
 # 数据库
 sql:
-  # sqlite, 暂不支持 mysql
-  db: sqlite
   # 使 Name 大小写不敏感, 同时影响白名单和指令. 仅可在建表时修改
   Name_COLLATE_NOCASE: true
 
@@ -185,6 +278,47 @@ playerJoinMessage:
       message: '§6IpacEL §f> §a%player% §b跑了'
 
 
+
+# 模块配置
+dev:
+  # 删除一个玩家的所有数据
+  deletePlayerDataAll:
+    # 只删除玩家离线超过指定时间的数据, 防止删除后服务器又进行保存 (毫秒
+    deleteDataTimeout: 43200000 # 12小时. 它必须大于数据缓存时间
+    # true=在删除期间锁定正在删除的账户, false=在数据删除期间完全禁用参观账户
+    deletingLockPlayer: true
+    # 删除两个参观账户之间间隔多长时间, 然后取消这个玩家的锁定, 有些插件会使用异步处理删除请求 (毫秒
+    intervalTime: 100
+    # 执行指令与删除文件之间间隔多长时间 (毫秒
+    intervalTime2: 150
+
+    # 执行哪些指令, 来删除其他插件数据. 可用变量: %playerUUID%, %playerName%
+    playerDataCommand:
+    #      - 'authme unregister %playerName%' # AuthMe: 取消注册这个玩家
+
+    # 玩家数据文件的路径. 可用变量: %playerUUID%, %playerName%
+    playerDataFile:
+      # world 存档
+      - 'world/playerdata/%playerUUID%.dat'
+      - 'world/playerdata/%playerUUID%.dat_old'
+      - 'world/advancements/%playerUUID%.json'
+      - 'world/stats/%playerUUID%.json'
+      # Essentials 插件数据
+    #      - 'plugins/Essentials/userdata/%playerUUID%.yml'
+
+    # 如果你使用一些会将玩家数据存储在每个world目录里的多世界插件, 则可以使用这个
+    # 玩家存档路径. 可用变量: %worldRoot%, %playerUUID%, %playerName%
+    playerDataFileWorld:
+    # 主世界
+    #      - '%worldRoot%/playerdata/%playerUUID%.dat'
+    #      - '%worldRoot%/playerdata/%playerUUID%.dat_old'
+    #      - '%worldRoot%/advancements/%playerUUID%.json'
+    #      - '%worldRoot%/stats/%playerUUID%.json'
+    # 下界和末地
+#      - '%worldRoot%/DIM-1/playerdata/%playerUUID%.dat'
+#      - '%worldRoot%/DIM1/playerdata/%playerUUID%.dat'
+
+
 # 消息
 message:
   # 指令消息
@@ -200,11 +334,16 @@ message:
     reload: '§6IpacEL §f> IpacWhitelist 配置和数据库重载完成'
     info: '§6IpacEL §f> §a%player%§7: §b{ID: %ID%, Type: "%Type%", Ban: "%Ban%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
     list: '§6IpacEL §f> §a%num% §7-> §b{ID: %ID%, Type: "%Type%", Ban: "%Ban%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
+    clean: '§6IpacEL §f> §b数据删除程序将在后台执行'
+    clean-ok: '§6IpacEL §f> §a共删除了 §b%num% §a个账户及其数据'
+
     err: '§6IpacEL §f> §b内部错误'
     err-ban: '§6IpacEL §f> §b此账户被封禁, 执行此操作需要解封'
     err-length: '§6IpacEL §f> §b名称或UUID长度异常'
     err-parameter: '§6IpacEL §f> §b无效参数: §a%i%'
     err-note-exist: '§6IpacEL §f> §a%player% §b不存在'
+    err-clean-incomplete: '§6IpacEL §f> §a%player% §b数据不完整, 可能这位玩家从未进入过服务器'
+    err-clean-deleteDataTimeout: '§6IpacEL §f> §a%player% §b未达到可删除的时间'
     err-permission: '§6IpacEL §f> §b权限不足'
 
   # 玩家加入
@@ -219,6 +358,7 @@ message:
     err-name: '§6IpacEL §f> §b无效的名称: §a%player%'
     err-name-visit: '§6IpacEL §f> §b无效的名称: §a%player%'
     starting: '§6IpacEL §f> §b服务器正在启动'
+    clean: '§6IpacEL §f> §b正在清理数据... 请稍后再试'
 
   # 参观账户加入
   visit:
@@ -261,6 +401,11 @@ permissions:
   IpacWhitelist.command.clean_visit:
     description: '使用 /wl clean_visit 指令'
     default: op
+
+  IpacWhitelist.command.clean:
+    description: '使用 /wl clean 指令'
+    default: op
+
 ```
 
 ---

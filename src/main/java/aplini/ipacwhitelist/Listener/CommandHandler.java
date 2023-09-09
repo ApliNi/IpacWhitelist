@@ -254,8 +254,8 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                     return true;
                 }
 
-                // 检查这个玩家是否存在, 这里不能使用 NOT 来检查, 因为账户可能在 Type=NOT 时被封禁
-                if(pd.ID != -1){
+                // 检查这个玩家是否存在
+                if(pd.isNull()){
                     sender.sendMessage(plugin.getConfig().getString("message.command.err-note-exist", "").replace("%player%", inpData));
                     return true;
                 }
@@ -372,7 +372,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                     return true;
                 }
 
-                sender.sendMessage(plugin.getConfig().getString("message.command.clean-visit", ""));
+                sender.sendMessage(plugin.getConfig().getString("message.command.clean", ""));
 
                 // 是否禁用参观账户
                 if(!plugin.getConfig().getBoolean("dev.deletePlayerDataAll.deletingLockPlayer", true)){
@@ -395,29 +395,29 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                 // 遍历所有数据
                 AtomicInteger i = new AtomicInteger();
-                CompletableFuture.runAsync(() ->
-                        whileDataForList(sql, (pd) -> {
-                            if(Objects.equals(pd.UUID, "")){
-                            return;
-                        }
-                        // 锁定这个参观账户
-                        onVisitPlayerJoin.cleanVisitList.add(pd.UUID);
+                CompletableFuture.runAsync(() -> whileDataForList(sql, (pd) -> {
+                    // 跳过数据不完整和玩家在线
+                    if(pd.UUID.isEmpty() || pd.Name.isEmpty() || Bukkit.getPlayer(pd.Name) != null){
+                        return;
+                    }
+                    // 锁定这个参观账户
+                    onVisitPlayerJoin.cleanVisitList.add(pd.UUID);
 
-                        // 开始清理数据 //
-                        i.getAndIncrement();
-                        // 删除文件和运行指令
-                        deletePlayerDataAll(plugin, i, pd);
-                        // 删除账户
-                        pd.Type = Type.NOT;
-                        pd.save();
+                    // 开始清理数据 //
+                    i.getAndIncrement();
+                    // 删除文件和运行指令
+                    deletePlayerDataAll(plugin, i, pd);
+                    // 删除账户
+                    pd.Type = Type.NOT;
+                    pd.save();
 
-                        // 清理结束, 等待指定时间
-                        try {
-                            TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("dev.deletePlayerDataAll.intervalTime", 100));
-                        } catch (InterruptedException ignored) {}
+                    // 清理结束, 等待指定时间
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("dev.deletePlayerDataAll.intervalTime", 100));
+                    } catch (InterruptedException ignored) {}
 
-                        // 取消锁定
-                        onVisitPlayerJoin.cleanVisitList.remove(pd.UUID);
+                    // 取消锁定
+                    onVisitPlayerJoin.cleanVisitList.remove(pd.UUID);
 
                 }, () -> {
                     // 运行结束 //
@@ -427,10 +427,107 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                         onVisitPlayerJoin.disabledVisit = false;
                     }
 
-                    sender.sendMessage(plugin.getConfig().getString("message.command.clean-visit-ok", "")
+                    sender.sendMessage(plugin.getConfig().getString("message.command.clean-ok", "")
                             .replace("%num%", i.toString()));
                 }));
 
+                return true;
+            }
+
+
+            // 清理参观账户的数据
+            case "clean" -> {
+                if(!sender.hasPermission("IpacWhitelist.command.clean")){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-permission", ""));
+                    return true;
+                }
+
+                if(args.length != 2){
+                    sender.sendMessage("/wl clean <playerName|playerUUID>");
+                    return true;
+                }
+
+                // 获取账户数据
+                String inpData = ifIsUUID32toUUID36(args[1]);
+                PlayerData pd = Util.getPlayerData(inpData);
+                // 输入数据错误
+                if(pd == null){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-length", ""));
+                    return true;
+                }
+
+                // 是否存在
+                if(pd.isNull() || pd.Type == Type.NOT){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-note-exist", "")
+                            .replace("%player%", inpData));
+                    return true;
+                }
+
+                // 是否被封禁
+                if(pd.Ban == Type.BAN){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-ban", ""));
+                    return true;
+                }
+
+                // 数据是否完整
+                if(pd.UUID.isEmpty() || pd.Name.isEmpty()){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-clean-incomplete", "")
+                            .replace("%player%", inpData));
+                    return true;
+                }
+
+                // 玩家在线
+                if(Bukkit.getPlayer(pd.Name) != null){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-clean-online", ""));
+                    return true;
+                }
+
+                // 未达到可以删除的时间
+                long visitExpiredTime = getTime() - plugin.getConfig().getLong("dev.deletePlayerDataAll.deleteDataTimeout", 43200000);
+                if(pd.Time > visitExpiredTime){
+                    sender.sendMessage(plugin.getConfig().getString("message.command.err-clean-deleteDataTimeout", "")
+                            .replace("%player%", inpData));
+                    return true;
+                }
+
+                // 删除数据
+                sender.sendMessage(plugin.getConfig().getString("message.command.clean", ""));
+
+                // 是否全局禁用连接
+                if(!plugin.getConfig().getBoolean("dev.deletePlayerDataAll.deletingLockPlayer", true)){
+                    onPlayerJoin.disabled = true;
+                }
+                // 锁定这个账户
+                onPlayerJoin.cleanList.add(pd.UUID);
+
+                CompletableFuture.runAsync(() -> {
+                    // 删除文件和运行指令
+                    deletePlayerDataAll(plugin, new AtomicInteger(), pd);
+                    // 删除账户
+                    pd.Type = Type.NOT;
+                    pd.save();
+
+                    // 清理结束, 等待指定时间
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("dev.deletePlayerDataAll.intervalTime", 100));
+                    } catch (InterruptedException ignored) {}
+
+                    // 取消锁定
+                    onVisitPlayerJoin.cleanVisitList.remove(pd.UUID);
+                    if(!plugin.getConfig().getBoolean("dev.deletePlayerDataAll.deletingLockPlayer", true)){
+                        onPlayerJoin.disabled = false;
+                    }
+
+                    sender.sendMessage(plugin.getConfig().getString("message.command.clean-ok", "")
+                            .replace("%num%", "1"));
+                });
+
+
+                return true;
+            }
+
+            case "cat" -> {
+                sender.sendMessage("§6喵§a喵§b喵§f~");
                 return true;
             }
         }

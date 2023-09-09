@@ -162,7 +162,7 @@ dev:
 #      - 'authme unregister %playerName%' # AuthMe: 取消注册这个玩家
 
     # 玩家数据文件的路径. 可用变量: %playerUUID%, %playerName%
-    playerDataFilePlugin:
+    playerDataFile:
       # world 存档
       - 'world/playerdata/%playerUUID%.dat'
       - 'world/playerdata/%playerUUID%.dat_old'
@@ -173,7 +173,7 @@ dev:
 
     # 如果你使用一些会将玩家数据存储在每个world目录里的多世界插件, 则可以使用这个
     # 玩家存档路径. 可用变量: %worldRoot%, %playerUUID%, %playerName%
-    playerDataFile:
+    playerDataFileWorld:
       # 主世界
 #      - '%worldRoot%/playerdata/%playerUUID%.dat'
 #      - '%worldRoot%/playerdata/%playerUUID%.dat_old'
@@ -199,13 +199,17 @@ message:
     reload: '§6IpacEL §f> IpacWhitelist 配置和数据库重载完成'
     info: '§6IpacEL §f> §a%player%§7: §b{ID: %ID%, Type: "%Type%", Ban: "%Ban%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
     list: '§6IpacEL §f> §a%num% §7-> §b{ID: %ID%, Type: "%Type%", Ban: "%Ban%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
-    clean-visit: '§6IpacEL §f> §b数据删除程序将在后台执行'
-    clean-visit-ok: '§6IpacEL §f> §a共删除了 §b%num% §a个参观账户及其数据'
+    clean: '§6IpacEL §f> §b数据删除程序将在后台执行'
+    clean-ok: '§6IpacEL §f> §a共删除了 §b%num% §a个账户及其数据'
+
     err: '§6IpacEL §f> §b内部错误'
     err-ban: '§6IpacEL §f> §b此账户被封禁, 执行此操作需要解封'
     err-length: '§6IpacEL §f> §b名称或UUID长度异常'
     err-parameter: '§6IpacEL §f> §b无效参数: §a%i%'
     err-note-exist: '§6IpacEL §f> §a%player% §b不存在'
+    err-clean-incomplete: '§6IpacEL §f> §a%player% §b数据不完整, 可能这位玩家从未进入过服务器'
+    err-clean-deleteDataTimeout: '§6IpacEL §f> §a%player% §b未达到可删除的时间'
+    err-clean-online: '§6IpacEL §f> §a%player% §b玩家在线'
     err-permission: '§6IpacEL §f> §b权限不足'
 
   # 玩家加入
@@ -220,7 +224,7 @@ message:
     err-name: '§6IpacEL §f> §b无效的名称: §a%player%'
     err-name-visit: '§6IpacEL §f> §b无效的名称: §a%player%'
     starting: '§6IpacEL §f> §b服务器正在启动'
-    clean-visit: '§6IpacEL §f> §b正在清理数据... 请稍后再试'
+    clean: '§6IpacEL §f> §b正在清理数据... 请稍后再试'
 
   # 参观账户加入
   visit:
