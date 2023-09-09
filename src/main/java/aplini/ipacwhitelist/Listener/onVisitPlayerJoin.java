@@ -92,7 +92,7 @@ public class onVisitPlayerJoin implements Listener {
         // 这个参观账户正在清理数据, 全局禁用 or 禁用当前玩家
         if(disabledVisit || cleanVisitList.contains(event.getPlayer().getUniqueId().toString())){
             event.disallow(PlayerLoginEvent.Result.KICK_OTHER,
-                    plugin.getConfig().getString("message.visit.clean", ""));
+                    plugin.getConfig().getString("message.join.clean", ""));
             return true;
         }
 

@@ -513,7 +513,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                     } catch (InterruptedException ignored) {}
 
                     // 取消锁定
-                    onVisitPlayerJoin.cleanVisitList.remove(pd.UUID);
+                    onPlayerJoin.cleanList.remove(pd.UUID);
                     if(!plugin.getConfig().getBoolean("dev.deletePlayerDataAll.deletingLockPlayer", true)){
                         onPlayerJoin.disabled = false;
                     }
