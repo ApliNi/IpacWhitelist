@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,7 +43,8 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 "unban",
                 "info",
                 "list",
-                "clean_visit"
+                "clean_visit",
+                "clean"
         );
     }
 

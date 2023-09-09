@@ -32,6 +32,10 @@ public class PlayerJoinMessage implements Listener {
 
     // 加入和退出事件处理
     public static void playerJoinMessage(String cp, Player player, boolean isJoin){
+        // 是否启用加入消息
+        if(!plugin.getConfig().getBoolean("playerJoinMessage.enable")){
+            return;
+        }
         // 事件是否禁用
         if(plugin.getConfig().getString(cp + ".message", "").isEmpty()) {
             return;
@@ -96,6 +100,8 @@ public class PlayerJoinMessage implements Listener {
     }
 
 
+    // 另一部分事件在 hookAuthMe.java 中
+
     // ------ //
     // ------ //
 
@@ -103,11 +109,6 @@ public class PlayerJoinMessage implements Listener {
     // 参观账户登录服务器
     public static void onVisitPlayerJoin(Player player) {
         playerJoinMessage("playerJoinMessage.playerJoin.onVisitPlayerJoin", player, true);
-    }
-
-    // AuthMe 玩家登录事件
-    static public void onAuthMeLoginEvent(Player player) {
-        playerJoinMessage("playerJoinMessage.playerJoin.onAuthMeLoginEvent", player, true);
     }
 
     // 玩家加入事件
@@ -120,12 +121,6 @@ public class PlayerJoinMessage implements Listener {
     // ------ //
     // ------ //
 
-
-    // AuthMe 玩家输入错误密码
-//    @EventHandler(priority = EventPriority.MONITOR)
-    static public void onAuthMeFailedLoginEvent(Player player) {
-        playerJoinMessage("playerJoinMessage.playerQuit.onAuthMeFailedLoginEvent", player, false);
-    }
 
     // 玩家退出事件
     @EventHandler(priority = EventPriority.MONITOR)

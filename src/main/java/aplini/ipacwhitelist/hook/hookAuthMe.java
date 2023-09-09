@@ -3,13 +3,13 @@ package aplini.ipacwhitelist.hook;
 import fr.xephi.authme.api.v3.AuthMeApi;
 import fr.xephi.authme.events.FailedLoginEvent;
 import fr.xephi.authme.events.LoginEvent;
+import fr.xephi.authme.events.LogoutEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import static aplini.ipacwhitelist.Listener.PlayerJoinMessage.onAuthMeFailedLoginEvent;
-import static aplini.ipacwhitelist.Listener.PlayerJoinMessage.onAuthMeLoginEvent;
+import static aplini.ipacwhitelist.Listener.PlayerJoinMessage.playerJoinMessage;
 
 public class hookAuthMe implements Listener {
     private static AuthMeApi AuthmeAPI = null;
@@ -37,14 +37,20 @@ public class hookAuthMe implements Listener {
 
     // AuthMe 玩家登录事件
     @EventHandler(priority = EventPriority.MONITOR)
-    public void _onAuthMeLoginEvent(LoginEvent event) {
-        onAuthMeLoginEvent(event.getPlayer());
+    public void onAuthMeLoginEvent(LoginEvent event) {
+        playerJoinMessage("playerJoinMessage.playerJoin.onAuthMeLoginEvent", event.getPlayer(), true);
     }
 
     // AuthMe 玩家输入错误密码
     @EventHandler(priority = EventPriority.MONITOR)
-    static public void _onAuthMeFailedLoginEvent(FailedLoginEvent event) {
-        onAuthMeFailedLoginEvent(event.getPlayer());
+    static public void onAuthMeFailedLoginEvent(FailedLoginEvent event) {
+        playerJoinMessage("playerJoinMessage.playerQuit.onAuthMeFailedLoginEvent", event.getPlayer(), false);
+    }
+
+    // AuthMe 玩家注销
+    @EventHandler(priority = EventPriority.MONITOR)
+    static public void onLogoutEvent(LogoutEvent event) {
+        playerJoinMessage("playerJoinMessage.playerQuit.onLogoutEvent", event.getPlayer(), false);
     }
 
 }
