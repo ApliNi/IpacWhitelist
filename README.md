@@ -252,21 +252,30 @@ playerJoinMessage:
 
   # 玩家加入
   playerJoin:
+
     # IpacWL 参观账户登录服务器
     onVisitPlayerJoin:
       message: '§6IpacEL §f> §a%player% §b使用参观账户加入游戏'
+
     # AuthMe 玩家登录或注册成功
     onAuthMeLoginEvent: # 需要启用 hook.AuthMe
       message: '§6IpacEL §f> §a%player% §b加入游戏'
+
     # 玩家加入事件. 如果使用 AuthMe, 同时这里留空, 就能在玩家登录后显示加入游戏
     onPlayerJoinEvent:
       message: '§6IpacEL §f> §a%player% §b加入游戏'
 
   # 玩家退出
   playerQuit:
+
     # AuthMe 登录密码错误
     onAuthMeFailedLoginEvent: # 需要启用 hook.AuthMe
       message: '§6IpacEL §f> §a%player% §b断开连接: §7密码错误'
+
+    # AuthMe 玩家注销事件 (/logout)
+    onLogoutEvent:
+      message: ''
+
     # 玩家退出事件
     onPlayerQuitEvent:
       message: '§6IpacEL §f> §a%player% §b跑了'
@@ -338,6 +347,7 @@ message:
     err-note-exist: '§6IpacEL §f> §a%player% §b不存在'
     err-clean-incomplete: '§6IpacEL §f> §a%player% §b数据不完整, 可能这位玩家从未进入过服务器'
     err-clean-deleteDataTimeout: '§6IpacEL §f> §a%player% §b未达到可删除的时间'
+    err-clean-online: '§6IpacEL §f> §a%player% §b玩家在线'
     err-permission: '§6IpacEL §f> §b权限不足'
 
   # 玩家加入

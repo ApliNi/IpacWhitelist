@@ -145,7 +145,7 @@ playerJoinMessage:
 
     # AuthMe 玩家注销事件 (/logout)
     onLogoutEvent:
-      message: '§6IpacEL §f> §a%player% §b跑了'
+      message: ''
 
     # 玩家退出事件
     onPlayerQuitEvent:

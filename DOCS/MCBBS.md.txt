@@ -148,8 +148,8 @@ whitelist:
   # 简易的 ip 黑名单. 在这里添加正则表达式, 匹配的ip不允许加入服务器 (也不允许使用参观账户
   # 使用 /wl reload 重载配置即可应用
   ip-blacklist: []
-  #    - '^192\.168\.100\..+$'
-  #    - '^fe80::1234:.+$' # ipv6没有方括号
+#    - '^192\.168\.100\..+$'
+#    - '^fe80::1234:.+$' # ipv6没有方括号
 
   # 限定玩家可以使用的用户名正则
   name-rule: '^\.?[a-zA-Z0-9_]+$' # 白名单中的玩家
@@ -258,21 +258,30 @@ playerJoinMessage:
 
   # 玩家加入
   playerJoin:
+
     # IpacWL 参观账户登录服务器
     onVisitPlayerJoin:
       message: '§6IpacEL §f> §a%player% §b使用参观账户加入游戏'
+
     # AuthMe 玩家登录或注册成功
     onAuthMeLoginEvent: # 需要启用 hook.AuthMe
       message: '§6IpacEL §f> §a%player% §b加入游戏'
+
     # 玩家加入事件. 如果使用 AuthMe, 同时这里留空, 就能在玩家登录后显示加入游戏
     onPlayerJoinEvent:
       message: '§6IpacEL §f> §a%player% §b加入游戏'
 
   # 玩家退出
   playerQuit:
+
     # AuthMe 登录密码错误
     onAuthMeFailedLoginEvent: # 需要启用 hook.AuthMe
       message: '§6IpacEL §f> §a%player% §b断开连接: §7密码错误'
+
+    # AuthMe 玩家注销事件 (/logout)
+    onLogoutEvent:
+      message: ''
+
     # 玩家退出事件
     onPlayerQuitEvent:
       message: '§6IpacEL §f> §a%player% §b跑了'
@@ -294,7 +303,7 @@ dev:
 
     # 执行哪些指令, 来删除其他插件数据. 可用变量: %playerUUID%, %playerName%
     playerDataCommand:
-    #      - 'authme unregister %playerName%' # AuthMe: 取消注册这个玩家
+#      - 'authme unregister %playerName%' # AuthMe: 取消注册这个玩家
 
     # 玩家数据文件的路径. 可用变量: %playerUUID%, %playerName%
     playerDataFile:
@@ -304,17 +313,17 @@ dev:
       - 'world/advancements/%playerUUID%.json'
       - 'world/stats/%playerUUID%.json'
       # Essentials 插件数据
-    #      - 'plugins/Essentials/userdata/%playerUUID%.yml'
+#      - 'plugins/Essentials/userdata/%playerUUID%.yml'
 
     # 如果你使用一些会将玩家数据存储在每个world目录里的多世界插件, 则可以使用这个
     # 玩家存档路径. 可用变量: %worldRoot%, %playerUUID%, %playerName%
     playerDataFileWorld:
-    # 主世界
-    #      - '%worldRoot%/playerdata/%playerUUID%.dat'
-    #      - '%worldRoot%/playerdata/%playerUUID%.dat_old'
-    #      - '%worldRoot%/advancements/%playerUUID%.json'
-    #      - '%worldRoot%/stats/%playerUUID%.json'
-    # 下界和末地
+      # 主世界
+#      - '%worldRoot%/playerdata/%playerUUID%.dat'
+#      - '%worldRoot%/playerdata/%playerUUID%.dat_old'
+#      - '%worldRoot%/advancements/%playerUUID%.json'
+#      - '%worldRoot%/stats/%playerUUID%.json'
+      # 下界和末地
 #      - '%worldRoot%/DIM-1/playerdata/%playerUUID%.dat'
 #      - '%worldRoot%/DIM1/playerdata/%playerUUID%.dat'
 
@@ -344,6 +353,7 @@ message:
     err-note-exist: '§6IpacEL §f> §a%player% §b不存在'
     err-clean-incomplete: '§6IpacEL §f> §a%player% §b数据不完整, 可能这位玩家从未进入过服务器'
     err-clean-deleteDataTimeout: '§6IpacEL §f> §a%player% §b未达到可删除的时间'
+    err-clean-online: '§6IpacEL §f> §a%player% §b玩家在线'
     err-permission: '§6IpacEL §f> §b权限不足'
 
   # 玩家加入
