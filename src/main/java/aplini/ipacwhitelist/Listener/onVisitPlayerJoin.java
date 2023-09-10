@@ -98,7 +98,7 @@ public class onVisitPlayerJoin implements Listener {
 
         // 参观账户队列已满
         if(visitList.size() == plugin.getConfig().getInt("visit.max-visit-player")){
-            event.disallow(PlayerLoginEvent.Result.KICK_FULL,
+            event.disallow(PlayerLoginEvent.Result.KICK_OTHER,
                     plugin.getConfig().getString("message.visit.full", ""));
             return true;
         }
