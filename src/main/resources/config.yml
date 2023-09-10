@@ -25,6 +25,11 @@ whitelist:
   kick-on-ban: true # ban
   kick-on-add-visit: true # 参观账户被添加到白名单时
 
+  # 在这里重新实现服务器人数限制
+  # 拥有 IpacWhitelist.maxPlayer.bypass 权限的玩家可绕过最大人数限制
+  maxPlayer:
+    enable: false
+
   # 自动检查并处理出错的记录
   # 比如添加玩家 UUID 后又添加了 NAME (此时产生两条记录), 当玩家登录时自动删除其中一条记录
   autoClean:
@@ -234,6 +239,7 @@ message:
     err-name-visit: '§6IpacEL §f> §b无效的名称: §a%player%'
     starting: '§6IpacEL §f> §b服务器正在启动'
     clean: '§6IpacEL §f> §b正在清理数据... 请稍后再试'
+    full: '§6IpacEL §f> §b服务器已满'
 
   # 参观账户加入
   visit:

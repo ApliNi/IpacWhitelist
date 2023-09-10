@@ -4,6 +4,7 @@ import aplini.ipacwhitelist.IpacWhitelist;
 import aplini.ipacwhitelist.util.PlayerData;
 import aplini.ipacwhitelist.util.SQL;
 import aplini.ipacwhitelist.util.Type;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -24,6 +25,8 @@ import static org.bukkit.Bukkit.getLogger;
 
 public class onPlayerJoin implements Listener {
     private static IpacWhitelist plugin;
+    // 当前玩家数量
+    private static int nowPlayersNum = 0;
     // 正在断开连接的玩家列表
     private static final List<UUID> playerDisconnectList = new ArrayList<>();
     // 数据清理时临时锁定玩家
@@ -44,6 +47,18 @@ public class onPlayerJoin implements Listener {
                     plugin.getConfig().getString("message.join.starting", ""));
             return;
         }
+
+        // 最大人数限制
+        if(plugin.getConfig().getBoolean("whitelist.maxPlayer.enable", false)){
+            if(nowPlayersNum >= Bukkit.getMaxPlayers() && !event.getPlayer().hasPermission("IpacWhitelist.maxPlayer.bypass")){
+                event.disallow(PlayerLoginEvent.Result.KICK_OTHER,
+                        plugin.getConfig().getString("message.join.full", ""));
+                return;
+            }
+        }
+
+        // 这里记录正在连接的玩家数量, 而非已登录的玩家数量
+        nowPlayersNum ++;
 
         // 玩家 UUID
         UUID playerUUID = event.getPlayer().getUniqueId();
@@ -159,6 +174,9 @@ public class onPlayerJoin implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR) // 玩家退出
     public void onPlayerQuit(PlayerQuitEvent event) {
+
+        nowPlayersNum --;
+
         UUID playerUUID = event.getPlayer().getUniqueId();
 
         // 更新玩家的最后连接时间

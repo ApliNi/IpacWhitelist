@@ -13,6 +13,11 @@ commands:
     aliases: [ipacwhitelist]
 
 permissions:
+
+  IpacWhitelist.maxPlayer.bypass:
+    description: '绕过最大人数限制'
+    default: op
+
   IpacWhitelist.command.reload:
     description: '使用 /wl reload 指令'
     default: op
