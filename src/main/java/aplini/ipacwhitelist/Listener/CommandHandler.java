@@ -389,6 +389,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                         }
 
                         sender.sendMessage(plugin.getConfig().getString("message.command.clean", ""));
+                        getLogger().info("[IpacWhitelist.clean] >>> ----------");
 
                         // 是否禁用参观账户
                         if(!plugin.getConfig().getBoolean("dev.deletePlayerDataAll.deletingLockPlayer", true)){
@@ -445,6 +446,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                                 onVisitPlayerJoin.disabledVisit = false;
                             }
 
+                            getLogger().info("[IpacWhitelist.clean] <<< ----------");
                             sender.sendMessage(plugin.getConfig().getString("message.command.clean-ok", "")
                                     .replace("%num%", i.toString()));
                         }));
@@ -503,6 +505,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                         // 删除数据
                         sender.sendMessage(plugin.getConfig().getString("message.command.clean", ""));
+                        getLogger().info("[IpacWhitelist.clean] >>> ----------");
 
                         // 是否全局禁用连接
                         if(!plugin.getConfig().getBoolean("dev.deletePlayerDataAll.deletingLockPlayer", true)){
@@ -529,6 +532,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                                 onPlayerJoin.disabled = false;
                             }
 
+                            getLogger().info("[IpacWhitelist.clean] <<< ----------");
                             sender.sendMessage(plugin.getConfig().getString("message.command.clean-ok", "")
                                     .replace("%num%", "1"));
                         });
