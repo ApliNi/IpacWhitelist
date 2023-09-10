@@ -292,9 +292,9 @@ dev:
     # true=在删除期间锁定正在删除的账户, false=在数据删除期间完全禁用参观账户
     deletingLockPlayer: true
     # 删除两个参观账户之间间隔多长时间, 然后取消这个玩家的锁定, 有些插件会使用异步处理删除请求 (毫秒
-    intervalTime: 100
+    intervalTime: 64
     # 执行指令与删除文件之间间隔多长时间 (毫秒
-    intervalTime2: 150
+    intervalTime2: 64
 
     # 执行哪些指令, 来删除其他插件数据. 可用变量: %playerUUID%, %playerName%
     playerDataCommand:
