@@ -14,9 +14,9 @@
 - `/wl ban <playerName|playerUUID>` - 封禁玩家
 - `/wl unban <playerName|playerUUID>` - 解封玩家
 - `/wl info <playerName|playerUUID>` - 查看玩家数据
-- `/wl list <VISIT|WHITE|BLACK|VISIT_CONVERT|VISIT_BLACK|*> <num|ALL>` - 列出玩家数据
-- `/wl clean <playerName|playerUUID>` - 清理一个账户的数据, 详见配置
-- `/wl clean_visit` - 清理所有参观账户数据, 详见配置
+- `/wl list <NOT|VISIT|WHITE|BLACK|VISIT_CONVERT|VISIT_BLACK|*> <num|ALL>` - 列出玩家数据
+- `/wl clean <VISIT|NOT>` - 清理一个类型下所有玩家的数据, 详见配置
+- `/wl clean PLAYER <playerName|playerUUID>` - 清理一个玩家的所有数据, 详见配置
 
 > 支持使用 32 或 36 位的 UUID
 
@@ -47,6 +47,7 @@
 - `ID` - 唯一的自增ID
 - `Type` - 这个账户的类型:
   - `0`: `NOT` - 未定义 or 不在白名单中
+    使用 `/wl del` 时, 插件不会将玩家永久从白名单中移除, 而是将 Type 改为 NOT. 这用于支持账户数据清理以及其他查询功能.
   - `1`: `VISIT` - 参观账户. 如果开启参观账户, 那么玩家第一次加入时 Type 会从 NOT 转换为 VISIT
   - `2`: `WHITE` - 在白名单中.  
     将一些非白名单(WHITE) 类型的玩家通过 `/wl add` 设置为白名单时, 根据当前类型运行不同程序...  
@@ -297,6 +298,7 @@ dev:
 
     # 执行哪些指令, 来删除其他插件数据. 可用变量: %playerUUID%, %playerName%
     playerDataCommand:
+      - 'lp user %playerUUID% clear'
     #      - 'authme unregister %playerName%' # AuthMe: 取消注册这个玩家
 
     # 玩家数据文件的路径. 可用变量: %playerUUID%, %playerName%
@@ -309,7 +311,7 @@ dev:
       # Essentials 插件数据
     #      - 'plugins/Essentials/userdata/%playerUUID%.yml'
 
-    # 如果你使用一些会将玩家数据存储在每个world目录里的多世界插件, 则可以使用这个
+    # 如果你使用一些会将玩家数据存储在每个world目录里的多世界插件, 则可以使用这个自动遍历所有world目录
     # 玩家存档路径. 可用变量: %worldRoot%, %playerUUID%, %playerName%
     playerDataFileWorld:
     # 主世界
@@ -335,11 +337,10 @@ message:
     unban: '§6IpacEL §f> §b%player% §a已移出黑名单'
     unban-exist: '§6IpacEL §f> §a%player% §b不在黑名单中'
     reload: '§6IpacEL §f> IpacWhitelist 配置和数据库重载完成'
-    info: '§6IpacEL §f> §a%player%§7: §b{ID: %ID%, Type: "%Type%", Ban: "%Ban%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
-    list: '§6IpacEL §f> §a%num% §7-> §b{ID: %ID%, Type: "%Type%", Ban: "%Ban%", UUID: "%UUID%", Name: "%Name%", Time: %Time%}'
+    info: '§6IpacEL §f> §a%player%§7: §f{§bID§f: §6%ID%§f, §bType§f: "§6%Type%§f", §bBan§f: "§6%Ban%§f", §bUUID§f: "§a%UUID%§f", §bName§f: "§a%Name%§f", §bTime§f: §6%Time%§f}'
+    list: '§6IpacEL §f> §a%num% §7-> §f{§bID§f: §6%ID%§f, §bType§f: "§6%Type%§f", §bBan§f: "§6%Ban%§f", §bUUID§f: "§a%UUID%§f", §bName§f: "§a%Name%§f", §bTime§f: §6%Time%§f}'
     clean: '§6IpacEL §f> §b数据删除程序将在后台执行'
     clean-ok: '§6IpacEL §f> §a共删除了 §b%num% §a个账户及其数据'
-
     err: '§6IpacEL §f> §b内部错误'
     err-ban: '§6IpacEL §f> §b此账户被封禁, 执行此操作需要解封'
     err-length: '§6IpacEL §f> §b名称或UUID长度异常'
@@ -402,12 +403,7 @@ permissions:
     description: '使用 /wl list 指令'
     default: op
 
-  IpacWhitelist.command.clean_visit:
-    description: '使用 /wl clean_visit 指令'
-    default: op
-
   IpacWhitelist.command.clean:
     description: '使用 /wl clean 指令'
     default: op
-
 ```

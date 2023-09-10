@@ -47,12 +47,13 @@ public class CleanPlayerData {
             }
         }
 
-        // 删除世界文件
-        for(World world : getServer().getWorlds()){
-            // 获取世界根目录
-            String worldRoot = world.getWorldFolder().getPath();
-            // 遍历配置
-            for(String li : plugin.getConfig().getStringList("dev.deletePlayerDataAll.playerDataFileWorld")){
+        // 删除 world 目录中的存档
+        for(String li : plugin.getConfig().getStringList("dev.deletePlayerDataAll.playerDataFileWorld")){
+            // 遍历 world
+            for(World world : getServer().getWorlds()){
+                // 获取世界根目录
+                String worldRoot = world.getWorldFolder().getPath();
+
                 String filePath = li
                         .replace("%worldRoot%", worldRoot)
                         .replace("%playerUUID%", pd.UUID)
@@ -64,5 +65,6 @@ public class CleanPlayerData {
                 }
             }
         }
+
     }
 }

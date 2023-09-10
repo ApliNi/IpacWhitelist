@@ -132,7 +132,6 @@ public class SQL {
             if(results.next()){
                 pd = packPlayerData(results);
             }
-            sql.close();
         } catch (Exception e) {
             getLogger().warning(e.getMessage());
         }
@@ -144,8 +143,7 @@ public class SQL {
         try {
             PreparedStatement sql = connection.prepareStatement("DELETE FROM `player` WHERE `ID` = ?;");
             sql.setInt(1, id);
-            sql.execute();
-            sql.close();
+            sql.executeUpdate();
         } catch (Exception e) {
             getLogger().warning(e.getMessage());
         }
@@ -207,12 +205,8 @@ public class SQL {
 
 
     // 遍历数据
-    public interface whileDataForListInterface {
-        void test(PlayerData pd);
-    }
-    public interface whileDataForListInterfaceEnd {
-        void test();
-    }
+    public interface whileDataForListInterface { void test(PlayerData pd);}
+    public interface whileDataForListInterfaceEnd { void test();}
     public static void whileDataForList(PreparedStatement sql, whileDataForListInterface func, whileDataForListInterfaceEnd funcEnd){
         // 查询
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
@@ -222,7 +216,6 @@ public class SQL {
                     PlayerData pd = packPlayerData(results);
                     func.test(pd);
                 }
-                sql.close();
             } catch (Exception e) {
                 getLogger().warning(e.getMessage());
             }
@@ -270,15 +263,14 @@ public class SQL {
                 sql.setLong(++i, pd.Time);
                 sql.setInt(++i, pd.ID);
             }else{
-                sql = connection.prepareStatement("REPLACE INTO `player` (`Type`, `Ban`, `UUID`, `Name`, `Time`) VALUES (?, ?, ?, ?, ?);");
+                sql = connection.prepareStatement("INSERT INTO `player` (`Type`, `Ban`, `UUID`, `Name`, `Time`) VALUES (?, ?, ?, ?, ?);");
                 sql.setInt(++i, pd.Type.getID());
                 sql.setInt(++i, pd.Ban.getID());
                 sql.setString(++i, pd.UUID);
                 sql.setString(++i, pd.Name);
                 sql.setLong(++i, pd.Time);
             }
-            sql.execute();
-            sql.close();
+            sql.executeUpdate();
         } catch (Exception e) {
             getLogger().warning(e.getMessage());
         }

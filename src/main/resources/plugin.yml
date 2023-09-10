@@ -41,10 +41,6 @@ permissions:
     description: '使用 /wl list 指令'
     default: op
 
-  IpacWhitelist.command.clean_visit:
-    description: '使用 /wl clean_visit 指令'
-    default: op
-
   IpacWhitelist.command.clean:
     description: '使用 /wl clean 指令'
     default: op
