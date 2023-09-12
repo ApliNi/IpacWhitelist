@@ -18,6 +18,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -339,21 +341,21 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 // 准备查询
                 Type type = Type.valueOf(inp1);
                 int maxLine = Integer.parseInt(inp2);
-
                 AtomicInteger i = new AtomicInteger();
-                CompletableFuture.runAsync(() ->
-                        whileDataForList(type, maxLine, (pd) -> {
-                            i.getAndIncrement();
-                            sender.sendMessage(plugin.getConfig().getString("message.command.list", "")
-                                    .replace("%num%", i.toString())
-                                    .replace("%ID%", String.valueOf(pd.ID))
-                                    .replace("%Type%", pd.Type.getName())
-                                    .replace("%Ban%", pd.Ban.getName())
-                                    .replace("%UUID%", pd.UUID)
-                                    .replace("%Name%", pd.Name)
-                                    .replace("%Time%", String.valueOf(pd.Time)));
-                }, () -> {
+
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                executor.submit(() -> whileDataForList(type, maxLine, (pd) -> {
+                    i.getAndIncrement();
+                    sender.sendMessage(plugin.getConfig().getString("message.command.list", "")
+                            .replace("%num%", i.toString())
+                            .replace("%ID%", String.valueOf(pd.ID))
+                            .replace("%Type%", pd.Type.getName())
+                            .replace("%Ban%", pd.Ban.getName())
+                            .replace("%UUID%", pd.UUID)
+                            .replace("%Name%", pd.Name)
+                            .replace("%Time%", String.valueOf(pd.Time)));
                 }));
+                executor.shutdown();
 
                 return true;
             }
@@ -389,7 +391,6 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                         }
 
                         sender.sendMessage(plugin.getConfig().getString("message.command.clean", ""));
-                        getLogger().info("[IpacWhitelist.clean] >>> ----------");
 
                         // 是否禁用参观账户
                         if(!plugin.getConfig().getBoolean("dev.deletePlayerDataAll.deletingLockPlayer", true)){
@@ -414,32 +415,37 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                         // 遍历所有数据
                         AtomicInteger i = new AtomicInteger();
-                        CompletableFuture.runAsync(() -> whileDataForList(sql, (pd) -> {
-                            // 跳过数据不完整和玩家在线
-                            if(pd.UUID.isEmpty() || pd.Name.isEmpty() || Bukkit.getPlayer(pd.Name) != null){
-                                return;
-                            }
-                            // 锁定这个参观账户
-                            onVisitPlayerJoin.cleanVisitList.add(pd.UUID);
 
-                            // 开始清理数据 //
-                            i.getAndIncrement();
-                            // 删除文件和运行指令
-                            deletePlayerDataAll(plugin, i, pd);
-                            // 删除账户
-                            pd.Type = Type.NOT;
-                            pd.save();
+                        ExecutorService executor = Executors.newSingleThreadExecutor();
+                        executor.submit(() -> {
+                            whileDataForList(sql, (pd) -> {
+                                // 跳过数据不完整和玩家在线
+                                if(pd.UUID.isEmpty() || pd.Name.isEmpty() || Bukkit.getPlayer(pd.Name) != null){
+                                    return;
+                                }
 
-                            // 清理结束, 等待指定时间
-                            try {
-                                TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("dev.deletePlayerDataAll.intervalTime", 100));
-                            } catch (InterruptedException ignored) {}
+                                getLogger().info("[IpacWhitelist.clean] <<< ----------");
 
-                            // 取消锁定
-                            onVisitPlayerJoin.cleanVisitList.remove(pd.UUID);
+                                // 锁定这个参观账户
+                                onVisitPlayerJoin.cleanVisitList.add(pd.UUID);
 
-                        }, () -> {
-                            // 运行结束 //
+                                // 开始清理数据 //
+                                i.getAndIncrement();
+                                // 删除文件和运行指令
+                                deletePlayerDataAll(plugin, i, pd);
+                                // 删除账户
+                                pd.Type = Type.NOT;
+                                pd.save();
+
+                                // 清理结束, 等待指定时间
+                                try {
+                                    TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("dev.deletePlayerDataAll.intervalTime", 100));
+                                } catch (InterruptedException ignored) {}
+
+                                // 取消锁定
+                                onVisitPlayerJoin.cleanVisitList.remove(pd.UUID);
+
+                            });
 
                             // 恢复参观账户
                             if (!plugin.getConfig().getBoolean("dev.deletePlayerDataAll.deletingLockPlayer", true)) {
@@ -449,7 +455,8 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                             getLogger().info("[IpacWhitelist.clean] <<< ----------");
                             sender.sendMessage(plugin.getConfig().getString("message.command.clean-ok", "")
                                     .replace("%num%", i.toString()));
-                        }));
+                        });
+                        executor.shutdown();
                     } // <- VISIT.. END
 
                     // 删除任意玩家数据
@@ -505,7 +512,6 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
 
                         // 删除数据
                         sender.sendMessage(plugin.getConfig().getString("message.command.clean", ""));
-                        getLogger().info("[IpacWhitelist.clean] >>> ----------");
 
                         // 是否全局禁用连接
                         if(!plugin.getConfig().getBoolean("dev.deletePlayerDataAll.deletingLockPlayer", true)){
@@ -515,6 +521,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                         onPlayerJoin.cleanList.add(pd.UUID);
 
                         CompletableFuture.runAsync(() -> {
+                            getLogger().info("[IpacWhitelist.clean] <<< ----------");
                             // 删除文件和运行指令
                             deletePlayerDataAll(plugin, new AtomicInteger(), pd);
                             // 删除账户
@@ -587,16 +594,6 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                             "PLAYER"
                     );
                 }
-//                else if(args.length == 3){
-//                    switch(args[1].toUpperCase()){
-//                        case "VISIT", "NOT" -> {
-//
-//                        }
-//                        case "PLAYER" -> {
-//
-//                        }
-//                    }
-//                }
             }
         }
         return null;

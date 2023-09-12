@@ -4,7 +4,6 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.sql.*;
-import java.util.concurrent.CompletableFuture;
 
 import static aplini.ipacwhitelist.IpacWhitelist.getPlugin;
 import static aplini.ipacwhitelist.util.Type.*;
@@ -208,26 +207,19 @@ public class SQL {
 
     // 遍历数据
     public interface whileDataForListInterface { void test(PlayerData pd);}
-    public interface whileDataForListInterfaceEnd { void test();}
-    public static void whileDataForList(PreparedStatement sql, whileDataForListInterface func, whileDataForListInterfaceEnd funcEnd){
+    public static void whileDataForList(PreparedStatement sql, whileDataForListInterface func){
         // 查询
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-            try {
-                ResultSet results = sql.executeQuery();
-                while(results.next()){
-                    PlayerData pd = packPlayerData(results);
-                    func.test(pd);
-                }
-            } catch (Exception e) {
-                getLogger().warning(e.getMessage());
+        try {
+            ResultSet results = sql.executeQuery();
+            while(results.next()){
+                PlayerData pd = packPlayerData(results);
+                func.test(pd);
             }
-        });
-        future.join(); // 等待运行完毕
-
-        // 运行结束
-        funcEnd.test();
+        } catch (Exception e) {
+            getLogger().warning(e.getMessage());
+        }
     }
-    public static void whileDataForList(Type type, int maxLine, whileDataForListInterface func, whileDataForListInterfaceEnd funcEnd){
+    public static void whileDataForList(Type type, int maxLine, whileDataForListInterface func){
         String query;
         String limit = maxLine != -1 ? ("LIMIT "+ maxLine) : "";
 
@@ -239,7 +231,7 @@ public class SQL {
 
         try {
             PreparedStatement sql = connection.prepareStatement(query);
-            whileDataForList(sql, func, funcEnd);
+            whileDataForList(sql, func);
 
         } catch (SQLException e) {
             getLogger().warning(e.getMessage());
