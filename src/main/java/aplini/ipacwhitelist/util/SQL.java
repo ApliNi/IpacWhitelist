@@ -158,15 +158,12 @@ public class SQL {
         // 如果 UUID 匹配
         pd = getPlayerData(DATA_UUID, playerUUID);
         if(!pd.isNull()){
-            // 黑名单
-            if(pd.Ban == BAN){return pd.whitelistedState(BAN);}
-            // 非参观账户 && 白名单过期
-            if(!isVisit(pd.Type) && Util.isWhitelistedExpired(pd.Time)){return pd.whitelistedState(WHITE_EXPIRED);}
+
             // 如果启用错误检查
             if(getPlugin().getConfig().getBoolean("whitelist.autoClean.enable", true)){
                 // 检查是否存在一个 UUID 为空, 名称相同的数据
                 PlayerData pd2 = getPlayerData(DATA_NAME_LIMIT_EMPTY_UUID, playerName);
-                if(pd2.ID != -1){
+                if(!pd2.isNull()){
                     // 如果启用按权重转移数据
                     if(getPlugin().getConfig().getBoolean("whitelist.autoClean.dataByWeight", true)){
                         // 比较这两条记录的关键数据, 保留 int 最大的一方
@@ -176,6 +173,11 @@ public class SQL {
                     delPlayerData(pd2.ID);
                 }
             }
+
+            // 黑名单
+            if(pd.Ban == BAN){return pd.whitelistedState(BAN);}
+            // 非参观账户 && 白名单过期
+            if(!isVisit(pd.Type) && Util.isWhitelistedExpired(pd.Time)){return pd.whitelistedState(WHITE_EXPIRED);}
             // 更新数据
             pd.Name = playerName;
             pd.Time = getTime();
@@ -253,8 +255,15 @@ public class SQL {
         try {
             PreparedStatement sql;
             int i = 0;
-            // 如果id存在则更新数据, 否则创建新数据
-            if(pd.ID != -1){
+            // 如果id不存在则创建数据, 否则更新数据
+            if(pd.isNull()){
+                sql = connection.prepareStatement("INSERT INTO `player` (`Type`, `Ban`, `UUID`, `Name`, `Time`) VALUES (?, ?, ?, ?, ?);");
+                sql.setInt(++i, pd.Type.getID());
+                sql.setInt(++i, pd.Ban.getID());
+                sql.setString(++i, pd.UUID);
+                sql.setString(++i, pd.Name);
+                sql.setLong(++i, pd.Time);
+            }else{
                 sql = connection.prepareStatement("UPDATE `player` SET `Type` = ?, `Ban` = ?, `UUID` = ?, `Name` = ?, `Time` = ? WHERE `ID` = ?;");
                 sql.setInt(++i, pd.Type.getID());
                 sql.setInt(++i, pd.Ban.getID());
@@ -262,13 +271,6 @@ public class SQL {
                 sql.setString(++i, pd.Name);
                 sql.setLong(++i, pd.Time);
                 sql.setInt(++i, pd.ID);
-            }else{
-                sql = connection.prepareStatement("INSERT INTO `player` (`Type`, `Ban`, `UUID`, `Name`, `Time`) VALUES (?, ?, ?, ?, ?);");
-                sql.setInt(++i, pd.Type.getID());
-                sql.setInt(++i, pd.Ban.getID());
-                sql.setString(++i, pd.UUID);
-                sql.setString(++i, pd.Name);
-                sql.setLong(++i, pd.Time);
             }
             sql.executeUpdate();
         } catch (Exception e) {
