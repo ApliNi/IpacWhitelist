@@ -342,7 +342,7 @@ dev:
     # Essentials 插件数据
     #      - 'plugins/Essentials/userdata/%playerUUID%.yml'
 
-    # 它会遍历每一个 world 目录. 如果你使用多世界插件, 则会很有用
+    # 如果使用 %worldRoot%, 那么这条路径将会遍历所有 world, 反之只会运行一次. 如果你使用多世界插件, 则会很有用
     # 可用变量: %worldRoot%, %playerUUID%, %playerName%
     playerDataFileWorld:
       # 主世界

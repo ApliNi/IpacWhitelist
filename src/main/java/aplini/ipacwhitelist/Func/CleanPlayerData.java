@@ -49,22 +49,27 @@ public class CleanPlayerData {
 
         // 删除 world 目录中的存档
         for(String li : plugin.getConfig().getStringList("dev.deletePlayerDataAll.playerDataFileWorld")){
-            // 遍历 world
-            for(World world : getServer().getWorlds()){
-                // 获取世界根目录
-                String worldRoot = world.getWorldFolder().getPath();
 
-                String filePath = li
-                        .replace("%worldRoot%", worldRoot)
-                        .replace("%playerUUID%", pd.UUID)
-                        .replace("%playerName%", pd.Name);
+            String filePath = li
+                    .replace("%playerUUID%", pd.UUID)
+                    .replace("%playerName%", pd.Name);
 
+            // 是否使用 worldRoot
+            if(filePath.contains("%worldRoot%")){
+                // 遍历所有 world
+                for(World world : getServer().getWorlds()){
+                    String thisFilePath = filePath.replace("%worldRoot%", world.getWorldFolder().getPath());
+                    File file = new File(thisFilePath);
+                    if(file.delete()){
+                        getLogger().info("[IpacWhitelist] [del.File] ["+ logPlayerInfo +"]: "+ thisFilePath);
+                    }
+                }
+            }else{
                 File file = new File(filePath);
                 if(file.delete()){
                     getLogger().info("[IpacWhitelist] [del.File] ["+ logPlayerInfo +"]: "+ filePath);
                 }
             }
         }
-
     }
 }
