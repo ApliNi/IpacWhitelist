@@ -174,19 +174,20 @@ public class onPlayerJoin implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR) // 玩家退出
     public void onPlayerQuit(PlayerQuitEvent event) {
-
-        nowPlayersNum --;
-
-        UUID playerUUID = event.getPlayer().getUniqueId();
-
-        // 更新玩家的最后连接时间
-        PlayerData pd = SQL.getPlayerData(Type.DATA_UUID, playerUUID.toString());
-        pd.Time = -3;
-        pd.save();
-
-        // 玩家退出后等待指定时间才能重新连接
-        playerDisconnectList.add(playerUUID);
         CompletableFuture.runAsync(() -> {
+
+            nowPlayersNum --;
+
+            UUID playerUUID = event.getPlayer().getUniqueId();
+
+            // 更新玩家的最后连接时间
+            PlayerData pd = SQL.getPlayerData(Type.DATA_UUID, playerUUID.toString());
+            pd.Time = -3;
+            pd.save();
+
+            // 玩家退出后等待指定时间才能重新连接
+            playerDisconnectList.add(playerUUID);
+
             try {
                 TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("whitelist.playerDisconnectToReconnectMinTime", 1000));
             } catch (InterruptedException ignored) {}
