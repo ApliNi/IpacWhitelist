@@ -25,6 +25,8 @@
 ### 参观账户
 推荐让参观账户使用观察模式加入服务器, 特别是红石服务器. 因为还无法解决生存模式下玩家碰撞实体的问题.  
 
+参观账户是外挂在当前的游戏环境中的, 并不是完美的隔离.  
+
 可以配合这些插件使用: 
 - [[LuckPerms]](https://luckperms.net/) - 权限组插件
 - [[IpacPER]](https://github.com/ApliNi/IpacPER) - 用于防止参观账户获取成就, 使用观察模式传送功能, 修复安装 OpenInv 后无法使用部分箱子菜单
@@ -176,6 +178,11 @@ whitelist:
   kick-on-ban: true # ban
   kick-on-add-visit: true # 参观账户被添加到白名单时
 
+  # 在这里重新实现服务器人数限制
+  # 拥有 IpacWhitelist.maxPlayer.bypass 权限的玩家可绕过最大人数限制
+  maxPlayer:
+    enable: false
+
   # 自动检查并处理出错的记录
   # 比如添加玩家 UUID 后又添加了 NAME (此时产生两条记录), 当玩家登录时自动删除其中一条记录
   autoClean:
@@ -317,30 +324,27 @@ dev:
     # 执行指令与删除文件之间间隔多长时间 (毫秒
     intervalTime2: 64
 
-    # 执行哪些指令, 来删除其他插件数据. 可用变量: %playerUUID%, %playerName%
+    # 执行哪些指令, 来删除其他插件数据
+    # 可用变量: %playerUUID%, %playerName%
     playerDataCommand:
       - 'lp user %playerUUID% clear'
-    #      - 'authme unregister %playerName%' # AuthMe: 取消注册这个玩家
+      - 'authme unregister %playerName%' # AuthMe: 取消注册这个玩家
 
-    # 玩家数据文件的路径. 可用变量: %playerUUID%, %playerName%
+    # 玩家数据文件的路径
+    # 可用变量: %playerUUID%, %playerName%
     playerDataFile:
-      # world 存档
-      - 'world/playerdata/%playerUUID%.dat'
-      - 'world/playerdata/%playerUUID%.dat_old'
-      - 'world/advancements/%playerUUID%.json'
-      - 'world/stats/%playerUUID%.json'
-      # Essentials 插件数据
+    # Essentials 插件数据
     #      - 'plugins/Essentials/userdata/%playerUUID%.yml'
 
-    # 如果你使用一些会将玩家数据存储在每个world目录里的多世界插件, 则可以使用这个自动遍历所有world目录
-    # 玩家存档路径. 可用变量: %worldRoot%, %playerUUID%, %playerName%
+    # 它会遍历每一个 world 目录. 如果你使用多世界插件, 则会很有用
+    # 可用变量: %worldRoot%, %playerUUID%, %playerName%
     playerDataFileWorld:
-    # 主世界
-    #      - '%worldRoot%/playerdata/%playerUUID%.dat'
-    #      - '%worldRoot%/playerdata/%playerUUID%.dat_old'
-    #      - '%worldRoot%/advancements/%playerUUID%.json'
-    #      - '%worldRoot%/stats/%playerUUID%.json'
-    # 下界和末地
+      # 主世界
+      - '%worldRoot%/playerdata/%playerUUID%.dat'
+      - '%worldRoot%/playerdata/%playerUUID%.dat_old'
+      - '%worldRoot%/advancements/%playerUUID%.json'
+      - '%worldRoot%/stats/%playerUUID%.json'
+      # 下界和末地
 #      - '%worldRoot%/DIM-1/playerdata/%playerUUID%.dat'
 #      - '%worldRoot%/DIM1/playerdata/%playerUUID%.dat'
 
@@ -385,6 +389,7 @@ message:
     err-name-visit: '§6IpacEL §f> §b无效的名称: §a%player%'
     starting: '§6IpacEL §f> §b服务器正在启动'
     clean: '§6IpacEL §f> §b正在清理数据... 请稍后再试'
+    full: '§6IpacEL §f> §b服务器已满'
 
   # 参观账户加入
   visit:
@@ -396,6 +401,11 @@ message:
 ### 权限
 ```yaml
 permissions:
+
+  IpacWhitelist.maxPlayer.bypass:
+    description: '绕过最大人数限制'
+    default: op
+
   IpacWhitelist.command.reload:
     description: '使用 /wl reload 指令'
     default: op
@@ -427,4 +437,5 @@ permissions:
   IpacWhitelist.command.clean:
     description: '使用 /wl clean 指令'
     default: op
+
 ```

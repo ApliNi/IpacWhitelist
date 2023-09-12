@@ -171,29 +171,26 @@ dev:
     # 执行指令与删除文件之间间隔多长时间 (毫秒
     intervalTime2: 64
 
-    # 执行哪些指令, 来删除其他插件数据. 可用变量: %playerUUID%, %playerName%
+    # 执行哪些指令, 来删除其他插件数据
+    # 可用变量: %playerUUID%, %playerName%
     playerDataCommand:
       - 'lp user %playerUUID% clear'
-#      - 'authme unregister %playerName%' # AuthMe: 取消注册这个玩家
+      - 'authme unregister %playerName%' # AuthMe: 取消注册这个玩家
 
-    # 玩家数据文件的路径. 可用变量: %playerUUID%, %playerName%
+    # 玩家数据文件的路径
+    # 可用变量: %playerUUID%, %playerName%
     playerDataFile:
-      # world 存档
-      - 'world/playerdata/%playerUUID%.dat'
-      - 'world/playerdata/%playerUUID%.dat_old'
-      - 'world/advancements/%playerUUID%.json'
-      - 'world/stats/%playerUUID%.json'
       # Essentials 插件数据
 #      - 'plugins/Essentials/userdata/%playerUUID%.yml'
 
-    # 如果你使用一些会将玩家数据存储在每个world目录里的多世界插件, 则可以使用这个自动遍历所有world目录
-    # 玩家存档路径. 可用变量: %worldRoot%, %playerUUID%, %playerName%
+    # 它会遍历每一个 world 目录. 如果你使用多世界插件, 则会很有用
+    # 可用变量: %worldRoot%, %playerUUID%, %playerName%
     playerDataFileWorld:
       # 主世界
-#      - '%worldRoot%/playerdata/%playerUUID%.dat'
-#      - '%worldRoot%/playerdata/%playerUUID%.dat_old'
-#      - '%worldRoot%/advancements/%playerUUID%.json'
-#      - '%worldRoot%/stats/%playerUUID%.json'
+      - '%worldRoot%/playerdata/%playerUUID%.dat'
+      - '%worldRoot%/playerdata/%playerUUID%.dat_old'
+      - '%worldRoot%/advancements/%playerUUID%.json'
+      - '%worldRoot%/stats/%playerUUID%.json'
       # 下界和末地
 #      - '%worldRoot%/DIM-1/playerdata/%playerUUID%.dat'
 #      - '%worldRoot%/DIM1/playerdata/%playerUUID%.dat'
