@@ -398,7 +398,7 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                         }
 
                         // 获取参观账户过期的时间位置
-                        long visitExpiredTime = getTime() - plugin.getConfig().getLong("dev.deletePlayerDataAll.deleteDataTimeout", 43200000);
+                        long visitExpiredTime = getTime() - plugin.getConfig().getLong("dev.deletePlayerDataAll.deleteDataTimeout", 43200);
 
                         Type type = Type.valueOf(args_1);
 

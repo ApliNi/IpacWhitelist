@@ -163,8 +163,8 @@ playerJoinMessage:
 dev:
   # 删除一个玩家的所有数据
   deletePlayerDataAll:
-    # 只删除玩家离线超过指定时间的数据, 防止删除后服务器又进行保存 (毫秒
-    deleteDataTimeout: 43200000 # 12小时. 它必须大于数据缓存时间
+    # 只删除玩家离线超过指定时间的数据, 防止删除后服务器又进行保存 (秒
+    deleteDataTimeout: 43200 # 12小时. 它必须大于数据缓存时间
     # true=在删除期间锁定正在删除的账户, false=在数据删除期间完全禁用参观账户
     deletingLockPlayer: true
     # 删除两个参观账户之间间隔多长时间, 然后取消这个玩家的锁定, 有些插件会使用异步处理删除请求 (毫秒
