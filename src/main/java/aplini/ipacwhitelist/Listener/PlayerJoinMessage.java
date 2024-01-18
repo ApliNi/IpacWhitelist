@@ -61,7 +61,7 @@ public class PlayerJoinMessage implements Listener {
                 Player mutePlayer = null;
 
                 // 如果是参观账户 && 关闭 visitOwnJoinMessage
-                if(visitList.contains(player.getUniqueId())){
+                if(visitList.contains(player.getUniqueId().toString())){
                     // 如果关闭 visitOwnJoinMessage
                     if(!plugin.getConfig().getBoolean("playerJoinMessage.visitOwnJoinMessage")){
                         mutePlayer = player;

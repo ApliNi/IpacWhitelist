@@ -552,6 +552,10 @@ public class CommandHandler implements Listener, CommandExecutor, TabCompleter {
                 sender.sendMessage("§6喵§a喵§b喵§f~");
                 return true;
             }
+
+            case "_func" -> {
+
+            }
         }
 
         sender.sendMessage("/wl ... "+ String.join(", ", commandList));

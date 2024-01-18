@@ -11,7 +11,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static aplini.ipacwhitelist.Func.EventFunc.startAsyncEventFunc;
 import static aplini.ipacwhitelist.hook.hookAuthMe.autoLogin;
@@ -22,9 +21,11 @@ import static org.bukkit.Bukkit.getLogger;
 public class onVisitPlayerJoin implements Listener {
     private static IpacWhitelist plugin;
     // 当前在线的参观账户uuid列表
-    static final List<UUID> visitList = new ArrayList<>();
+    static final List<String> visitList = new ArrayList<>();
     // 临时禁止登录的参观账户uuid列表
     static final List<String> cleanVisitList = new ArrayList<>();
+    // 这个参观账户是否为第一次加入服务器. 在完成加入后会清除
+    static final List<String> firstTimeJoinPlayer = new ArrayList<>();
     // 临时禁用参观账户
     static boolean disabledVisit = false;
 
@@ -43,13 +44,13 @@ public class onVisitPlayerJoin implements Listener {
         pd.save();
         getLogger().info("[IpacWhitelist] 为新的参观账户创建数据: %s ".formatted(event.getPlayer().getName()));
 
+        // 记录当前玩家为首次加入
+        firstTimeJoinPlayer.add(pd.UUID);
+
         // 参观账户事件程序
         startAsyncEventFunc("onNewVisitPlayerLoginEvent", plugin, event.getPlayer());
 
-        // 自动注册
-        if(plugin.getConfig().getBoolean("visit.AuthMe.autoRegister")){
-            autoRegister(event.getPlayer(), plugin.getConfig().getString("visit.AuthMe.autoRegisterPassword"));
-        }
+//        // 自动注册
 
         // 触发 参观账户加入服务器 事件
         onVisitPlayerLoginEvent(event);
@@ -59,7 +60,7 @@ public class onVisitPlayerJoin implements Listener {
     public static void onVisitPlayerLoginEvent(PlayerLoginEvent event) {
         if(ifForbiddenJoin(event)){return;}
 
-        UUID playerUUID = event.getPlayer().getUniqueId();
+        String playerUUID = event.getPlayer().getUniqueId().toString();
 
         // 添加到 visitList
         visitList.add(playerUUID);
@@ -67,10 +68,7 @@ public class onVisitPlayerJoin implements Listener {
         // 参观账户事件程序
         startAsyncEventFunc("onVisitPlayerLoginEvent", plugin, event.getPlayer());
 
-        // 自动登录
-        if(plugin.getConfig().getBoolean("visit.AuthMe.autoLogin")){
-            autoLogin(event.getPlayer());
-        }
+//        // 自动登录
 
         getLogger().info("[IpacWhitelist] %s 以参观模式加入服务器".formatted(event.getPlayer().getName()));
     }
@@ -108,22 +106,38 @@ public class onVisitPlayerJoin implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST) // 玩家加入
     public void onVisitPlayerJoinEvent(PlayerJoinEvent event) {
-        UUID playerUUID = event.getPlayer().getUniqueId();
+        String playerUUID = event.getPlayer().getUniqueId().toString();
 
         // 是参观账户
         if(visitList.contains(playerUUID)){
+
+            // 自动注册
+            if(plugin.getConfig().getBoolean("visit.AuthMe.autoRegister")){
+                autoRegister(event.getPlayer(), plugin.getConfig().getString("visit.AuthMe.autoRegisterPassword"));
+            }
+            // 自动登录
+            if(plugin.getConfig().getBoolean("visit.AuthMe.autoLogin")){
+                // 如果设置 首次加入不运行自动登录, 且玩家为首次加入, 则不运行自动登录
+                if(!plugin.getConfig().getBoolean("visit.AuthMe.ignoreFirstAutoLogin", false) || !firstTimeJoinPlayer.contains(playerUUID)){
+                    autoLogin(event.getPlayer());
+                }
+            }
+
             // 运行 玩家加入消息显示 :: 参观账户加入服务器
             if(plugin.getConfig().getBoolean("playerJoinMessage.enable")){
                 PlayerJoinMessage.onVisitPlayerJoin(event.getPlayer());
             }
             // 参观账户事件程序
             startAsyncEventFunc("onVisitPlayerJoinEvent", plugin, event.getPlayer());
+
+            // 从此, 这个玩家不再是第一次加入了
+            firstTimeJoinPlayer.remove(playerUUID);
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST) // 玩家退出
     public void onVisitPlayerQuitEvent(PlayerQuitEvent event) {
-        UUID playerUUID = event.getPlayer().getUniqueId();
+        String playerUUID = event.getPlayer().getUniqueId().toString();
 
         // 是参观账户
         if(visitList.contains(playerUUID)){

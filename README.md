@@ -120,7 +120,7 @@
   
     如果账户已被封禁, 则会完全绕过加入部分的代码. 也就是无论 Type 如何, 都不能加入.
   
-    [!] 如果账户处于 BAN 状态, 则涉及其他数据的操作都不能使用! 比如 `/wl add|del|clean`, `/wl clean_visit` 也会绕过处于 Ban 状态的参观账户.  
+    [!] 如果账户处于 BAN 状态, 则涉及其他数据的操作都不能使用! 比如 `/wl add|del|clean`, `/wl clean VISIT` 也会绕过处于 Ban 状态的参观账户.  
 
 - `UUID` AND `Name` - 存储玩家的 UUID 和名称.
   - UUID 使用 36 位(带连字符) 的字符串格式保存在数据库中.
@@ -222,8 +222,9 @@ visit:
   # 自动注册和登录都在运行完事件程序后运行
   AuthMe:
     autoRegisterPassword: 'complexPassword' # 需要在这里填写一个复杂的密码
-    autoRegister: true # 为参观账户自动注册, 相当于 `authme register <playerName> <password>`, 但不会踢出玩家
+    autoRegister: true # 为参观账户自动注册, 相当于 `/authme register <playerName> <password>`, 但不会踢出玩家
     autoLogin: true # 为参观账户自动登录, 相当于 `/authme forcelogin <playerName>`
+    ignoreFirstAutoLogin: true # 如果参观账户第一次加入服务器, 则不运行自动登录. 如果启用 AuthMe 的 "注册后无需再次登录" 则需要同时启用它
 
   # 这些指令只是示例, 请根据自己的需求修改
   # 关于 LuckPerms. 使用 lp 命令操作权限时, 需要保证用户至少有一个权限组. 也就是先添加权限组再删除权限组
@@ -234,13 +235,13 @@ visit:
     onNewVisitPlayerLoginEvent: # 参观账户第一次登录服务器 (第一次登录也会触发 onVisitPlayerLoginEvent 事件)
       command:
         - 'lp user %playerUUID% parent add visit' # 将玩家添加到 visit 用户组
-        - 'gamemode spectator %playerName%' # 将玩家设置为观察模式
 
     onVisitPlayerLoginEvent: # 参观账户登录服务器
       command: []
 
     onVisitPlayerJoinEvent: # 参观账户加入服务器
-      command: []
+      command:
+        - 'gamemode spectator %playerName%' # 将玩家设置为观察模式
       message:
         - '§6IpacEL §f> §a您正在使用参观账户=w='
 
