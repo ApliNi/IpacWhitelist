@@ -326,6 +326,7 @@ dev:
     intervalTime2: 64
 
     # 执行哪些指令, 来删除其他插件数据
+    # !!! 谨慎使用 %playerName% 变量, 一些服务器里可能存在同名玩家数据和参观账户数据 !!!
     # 可用变量: %playerUUID%, %playerName%
     playerDataCommand:
       - 'lp user %playerUUID% clear'
