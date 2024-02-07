@@ -9,18 +9,21 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import static aplini.ipacwhitelist.Listener.PlayerJoinMessage.playerJoinMessage;
+import static aplini.ipacwhitelist.func.eventFunc.runEventFunc;
+import static aplini.ipacwhitelist.listener.onPlayerLogin.playerList;
 
 public class hookAuthMe implements Listener {
     private static AuthMeApi AuthmeAPI = null;
-
     // 加载 API
     public hookAuthMe(){
         AuthmeAPI = AuthMeApi.getInstance();
     }
 
-    // 注册玩家
-    public static void autoRegister(Player player, String password){
+    // AuthMe 操作应发生在玩家加入服务器时
+    // @EventHandler(priority = EventPriority.LOWEST)
+
+    // 注册账户
+    public static void authmeRegisterPlayer(Player player, String password){
         if(AuthmeAPI == null) return;
         // 如果已注册则跳过
         if(!AuthmeAPI.isRegistered(player.getName())){
@@ -28,29 +31,40 @@ public class hookAuthMe implements Listener {
         }
     }
 
-    // 登录玩家
-    public static void autoLogin(Player player){
+    // 登录账户
+    public static void authmeLoginPlayer(Player player){
         if(AuthmeAPI == null) return;
-        AuthmeAPI.forceLogin(player);
+        // 如果已经登录则跳过
+        if(!AuthmeAPI.isAuthenticated(player)){
+            AuthmeAPI.forceLogin(player);
+        }
     }
 
-
-    // AuthMe 玩家登录事件
+    // AuthMe 玩家登录成功事件
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAuthMeLoginEvent(LoginEvent event) {
-        playerJoinMessage("playerJoinMessage.playerJoin.onAuthMeLoginEvent", event.getPlayer(), true);
+        Player player = event.getPlayer();
+        // 只处理白名单玩家产生的事件
+        if(playerList.contains(player.getUniqueId().toString())){
+            runEventFunc("whitelist.WHITE.onAuthMeLoginEvent", player);
+        }
     }
 
     // AuthMe 玩家输入错误密码
     @EventHandler(priority = EventPriority.MONITOR)
     static public void onAuthMeFailedLoginEvent(FailedLoginEvent event) {
-        playerJoinMessage("playerJoinMessage.playerQuit.onAuthMeFailedLoginEvent", event.getPlayer(), false);
+        Player player = event.getPlayer();
+        if(playerList.contains(player.getUniqueId().toString())){
+            runEventFunc("whitelist.WHITE.onAuthMeFailedLoginEvent", player);
+        }
     }
 
     // AuthMe 玩家注销
     @EventHandler(priority = EventPriority.MONITOR)
     static public void onLogoutEvent(LogoutEvent event) {
-        playerJoinMessage("playerJoinMessage.playerQuit.onLogoutEvent", event.getPlayer(), false);
+        Player player = event.getPlayer();
+        if(playerList.contains(player.getUniqueId().toString())){
+            runEventFunc("whitelist.WHITE.onAuthMeLogoutEvent", player);
+        }
     }
-
 }

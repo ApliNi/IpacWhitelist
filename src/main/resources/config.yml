@@ -1,246 +1,243 @@
-# 数据库
-sql:
-  # 使 Name 大小写不敏感, 同时影响白名单和指令. 仅可在建表时修改
-  Name_COLLATE_NOCASE: true
 
-# 连接到其他插件, 修改此处需要重启服务器
+# 数据库配置
+sqlite:
+  # 是否区分玩家名称的大小写, 仅可在创建数据库时启用, 影响所有需要查询名称的功能
+  # 启用后, 使用指令可能会变得麻烦
+  nameCaseSensitive: false
+
+
+# 连接到其他插件
 hook:
-  AuthMe: false
+  # 离线登录插件
+  AuthMe: true
 
 
-# 白名单功能
+# 白名单配置
+# 白名单验证流程与配置的顺序相同
 whitelist:
+
   # 简易的 ip 黑名单. 在这里添加正则表达式, 匹配的ip不允许加入服务器 (也不允许使用参观账户
   # 使用 /wl reload 重载配置即可应用
-  ip-blacklist: []
-#    - '^192\.168\.100\..+$'
-#    - '^fe80::1234:.+$' # ipv6没有方括号
+  ipBlacklist: [ ]
+  #    - '^192\.168\.100\..+$'
+  #    - '^fe80::1234:.+$' # IPv6 没有方括号
+  ipBlacklistMsg: '§6IpacEL §f> §b您已被列入黑名单: §a%playerName%' # var: %ip%
 
-  # 限定玩家可以使用的用户名正则
-  name-rule: '^\.?[a-zA-Z0-9_]+$' # 白名单中的玩家
-  name-rule-visit: '^\.?[a-zA-Z0-9_]+$' # 参观账户
+  # 玩家名称字符检查
+  # 名称长度为 3 到 16 字符, 允许包含 Geyser 的 "." 前缀
+  playerNameRule: '^(?:\.?[a-zA-Z0-9_]{3,16})$'
+  playerNameRuleMsg: '§6IpacEL §f> §a名称中包含不支持的字符: §b%playerName%'
 
-  # 玩家在线时, 对其使用 /wl del 或 /wl ban 等指令是否需要踢出玩家
-  kick-on-del: true # del
-  kick-on-ban: true # ban
-  kick-on-add-visit: true # 参观账户被添加到白名单时
+  # 服务器启动完毕后需要等待多长时间才允许玩家加入 (毫秒
+  lateJoinTime: 4000 # 4秒
+  lateJoinTimeMsg: '§6IpacEL §f> §b服务器正在启动'
 
-  # 在这里重新实现服务器人数限制
-  # 拥有 IpacWhitelist.maxPlayer.bypass 权限的玩家可绕过最大人数限制
-  maxPlayer:
-    enable: false
+  # 防止玩家短时间内重复加入退出 (毫秒
+  repeatJoinInterval: 1200 # 1.2秒
+  repeatJoinIntervalMsg: '§6IpacEL §f> §b连接受限, 请稍后重试'
 
-  # 自动检查并处理出错的记录
-  # 比如添加玩家 UUID 后又添加了 NAME (此时产生两条记录), 当玩家登录时自动删除其中一条记录
-  autoClean:
-    enable: true
-    # 如果两条记录中的关键数据不一致, 比如记录1是白名单, 而记录2中是黑名单, 则将记录2中的数据迁移到记录1
-    dataByWeight: true
+  # 启用最大玩家数量限制
+  # 拥有 IpacWhitelist.maxPlayers.bypass 权限的玩家可绕过最大人数限制
+  maxPlayers: true
+  maxPlayersIncludesVisit: true  # 参观账户是否包含在玩家总数中
+  maxPlayersMsg: '§6IpacEL §f> §b服务器已满'
 
-  # 如果玩家在指定秒数内没上线过, 则视为不在白名单中. -1 = 禁用
-  # 参观账户不受此限制
-  timeout: 10368000 # 10368000 = 4个月
+  # 以下根据玩家当前的类型对配置分类
 
-  # 服务器启动完成后等待多少毫秒才能允许玩家加入
-  late-join-time: 4000 # 4秒
+  # 玩家不在白名单中
+  NOT:
+    # 使用参观账户, 允许玩家参观服务器
+    visitEnable: true
+    # 否则不允许加入, 发出以下消息
+    notMsg: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%playerName%'
 
-  # 玩家因任何原因断开连接后需要等待多长时间才能再次加入 (毫秒
-  # 用于防止玩家在短时间内重复加入退出
-  playerDisconnectToReconnectMinTime: 1000
+    # 注意! 这里可能缺少 UUID 或 NAME, 这取决于使用 `/wl add` 指令时的输入内容
+    onWhitelistAddEvent: [ ] # 玩家被添加到白名单
 
+  # 参观账户
+  VISIT:
+    # 参观账户的名称字符检查
+    playerNameRule: '^(?:\.?[a-zA-Z0-9_]{3,16})$'
+    playerNameRuleMsg: '§6IpacEL §f> §a名称中包含不支持的字符: §b%playerName%'
 
-# 参观账户
-# 参观账户允许不在白名单中的玩家加入服务器, 可以限制其功能
-visit:
-  # 如果开启, 不在白名单和移出白名单的玩家将会以参观账户的形式加入服务器. 白名单过期和封禁中的账户依然不可加入服务器
-  # 关闭可重载配置, 但开启它需要重启服务器
-  enable: false
-  # 最多允许同时加入多少参观账户
-  max-visit-player: 10
+    # 同时允许多少参观账户加入服务器
+    maxPlayers: 10
+    maxPlayersMsg: '§6IpacEL §f> §b参观队列已满'
 
-  # 限定参观账户只能使用以下域名加入服务器, 否则提示不在白名单
-  limit-hostname:
-    enable: false
-    list:
-      - 'visit.your-mc-server.com:25565'
-      - 'visit2.your-mc-server.com:25565'
+    # [AuthMe] 自动注册登录参观账户
+    AuthMePlugin:
+      # 为参观账户自动注册和登录, 相当于 `/authme register <playerName> <password>` 和 `/authme forcelogin <playerName>`, 但不会踢出玩家
+      autoRegisterAndLogin: true
+      # 需要在这里填写一个复杂的密码, 只要满足 AuthMe 的密码规则即可
+      autoRegisterPassword: 'complexPassword'
 
-  # 需要启用 hook.AuthMe
-  # 自动注册和登录都在运行完事件程序后运行
-  AuthMe:
-    autoRegisterPassword: 'complexPassword' # 需要在这里填写一个复杂的密码
-    autoRegister: true # 为参观账户自动注册, 相当于 `/authme register <playerName> <password>`, 但不会踢出玩家
-    autoLogin: true # 为参观账户自动登录, 相当于 `/authme forcelogin <playerName>`
-    ignoreFirstAutoLogin: true # 如果参观账户第一次加入服务器, 则不运行自动登录. 如果启用 AuthMe 的 "注册后无需再次登录" 则需要同时启用它
+    # [事件程序] 以 "on" 开头, "Event" 结尾的配置均可使用此模板
+    # kick    = 同步踢出玩家, 并显示消息
+    # cmd     = 同步运行控制台命令
+    # msg     = 发送消息给这个玩家
+    # msgBroadcast = 广播消息给所有玩家
+    # msgExclude   = 广播消息给其他所有玩家
+    # [变量] 对于操作数据的功能尽量使用 UUID 而非 NAME, 防止因为名称冲突而影响数据
+    # %playerUUID%  = 玩家 UUID 36 位字符串
+    # %playerName%  = 玩家名称, 区分大小写
+    onNewPlayerLoginEvent: # 参观账户第一次登录服务器
+      cmd:
+        - 'lp user %playerUUID% parent add visit' # 将玩家添加到 visit 权限组
 
-  # 这些指令只是示例, 请根据自己的需求修改
-  # 关于 LuckPerms. 使用 lp 命令操作权限时, 需要保证用户至少有一个权限组. 也就是先添加权限组再删除权限组
+    onPlayerLoginEvent: [ ] # 参观账户每次登录服务器
 
-  # 参观账户事件程序
-  # command 和 message 中可使用的变量: %playerName%, %playerUUID%
-  event:
-    onNewVisitPlayerLoginEvent: # 参观账户第一次登录服务器 (第一次登录也会触发 onVisitPlayerLoginEvent 事件)
-      command:
-        - 'lp user %playerUUID% parent add visit' # 将玩家添加到 visit 用户组
-
-    onVisitPlayerLoginEvent: # 参观账户登录服务器
-      command: []
-
-    onVisitPlayerJoinEvent: # 参观账户加入服务器
-      command:
+    onPlayerJoinEvent: # 参观账户加入服务器
+      cmd:
         - 'gamemode spectator %playerName%' # 将玩家设置为观察模式
-      message:
+      msg:
         - '§6IpacEL §f> §a您正在使用参观账户=w='
+#        - '§6IpacEL §f> §b如需加入, 请访问我们的网站: §ahttps://ipacel.cc/'
+      msgExclude:
+        - '§6IpacEL §f> §a%playerName% §b使用参观账户加入游戏'
 
-    onVisitPlayerQuitEvent: # 参观账户退出服务器
-      command: []
+    onPlayerQuitEvent: # 参观账户退出服务器
+      msgBroadcast:
+        - '§6IpacEL §f> §a%playerName% §b跑了'
 
+    onWhitelistAddEvent: # 参观账户被添加到白名单
+      kick:
+        - '§6IpacEL §f> §a您已添加到白名单, 请重新登录服务器'
+      cmd:
+        - 'lp user %playerUUID% parent remove visit' # 将玩家移出 visit 用户组
+        - 'authme unregister %playerName%' # 取消注册玩家
 
-  # 参观账户被添加到白名单时执行一些指令 `/wl add <playerName> [playerUUID]`
-  # 可用变量: %playerName%, %playerUUID% (如果指令中不包含 UUID, 则会从数据库中查找)
-  wl-add:
-    command:
-      - 'lp user %playerUUID% parent remove visit' # 将玩家移出 visit 用户组
-      - 'authme unregister %playerName%' # 取消注册玩家
+  # 被添加到白名单中的参观账户, 需要通过此流程进行数据转换
+  # 之后在 WHITE 分类中继续运行
+  VISIT_CONVERT:
+    onPlayerLoginEvent: [ ] # 需要转换账户类型的玩家登录
 
-  # 参观账户被添加到白名单后执行一些指令, 如果参观账户现在不在线, 则推迟到下一次上线时运行
-  # 可用变量: %playerName%, %playerUUID% (从玩家对象中获取)
-  wl-add-convert:
-    command:
-      - 'spawn %playerName%' # 传送到重生点
-      - 'gamemode survival %playerName%' # 将玩家设置为生存模式
+    onPlayerJoinEvent: # 需要转换账户类型的玩家加入
+      cmd:
+        - 'spawn %playerName%' # 传送到重生点
+        - 'gamemode survival %playerName%' # 将玩家设置为生存模式
 
+    # <- 现在玩家正式添加到白名单, 将继续运行 WHITE 中的配置
 
-# 玩家加入消息广播
-playerJoinMessage:
-  enable: true # 修改这个需要重启服务器
+  # 白名单中的玩家
+  WHITE:
+    onPlayerLoginEvent: [ ] # 玩家登录服务器
 
-  # 退出的锁在多长时间后释放 (毫秒
-  quitLockFreedTime: 2000
+    onPlayerJoinEvent: # 玩家加入服务器
+      msgBroadcast:
+        - '§6IpacEL §f> §a%playerName% §b加入游戏'
 
-  # 参观账户是否可以收到自己的加入消息
-  visitOwnJoinMessage: false
-  # 玩家是否可以收到自己的加入消息
-  ownJoinMessage: true
+    onAuthMeLoginEvent: # 玩家通过 AuthMe 登录成功
+      msgBroadcast:
+        - '§6IpacEL §f> §a%playerName% §b登录成功'
 
-  # 事件触发时将发出广播消息
-  # 如果 message 留空, 则忽略这个事件
-  # 如果 terminate: true, 运行后将不再运行其他事件的广播. 默认为 true, 可以不需要填写
+    onAuthMeFailedLoginEvent: # 玩家通过 AuthMe 登录失败
+      msgBroadcast:
+        - '§6IpacEL §f> §a%playerName% §b断开连接: §7密码错误'
 
-  # 玩家加入
-  playerJoin:
+    onPlayerQuitEvent: # 玩家退出服务器
+      msgBroadcast:
+        - '§6IpacEL §f> §a%playerName% §b跑了'
 
-    # IpacWL 参观账户登录服务器
-    onVisitPlayerJoin:
-      message: '§6IpacEL §f> §a%player% §b使用参观账户加入游戏'
+    onAuthMeLogoutEvent: [ ] # 玩家通过 AuthMe 注销
 
-    # AuthMe 玩家登录或注册成功
-    onAuthMeLoginEvent: # 需要启用 hook.AuthMe
-      message: '§6IpacEL §f> §a%player% §b加入游戏'
-
-    # 玩家加入事件. 如果使用 AuthMe, 同时这里留空, 就能在玩家登录后显示加入游戏
-    onPlayerJoinEvent:
-      message: '§6IpacEL §f> §a%player% §b加入游戏'
-
-  # 玩家退出
-  playerQuit:
-
-    # AuthMe 登录密码错误
-    onAuthMeFailedLoginEvent: # 需要启用 hook.AuthMe
-      message: '§6IpacEL §f> §a%player% §b断开连接: §7密码错误'
-
-    # AuthMe 玩家注销事件 (/logout)
-    onLogoutEvent:
-      message: ''
-
-    # 玩家退出事件
-    onPlayerQuitEvent:
-      message: '§6IpacEL §f> §a%player% §b跑了'
+    onWhitelistDelEvent: # 白名单被移除
+      kick:
+        - '§6IpacEL §f> §b您已被移出白名单'
 
 
+  # 被封禁的账户
+  BAN:
+    # 被封禁账户登录时的消息
+    kickMsg: '§6IpacEL §f> §a您已被列入黑名单: §b%playerName%'
 
-# 模块配置
-dev:
-  # 删除一个玩家的所有数据
-  deletePlayerDataAll:
-    # 只删除玩家离线超过指定时间的数据, 防止删除后服务器又进行保存 (秒
-    deleteDataTimeout: 43200 # 12小时. 它必须大于数据缓存时间
-    # true=在删除期间锁定正在删除的账户, false=在数据删除期间完全禁用参观账户
-    deletingLockPlayer: true
-    # 删除两个参观账户之间间隔多长时间, 然后取消这个玩家的锁定, 有些插件会使用异步处理删除请求 (毫秒
-    intervalTime: 300
-    # 执行指令与删除文件之间间隔多长时间 (毫秒
-    intervalTime2: 400
+    onWhitelistBanEvent: # 任何玩家被添加到黑名单
+      kick:
+        - '§6IpacEL §f> §b您已被添加到黑名单'
 
-    # 执行哪些指令, 来删除其他插件数据
-    # !!! 谨慎使用 %playerName% 变量, 一些服务器里可能存在同名玩家数据和参观账户数据 !!!
-    # 可用变量: %playerUUID%, %playerName%
-    playerDataCommand:
-      - 'lp user %playerUUID% clear'
-      - 'authme unregister %playerName%' # AuthMe: 取消注册这个玩家
+    onWhitelistUnbanEvent: [ ] # 玩家从黑名单中移出
 
-    # 玩家数据文件的路径
-    # 可用变量: %playerUUID%, %playerName%
-    playerDataFile:
-      # Essentials 插件数据
-#      - 'plugins/Essentials/userdata/%playerUUID%.yml'
-
-    # 如果使用 %worldRoot%, 那么这条路径将会遍历所有 world, 反之只会运行一次. 如果你使用多世界插件, 则会很有用
-    # 可用变量: %worldRoot%, %playerUUID%, %playerName%
-    playerDataFileWorld:
-      # 主世界
-      - '%worldRoot%/playerdata/%playerUUID%.dat'
-      - '%worldRoot%/playerdata/%playerUUID%.dat_old'
-      - '%worldRoot%/advancements/%playerUUID%.json'
-      - '%worldRoot%/stats/%playerUUID%.json'
-      # 下界和末地
-#      - '%worldRoot%/DIM-1/playerdata/%playerUUID%.dat'
-#      - '%worldRoot%/DIM1/playerdata/%playerUUID%.dat'
+    onPlayerLoginEvent: [ ] # 玩家登录服务器
 
 
-# 消息
+# 指令配置
+# 如无必要, 请勿修改这部分消息, 防止信息显示错误
+command:
+
+  add:
+    title:   '§6IpacEL §f> §a添加到白名单:'
+    isBan:   '  - §a%playerName%§f[§b%playerUUID%§f] §b已在黑名单中, 不可操作'
+    isExist: '  - §a%playerName%§f[§b%playerUUID%§f] §b已在白名单中'
+    isVisit: '  - §a%playerName%§f[§b%playerUUID%§f] §a已从参观账户中重置'
+    finish:  '  - §a%playerName%§f[§b%playerUUID%§f] §a已完成'
+
+  del:
+    title:   '§6IpacEL §f> §b从白名单移出:'
+    isEmpty: '  - §a%playerName%§f[§b%playerUUID%§f] §b不存在'
+    isMulti: '  - §a%playerName%§f[§b%playerUUID%§f] §b重复的匹配项'
+    isBan:   '  - §a%playerName%§f[§b%playerUUID%§f] §b已在黑名单中, 不可操作'
+    finish:  '  - §a%playerName%§f[§b%playerUUID%§f] §a已完成'
+
+  ban:
+    title:   '§6IpacEL §f> §b添加到黑名单:'
+    isBan:   '  - §a%playerName%§f[§b%playerUUID%§f] §b已在黑名单中'
+    isMulti: '  - §a%playerName%§f[§b%playerUUID%§f] §b重复的匹配项'
+    finish:  '  - §a%playerName%§f[§b%playerUUID%§f] §a已完成'
+
+  unban:
+    title:   '§6IpacEL §f> §a从黑名单移出:'
+    isEmpty: '  - §a%playerName%§f[§b%playerUUID%§f] §b不存在'
+    isMulti: '  - §a%playerName%§f[§b%playerUUID%§f] §b重复的匹配项'
+    isUnban: '  - §a%playerName%§f[§b%playerUUID%§f] §b不在黑名单中'
+    finish:  '  - §a%playerName%§f[§b%playerUUID%§f] §a已完成'
+
+  info:
+    title:   '§6IpacEL §f> §b查询玩家信息:'
+    isEmpty: '  - §a%playerName%§f[§b%playerUUID%§f] §b不存在'
+    finish:  '  - §a%playerName%§f[§b%playerUUID%§f]: ID: %id%, TYPE: %type%, BAN: %ban%, TIME: %time%'
+
+  list:
+    title:   '§6IpacEL §f> §b查询玩家信息[%type%]:'
+    isEmpty: '  - §a%playerName%§f[§b%playerUUID%§f] §b不存在'
+    finish:  '  - §a%playerName%§f[§b%playerUUID%§f]: ID: %id%, TYPE: %type%, BAN: %ban%, TIME: %time%'
+
+  clear:
+    title: '§6IpacEL §f> §b运行数据清理[%type%:%var%]:'
+    isMiss: '  - [%var%:%id%] §a%playerName%§f[§b%playerUUID%§f] §b缺少必要的玩家信息'
+
+    # 只处理离线超过指定时间的账户, 防止清除后被保存 (秒
+    delTime: 43200 # 12小时. 它必须大于数据缓存时间
+    delTimeMsg: '  - [%var%:%id%] §a%playerName%§f[§b%playerUUID%§f] §b未达到可删除的时间'
+
+    # 运行指令
+    runCommand:
+      - 'lp user %playerUUID% clear'      # 清除玩家权限
+      - 'authme unregister %playerName%'  # 取消注册玩家
+
+    # 运行指令和清除文件之间的间隔 (毫秒
+    delayStep: 270
+
+    # 清除文件
+    # %worldPath% = 所有地图的根目录
+    # %worldName% = 所有地图的名称
+    clearFile:
+      # 清理所有地图下的存档
+      - '%worldPath%/playerdata/%playerUUID%.dat'
+      - '%worldPath%/playerdata/%playerUUID%.dat_old'
+      - '%worldPath%/advancements/%playerUUID%.json'
+      - '%worldPath%/stats/%playerUUID%.json'
+      # 清理 Essentials 插件下的玩家数据
+      - 'plugins/Essentials/userdata/%playerUUID%.yml'
+      # 清理粘液科技文件
+      - 'data-storage/Slimefun/waypoints/%playerUUID%.yml'
+
+    # 循环之间的时间间隔 (毫秒
+    delayLoop: 727
+
+    ing:     '  - [%var%:%id%] §a%playerName%§f[§b%playerUUID%§f] §a已完成'
+    finish:  '§6IpacEL §f> §a数据清理运行完毕'
+
+
+# 其他消息
 message:
-  # 指令消息
-  command:
-    add: '§6IpacEL §f> §b%player% §a已添加到白名单'
-    add-reset: '§6IpacEL §f> §b%player% §a的白名单已重置'
-    add-reset-visit: '§6IpacEL §f> §b%player% §a已从参观账户中重置'
-    del: '§6IpacEL §f> §a%player% §b已移出白名单'
-    ban: '§6IpacEL §f> §a%player% §b已列入黑名单'
-    ban-exist: '§6IpacEL §f> §a%player% §b在黑名单中'
-    unban: '§6IpacEL §f> §b%player% §a已移出黑名单'
-    unban-exist: '§6IpacEL §f> §a%player% §b不在黑名单中'
-    reload: '§6IpacEL §f> IpacWhitelist 配置和数据库重载完成'
-    info: '§6IpacEL §f> §a%player%§7: §f{§bID§f: §6%ID%§f, §bType§f: "§6%Type%§f", §bBan§f: "§6%Ban%§f", §bUUID§f: "§a%UUID%§f", §bName§f: "§a%Name%§f", §bTime§f: §6%Time%§f}'
-    list: '§6IpacEL §f> §a%num% §7-> §f{§bID§f: §6%ID%§f, §bType§f: "§6%Type%§f", §bBan§f: "§6%Ban%§f", §bUUID§f: "§a%UUID%§f", §bName§f: "§a%Name%§f", §bTime§f: §6%Time%§f}'
-    clean: '§6IpacEL §f> §b数据删除程序将在后台执行'
-    clean-ok: '§6IpacEL §f> §a共删除了 §b%num% §a个账户及其数据'
-    err: '§6IpacEL §f> §b内部错误'
-    err-ban: '§6IpacEL §f> §b此账户被封禁, 执行此操作需要解封'
-    err-length: '§6IpacEL §f> §b名称或UUID长度异常'
-    err-parameter: '§6IpacEL §f> §b无效参数: §a%i%'
-    err-note-exist: '§6IpacEL §f> §a%player% §b不存在'
-    err-clean-incomplete: '§6IpacEL §f> §a%player% §b数据不完整, 可能这位玩家从未进入过服务器'
-    err-clean-deleteDataTimeout: '§6IpacEL §f> §a%player% §b未达到可删除的时间'
-    err-clean-online: '§6IpacEL §f> §a%player% §b玩家在线'
-    err-permission: '§6IpacEL §f> §b权限不足'
-
-  # 玩家加入
-  join:
-    add: '§6IpacEL §f> §a您的白名单已重置, 请重新加入服务器'
-    not: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%player%'
-    expired: '§6IpacEL §f> §b太久没有上线? 请联系管理员恢复白名单§7: §a%player%'
-    limiter-reconnection-time: '§6IpacEL §f> §b连接受限'
-    ban: '§6IpacEL §f> §b您被列入黑名单: §a%player%'
-    ban-ip: '§6IpacEL §f> §b您被列入黑名单: §a%player%' # %ip%
-    err: '§6IpacEL §f> §a发生内部错误, 请稍后重试或联系管理员解决'
-    err-name: '§6IpacEL §f> §b无效的名称: §a%player%'
-    err-name-visit: '§6IpacEL §f> §b无效的名称: §a%player%'
-    starting: '§6IpacEL §f> §b服务器正在启动'
-    clean: '§6IpacEL §f> §b正在清理数据... 请稍后再试'
-    full: '§6IpacEL §f> §b服务器已满'
-
-  # 参观账户加入
-  visit:
-    illegal-hostname: '§6IpacEL §f> §b您不在白名单中或已失效, 请联系管理员恢复§7: §a%player%' # 未使用限定的主机名
-    full: '§6IpacEL §f> §b参观队列已满'
+  parameterErr: '§6IpacEL §f> §a参数不可识别或未通过检查: §b%var%'
+  playerLoginErr: '§6IpacEL §f> §b出现未知的错误, 请联系管理员检查'

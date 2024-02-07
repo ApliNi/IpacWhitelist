@@ -1,12 +1,13 @@
 package aplini.ipacwhitelist;
 
-import aplini.ipacwhitelist.Listener.CommandHandler;
-import aplini.ipacwhitelist.Listener.PlayerJoinMessage;
-import aplini.ipacwhitelist.Listener.onPlayerJoin;
-import aplini.ipacwhitelist.Listener.onVisitPlayerJoin;
 import aplini.ipacwhitelist.hook.hookAuthMe;
-import aplini.ipacwhitelist.util.SQL;
+import aplini.ipacwhitelist.listener.commandHandler;
+import aplini.ipacwhitelist.listener.onPlayerLogin;
+import aplini.ipacwhitelist.utils.Metrics;
+import aplini.ipacwhitelist.utils.sql;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;
@@ -17,70 +18,56 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class IpacWhitelist extends JavaPlugin implements Listener {
-    private static IpacWhitelist plugin;
+    public static Server server = Bukkit.getServer();
+    public static IpacWhitelist plugin;
+    public static FileConfiguration config;
     public static boolean allowJoin = false;
 
     @Override // 插件加载
     public void onLoad() {
-        plugin = this;
-        plugin.saveDefaultConfig();
-        plugin.reloadConfig();
-        plugin.getConfig();
+        loadConfig();
+    }
 
-        // 连接数据库
-        SQL.connection();
-        // 初始化数据库
-        SQL.initialize();
+    // 加载配置文件
+    public void loadConfig(){
+        plugin = this;
+        saveDefaultConfig();
+        reloadConfig();
+        config = getConfig();
+        sql.reconnect();
+        sql.initialize();
     }
 
     // 插件启动
-    public void onEnable() {
+    public void onEnable(){
+        // 连接到插件
+        if(config.getBoolean("hook.AuthMe", true)){
+            getServer().getPluginManager().registerEvents(new hookAuthMe(), plugin);
+        }
+
+        // 注册指令
+        Objects.requireNonNull(getCommand("wl")).setExecutor(new commandHandler());
+
         // 注册监听器
-        getServer().getPluginManager().registerEvents(this, this);
-        getServer().getPluginManager().registerEvents(new onPlayerJoin(this), this);
-        Objects.requireNonNull(Bukkit.getPluginCommand("wl")).setExecutor(new CommandHandler(this));
+        getServer().getPluginManager().registerEvents(this, plugin);
+        getServer().getPluginManager().registerEvents(new onPlayerLogin(), plugin);
 
-        // hook
-        if(plugin.getConfig().getBoolean("hook.AuthMe")){
-            getServer().getPluginManager().registerEvents(new hookAuthMe(), this);
-        }
-
-        // 参观账户功能
-        if(plugin.getConfig().getBoolean("visit.enable")){
-            getServer().getPluginManager().registerEvents(new onVisitPlayerJoin(this), this);
-        }
-
-        // 玩家加入消息功能
-        if(plugin.getConfig().getBoolean("playerJoinMessage.enable")){
-            getServer().getPluginManager().registerEvents(new PlayerJoinMessage(this), this);
-        }
-
+        // 统计
+        Metrics metrics = new Metrics(this, 20926);
     }
-
-    // 插件禁用
-    public void onDisable() {
-        // 关闭数据库连接
-        SQL.closeConnection();
-    }
-
 
     @EventHandler // 服务器启动完成
-    public void onServerLoad(ServerLoadEvent event) {
+    public void onServerLoad(ServerLoadEvent event){
         // 异步
         CompletableFuture.runAsync(() -> {
             // 等待时间
             try {
-                TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("whitelist.late-join-time", 4000));
+                TimeUnit.MILLISECONDS.sleep(config.getInt("whitelist.lateJoinTime", 4000));
             } catch (InterruptedException ignored) {}
 
-            getLogger().info("启动等待结束");
+            plugin.getLogger().info("启动等待结束");
             // 允许加入
             allowJoin = true;
         });
-    }
-
-
-    public static IpacWhitelist getPlugin() {
-        return plugin;
     }
 }

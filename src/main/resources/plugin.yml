@@ -8,44 +8,44 @@ softdepend:
 
 commands:
   wl:
-    description: 白名单
+    description: 白名单指令
     usage: /<command>
     aliases: [ipacwhitelist]
 
 permissions:
 
-  IpacWhitelist.maxPlayer.bypass:
+  IpacWhitelist.maxPlayers.bypass:
     description: '绕过最大人数限制'
     default: op
 
-  IpacWhitelist.command.reload:
+  IpacWhitelist.cmd.reload:
     description: '使用 /wl reload 指令'
     default: op
 
-  IpacWhitelist.command.add:
+  IpacWhitelist.cmd.add:
     description: '使用 /wl add 指令'
     default: op
 
-  IpacWhitelist.command.del:
+  IpacWhitelist.cmd.del:
     description: '使用 /wl del 指令'
     default: op
 
-  IpacWhitelist.command.ban:
+  IpacWhitelist.cmd.ban:
     description: '使用 /wl ban 指令'
     default: op
 
-  IpacWhitelist.command.unban:
+  IpacWhitelist.cmd.unban:
     description: '使用 /wl unban 指令'
     default: op
 
-  IpacWhitelist.command.info:
+  IpacWhitelist.cmd.info:
     description: '使用 /wl info 指令'
     default: op
 
-  IpacWhitelist.command.list:
+  IpacWhitelist.cmd.list:
     description: '使用 /wl list 指令'
     default: op
 
-  IpacWhitelist.command.clean:
+  IpacWhitelist.cmd.clean:
     description: '使用 /wl clean 指令'
     default: op
