@@ -20,6 +20,11 @@ public class del {
 
     public static void cmd(CommandSender sender, String[] args){
 
+        if(!sender.hasPermission("IpacWhitelist.del")){
+            sender.sendMessage(config.getString("message.noPermission", ""));
+            return;
+        }
+
         if(args.length < 2){
             sender.sendMessage("/wl del <playerName|playerUUID>");
             return;
@@ -66,7 +71,12 @@ public class del {
     }
 
 
-    public static List<String> tab(String[] args){
+    public static List<String> tab(CommandSender sender, String[] args){
+
+        if(!sender.hasPermission("IpacWhitelist.del")){
+            return null;
+        }
+
         if(args[1].isEmpty()){
             // 返回在线玩家列表
             List<String> list = new ArrayList<>();

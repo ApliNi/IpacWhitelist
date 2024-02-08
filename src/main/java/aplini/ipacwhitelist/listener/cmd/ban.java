@@ -21,6 +21,11 @@ public class ban {
 
     public static void cmd(CommandSender sender, String[] args){
 
+        if(!sender.hasPermission("IpacWhitelist.ban")){
+            sender.sendMessage(config.getString("message.noPermission", ""));
+            return;
+        }
+
         if(args.length < 2){
             sender.sendMessage("/wl ban <playerName|playerUUID>");
             return;
@@ -69,7 +74,12 @@ public class ban {
     }
 
 
-    public static List<String> tab(String[] args){
+    public static List<String> tab(CommandSender sender, String[] args){
+
+        if(!sender.hasPermission("IpacWhitelist.ban")){
+            return null;
+        }
+
         if(args[1].isEmpty()){
             // 返回在线的玩家列表
             List<String> list = new ArrayList<>();

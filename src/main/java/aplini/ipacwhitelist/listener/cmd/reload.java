@@ -8,6 +8,12 @@ import static aplini.ipacwhitelist.IpacWhitelist.*;
 public class reload {
 
     public static void cmd(CommandSender sender){
+
+        if(!sender.hasPermission("IpacWhitelist.reload")){
+            sender.sendMessage(config.getString("message.noPermission", ""));
+            return;
+        }
+
         allowJoin = false;
         plugin.saveDefaultConfig();
         plugin.reloadConfig();

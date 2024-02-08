@@ -19,6 +19,9 @@ public class PlayerData {
     public long time    = 0;
     public PlayerConfig config  = new PlayerConfig();
 
+    // 保存数据时是否更新时间
+    public boolean updateTime = true;
+
     // 数据是否为空
     public boolean isNull(){
         return this.id == -1;

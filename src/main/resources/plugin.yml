@@ -18,6 +18,10 @@ permissions:
     description: '绕过最大人数限制'
     default: op
 
+  IpacWhitelist.cmd:
+    description: '使用指令和指令补全'
+    default: op
+
   IpacWhitelist.cmd.reload:
     description: '使用 /wl reload 指令'
     default: op
@@ -46,6 +50,10 @@ permissions:
     description: '使用 /wl list 指令'
     default: op
 
-  IpacWhitelist.cmd.clean:
-    description: '使用 /wl clean 指令'
+  IpacWhitelist.cmd.clear:
+    description: '使用 /wl clear 指令'
+    default: op
+
+  IpacWhitelist.cmd.importData:
+    description: '使用 /wl importData 指令'
     default: op

@@ -19,6 +19,11 @@ public class info {
 
     public static void cmd(CommandSender sender, String[] args){
 
+        if(!sender.hasPermission("IpacWhitelist.info")){
+            sender.sendMessage(config.getString("message.noPermission", ""));
+            return;
+        }
+
         if(args.length < 2){
             sender.sendMessage("/wl info <playerName|playerUUID>");
             return;
@@ -52,7 +57,12 @@ public class info {
     }
 
 
-    public static List<String> tab(String[] args){
+    public static List<String> tab(CommandSender sender, String[] args){
+
+        if(!sender.hasPermission("IpacWhitelist.info")){
+            return null;
+        }
+
         if(args[1].isEmpty()){
             // 返回在线玩家列表
             List<String> list = new ArrayList<>();

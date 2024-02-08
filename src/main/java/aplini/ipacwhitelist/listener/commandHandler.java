@@ -15,6 +15,11 @@ public class commandHandler implements Listener, CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args){
 
+        // 如果没有主权限, 则什么都不能运行
+        if(!sender.hasPermission("IpacWhitelist.cmd")){
+            return null;
+        }
+
         // 返回子命令列表
         if(args.length == 1){
             return List.of(
@@ -31,13 +36,13 @@ public class commandHandler implements Listener, CommandExecutor, TabCompleter {
 
         return (switch(args[0].toLowerCase()){
 
-            case "add" -> add.tab(args);
-            case "del" -> del.tab(args);
-            case "ban" -> ban.tab(args);
-            case "unban" -> unban.tab(args);
-            case "info" -> info.tab(args);
-            case "list" -> list.tab(args);
-            case "clear" -> clear.tab(args);
+            case "add" -> add.tab(sender, args);
+            case "del" -> del.tab(sender, args);
+            case "ban" -> ban.tab(sender, args);
+            case "unban" -> unban.tab(sender, args);
+            case "info" -> info.tab(sender, args);
+            case "list" -> list.tab(sender, args);
+            case "clear" -> clear.tab(sender, args);
 
             default -> null;
         });
@@ -45,6 +50,12 @@ public class commandHandler implements Listener, CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args){
+
+        // 如果没有主权限, 则什么都不能运行
+        if(!sender.hasPermission("IpacWhitelist.cmd")){
+            return false;
+        }
+
         // 异步处理指令
         CompletableFuture.runAsync(() -> {
             switch(args[0].toLowerCase()){
@@ -57,6 +68,7 @@ public class commandHandler implements Listener, CommandExecutor, TabCompleter {
                 case "info" -> info.cmd(sender, args);
                 case "list" -> list.cmd(sender, args);
                 case "clear" -> clear.cmd(sender, args);
+                case "importdata" -> importData.cmd(sender, args);
 
                 default -> {
                     sender.sendMessage("""
@@ -70,6 +82,7 @@ public class commandHandler implements Listener, CommandExecutor, TabCompleter {
                             - /wl info <Name|UUID>  - 显示玩家信息
                             - /wl list <Type>       - 查询玩家数据
                             - /wl clear PLAYER|TYPE <Name|UUID|Type>  - 清除数据
+                            - /wl importData        - 导入数据
                         """);
                 }
             }

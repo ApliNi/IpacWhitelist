@@ -21,6 +21,11 @@ public class add {
 
     public static void cmd(CommandSender sender, String[] args){
 
+        if(!sender.hasPermission("IpacWhitelist.add")){
+            sender.sendMessage(config.getString("message.noPermission", ""));
+            return;
+        }
+
         if(args.length < 2){
             sender.sendMessage("/wl add <playerName|playerUUID>");
             return;
@@ -72,7 +77,12 @@ public class add {
     }
 
 
-    public static List<String> tab(String[] args){
+    public static List<String> tab(CommandSender sender, String[] args){
+
+        if(!sender.hasPermission("IpacWhitelist.add")){
+            return null;
+        }
+
         if(args[1].isEmpty()){
             // 返回在线的参观账户列表
             List<String> list = new ArrayList<>();

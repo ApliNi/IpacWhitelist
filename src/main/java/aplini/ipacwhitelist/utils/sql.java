@@ -194,7 +194,10 @@ public class sql {
     // 保存玩家数据
     public static void savePlayerData(PlayerData pd){
         // 更新数据修改时间
-        pd.time = getTime();
+        if(pd.updateTime){
+            pd.time = getTime();
+        }
+        // 将 null 转换为空字符串
         pd.uuid = pd.uuid == null ? "" : pd.uuid;
         pd.name = pd.name == null ? "" : pd.name;
         try {

@@ -18,6 +18,11 @@ public class unban {
 
     public static void cmd(CommandSender sender, String[] args){
 
+        if(!sender.hasPermission("IpacWhitelist.unban")){
+            sender.sendMessage(config.getString("message.noPermission", ""));
+            return;
+        }
+
         if(args.length < 2){
             sender.sendMessage("/wl unban <playerName|playerUUID>");
             return;
@@ -64,9 +69,14 @@ public class unban {
     }
 
 
-    public static List<String> tab(String[] args){
-        if(args[1].isEmpty()){
+    public static List<String> tab(CommandSender sender, String[] args){
+
+        if(!sender.hasPermission("IpacWhitelist.info")){
             return null;
+        }
+
+        if(args[1].isEmpty()){
+            return List.of("....");
         }
 
         // 查询匹配的输入

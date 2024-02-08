@@ -16,6 +16,11 @@ public class list {
 
     public static void cmd(CommandSender sender, String[] args){
 
+        if(!sender.hasPermission("IpacWhitelist.list")){
+            sender.sendMessage(config.getString("message.noPermission", ""));
+            return;
+        }
+
         if(args.length < 2){
             sender.sendMessage("/wl list <Type>");
             return;
@@ -36,17 +41,6 @@ public class list {
     }
 
 
-    public static List<String> tab(String[] args){
-        return List.of(
-                "NOT",
-                "VISIT",
-                "WHITE",
-                "VISIT_CONVERT",
-                "BAN"
-        );
-    }
-
-
     static void sendListMsg(CommandSender sender, List<PlayerData> list){
         for(PlayerData li : list){
             sender.sendMessage(msg(config.getString("command.info.finish", ""), li.uuid, li.name)
@@ -56,5 +50,21 @@ public class list {
                     .replace(ph.time.ph, getDisplayTime(li.time))
             );
         }
+    }
+
+
+    public static List<String> tab(CommandSender sender, String[] args){
+
+        if(!sender.hasPermission("IpacWhitelist.info")){
+            return null;
+        }
+
+        return List.of(
+                "NOT",
+                "VISIT",
+                "WHITE",
+                "VISIT_CONVERT",
+                "BAN"
+        );
     }
 }

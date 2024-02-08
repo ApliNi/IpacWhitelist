@@ -23,6 +23,11 @@ public class clear {
 
     public static void cmd(CommandSender sender, String[] args){
 
+        if(!sender.hasPermission("IpacWhitelist.clear")){
+            sender.sendMessage(config.getString("message.noPermission", ""));
+            return;
+        }
+
         if(args.length < 3){
             sender.sendMessage("/wl clear PLAYER|TYPE <playerName|playerUUID|Type>");
             return;
@@ -123,7 +128,12 @@ public class clear {
     }
 
 
-    public static List<String> tab(String[] args){
+    public static List<String> tab(CommandSender sender, String[] args){
+
+        if(!sender.hasPermission("IpacWhitelist.clear")){
+            return null;
+        }
+
         if(args.length == 2){
             return List.of(
                     "PLAYER",

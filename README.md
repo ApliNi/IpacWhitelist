@@ -3,15 +3,22 @@
 - 同时支持正版账号/离线账号/Geyser账号. 
 - 支持查看/导出数据
 
-## v4.0 更新
+下载: [[发布版本]](https://modrinth.com/plugin/ipacwhitelist) -- [[开发版本]](https://github.com/ApliNi/IpacWhitelist/actions)
+
+## v4 更新
 此版本对插件进行完全重构, 修复了许多 bug 并优化性能, 属于不兼容更新.
 建议所有服主更新到此版本, 但这需要一些时间来重新修改配置
 
-下载: [[发布版本]](https://modrinth.com/plugin/ipacwhitelist) -- [[开发版本]](https://github.com/ApliNi/IpacWhitelist/actions)
+### 从 v3 导入数据
+1. 在 v3 版本控制台中输入指令: `/wl list * ALL`
+2. 复制这部分的完整日志内容, 到 IpacWhitelist 插件目录下的 `Data.txt` (需要自己创建)
+3. 安装 v4 版本, 根据服务器需求修改配置, 比如玩家名称检查正则
+4. 在 v4 版本运行指令 `/wl importData`
+5. 检查内容是否识别正确
 
 
 ### 指令列表
-- `/wl` - 主命令
+- `/wl` - 显示指令列表
 - `/wl reload`    - 重载插件
 - `/wl add <Name|UUID>`   - 添加到白名单
 - `/wl del <Name|UUID>`   - 从白名单移出
@@ -20,6 +27,7 @@
 - `/wl info <Name|UUID>`  - 显示玩家信息
 - `/wl list <Type>`       - 查询玩家数据
 - `/wl clear PLAYER|TYPE <Name|UUID|Type>`  - 清除数据
+- `/wl importData`        - 导入数据
 
 > 支持使用 32 或 36 位的 UUID
 
@@ -362,6 +370,10 @@ permissions:
     description: '绕过最大人数限制'
     default: op
 
+  IpacWhitelist.cmd:
+    description: '使用指令和指令补全'
+    default: op
+
   IpacWhitelist.cmd.reload:
     description: '使用 /wl reload 指令'
     default: op
@@ -390,8 +402,12 @@ permissions:
     description: '使用 /wl list 指令'
     default: op
 
-  IpacWhitelist.cmd.clean:
-    description: '使用 /wl clean 指令'
+  IpacWhitelist.cmd.clear:
+    description: '使用 /wl clear 指令'
+    default: op
+
+  IpacWhitelist.cmd.importData:
+    description: '使用 /wl importData 指令'
     default: op
 
 ```
