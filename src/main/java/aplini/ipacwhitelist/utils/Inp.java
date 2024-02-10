@@ -20,7 +20,7 @@ public class Inp {
 
     public Player onlinePlayer = null;
 
-    public PlayerData pd = new PlayerData();
+    public final PlayerData pd = new PlayerData();
     public List<PlayerData> pds = new ArrayList<>();
 
     // 从用户输入中得到玩家数据

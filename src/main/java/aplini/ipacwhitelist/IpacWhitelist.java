@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class IpacWhitelist extends JavaPlugin implements Listener {
-    public static Server server = Bukkit.getServer();
+    public static final Server server = Bukkit.getServer();
     public static IpacWhitelist plugin;
     public static FileConfiguration config;
     public static boolean allowJoin = false;

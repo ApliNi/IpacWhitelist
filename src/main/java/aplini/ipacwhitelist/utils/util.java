@@ -5,8 +5,6 @@ import aplini.ipacwhitelist.enums.ph;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static aplini.ipacwhitelist.IpacWhitelist.getPlugin;
-
 public class util {
 
     // 获取秒级时间戳

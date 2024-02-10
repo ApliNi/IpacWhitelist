@@ -6,8 +6,8 @@
 下载: [[发布版本]](https://modrinth.com/plugin/ipacwhitelist) -- [[开发版本]](https://github.com/ApliNi/IpacWhitelist/actions)
 
 ## v4 更新
-此版本对插件进行完全重构, 修复了许多 bug 并优化性能, 属于不兼容更新.
-建议所有服主更新到此版本, 但这需要一些时间来重新修改配置
+此版本对插件进行完全重构, 添加新功能并优化性能, 属于不兼容更新.
+在发布正式版后, 建议所有服主更新到此版本, 这需要一些时间来重新修改配置
 
 ### 从 v3 导入数据
 1. 在 v3 版本控制台中输入指令: `/wl list * ALL`
@@ -29,7 +29,7 @@
 - `/wl clear PLAYER|TYPE <Name|UUID|Type>`  - 清除数据
 - `/wl importData`        - 导入数据
 
-> 支持使用 32 或 36 位的 UUID
+> 支持使用 32 或 36 位的 UUID. 我们有完整的指令补全支持!
 
 ---
 

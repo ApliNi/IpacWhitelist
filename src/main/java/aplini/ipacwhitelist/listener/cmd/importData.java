@@ -1,7 +1,6 @@
 package aplini.ipacwhitelist.listener.cmd;
 
 import aplini.ipacwhitelist.enums.Type;
-import aplini.ipacwhitelist.utils.Inp;
 import aplini.ipacwhitelist.utils.PlayerData;
 import aplini.ipacwhitelist.utils.sql;
 import org.bukkit.command.CommandSender;
