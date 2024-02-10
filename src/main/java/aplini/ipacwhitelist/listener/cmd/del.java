@@ -74,7 +74,7 @@ public class del {
     public static List<String> tab(CommandSender sender, String[] args){
 
         if(!sender.hasPermission("IpacWhitelist.del")){
-            return null;
+            return List.of("");
         }
 
         if(args[1].isEmpty()){

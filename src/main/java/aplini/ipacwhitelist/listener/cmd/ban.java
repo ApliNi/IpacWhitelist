@@ -77,7 +77,7 @@ public class ban {
     public static List<String> tab(CommandSender sender, String[] args){
 
         if(!sender.hasPermission("IpacWhitelist.ban")){
-            return null;
+            return List.of("");
         }
 
         if(args[1].isEmpty()){

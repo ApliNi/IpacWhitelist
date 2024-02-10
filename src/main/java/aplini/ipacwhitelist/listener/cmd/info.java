@@ -60,7 +60,7 @@ public class info {
     public static List<String> tab(CommandSender sender, String[] args){
 
         if(!sender.hasPermission("IpacWhitelist.info")){
-            return null;
+            return List.of("");
         }
 
         if(args[1].isEmpty()){

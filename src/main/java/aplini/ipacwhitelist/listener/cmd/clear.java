@@ -128,38 +128,6 @@ public class clear {
     }
 
 
-    public static List<String> tab(CommandSender sender, String[] args){
-
-        if(!sender.hasPermission("IpacWhitelist.clear")){
-            return null;
-        }
-
-        if(args.length == 2){
-            return List.of(
-                    "PLAYER",
-                    "TYPE"
-            );
-        }
-        else if(args.length == 3){
-            if(args[1].equalsIgnoreCase("PLAYER")){
-                List<String> list = new ArrayList<>();
-                for(PlayerData li : sql.findPlayerDataList(setUUID36(args[2]))){
-                    list.add(li.uuid +" - "+ li.name +" [TYPE: "+ li.type.name +", BAN: "+ li.ban.name +"] ");
-                }
-                return list;
-            }
-            else if(args[1].equalsIgnoreCase("TYPE")){
-                return List.of(
-                        "NOT",
-                        "VISIT",
-                        "BAN"
-                );
-            }
-        }
-        return null;
-    }
-
-
     static void clearPlayerData(PlayerData pd){
 
         // 将清理完的 Type 设置为 NOT
@@ -210,5 +178,37 @@ public class clear {
                 }
             }
         }
+    }
+
+
+    public static List<String> tab(CommandSender sender, String[] args){
+
+        if(!sender.hasPermission("IpacWhitelist.clear")){
+            return List.of("");
+        }
+
+        if(args.length == 2){
+            return List.of(
+                    "PLAYER",
+                    "TYPE"
+            );
+        }
+        else if(args.length == 3){
+            if(args[1].equalsIgnoreCase("PLAYER")){
+                List<String> list = new ArrayList<>();
+                for(PlayerData li : sql.findPlayerDataList(setUUID36(args[2]))){
+                    list.add(li.uuid +" - "+ li.name +" [TYPE: "+ li.type.name +", BAN: "+ li.ban.name +"] ");
+                }
+                return list;
+            }
+            else if(args[1].equalsIgnoreCase("TYPE")){
+                return List.of(
+                        "NOT",
+                        "VISIT",
+                        "BAN"
+                );
+            }
+        }
+        return List.of("");
     }
 }

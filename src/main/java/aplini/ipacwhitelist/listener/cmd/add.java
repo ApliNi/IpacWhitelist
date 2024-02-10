@@ -80,7 +80,7 @@ public class add {
     public static List<String> tab(CommandSender sender, String[] args){
 
         if(!sender.hasPermission("IpacWhitelist.add")){
-            return null;
+            return List.of("");
         }
 
         if(args[1].isEmpty()){
