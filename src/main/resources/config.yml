@@ -197,6 +197,7 @@ command:
 
   list:
     title:   '§6IpacEL §f> §b查询玩家信息[%type%]:'
+    noData:  '  - §b这个标签下没有任何数据'
     isEmpty: '  - §a%playerName%§f[§b%playerUUID%§f] §b不存在'
     finish:  '  - §a%playerName%§f[§b%playerUUID%§f]: ID: %id%, TYPE: %type%, BAN: %ban%, TIME: %time%'
 

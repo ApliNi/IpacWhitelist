@@ -29,6 +29,9 @@ public class list {
         // 获取对应的标签
         String typeName = args[1].toUpperCase();
 
+        sender.sendMessage(config.getString("command.list.title", "")
+                .replace(ph.type.ph, typeName));
+
         // 查询指定的数据
         switch(typeName){
             case "NOT" -> sendListMsg(sender, sql.findPlayerDataList("", Key.GET_NOT));
@@ -42,6 +45,12 @@ public class list {
 
 
     static void sendListMsg(CommandSender sender, List<PlayerData> list){
+
+        if(list.isEmpty()){
+            sender.sendMessage(config.getString("command.list.noData", ""));
+            return;
+        }
+
         for(PlayerData li : list){
             sender.sendMessage(msg(config.getString("command.info.finish", ""), li.uuid, li.name)
                     .replace(ph.id.ph, ""+ li.id)
