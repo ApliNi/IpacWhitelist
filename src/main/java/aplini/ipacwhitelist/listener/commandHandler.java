@@ -32,7 +32,8 @@ public class commandHandler implements Listener, CommandExecutor, TabCompleter {
                     "unban",
                     "info",
                     "list",
-                    "clear"
+                    "clear",
+                    "importData"
             );
         }
 

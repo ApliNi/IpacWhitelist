@@ -169,6 +169,9 @@ public class sql {
             case GET_BAN ->
                     " AND `Ban` = %s ".formatted(Type.BAN.num);
 
+            case GET_ALL ->
+                    "";
+
             default -> "";
         });
         try {

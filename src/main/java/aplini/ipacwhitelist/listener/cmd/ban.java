@@ -21,7 +21,7 @@ public class ban {
 
     public static void cmd(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.ban")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.ban")){
             sender.sendMessage(config.getString("message.noPermission", ""));
             return;
         }
@@ -76,7 +76,7 @@ public class ban {
 
     public static List<String> tab(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.ban")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.ban")){
             return List.of("");
         }
 

@@ -4,6 +4,7 @@ import aplini.ipacwhitelist.enums.ph;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static aplini.ipacwhitelist.IpacWhitelist.*;
@@ -19,14 +20,13 @@ public class eventFunc {
 
         // kick
         if(player != null){
-            for (String li : config.getStringList(cp + ".kick")) {
-                // 获取消息文本
-                String msg = li
+            // 将消息合并, 添加换行符
+            List<String> list = config.getStringList(cp + ".kick");
+            if(!list.isEmpty()){
+                String msg = String.join("\\n", list)
                         .replace(ph.playerUUID.ph, playerUUID)
                         .replace(ph.playerName.ph, playerName);
-                // 踢出玩家, 只运行一次
-                player.kickPlayer(msg);
-                break;
+                Bukkit.getScheduler().runTask(plugin, () -> player.kickPlayer(msg));
             }
         }
 
@@ -37,7 +37,7 @@ public class eventFunc {
                     .replace(ph.playerUUID.ph, playerUUID)
                     .replace(ph.playerName.ph, playerName);
             // 运行命令
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+            Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd));
         }
 
         // 剩余部分都可以异步运行

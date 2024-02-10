@@ -16,7 +16,7 @@ public class list {
 
     public static void cmd(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.list")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.list")){
             sender.sendMessage(config.getString("message.noPermission", ""));
             return;
         }
@@ -39,6 +39,7 @@ public class list {
             case "WHITE" -> sendListMsg(sender, sql.findPlayerDataList("", Key.GET_WHITE));
             case "VISIT_CONVERT" -> sendListMsg(sender, sql.findPlayerDataList("", Key.GET_VISIT_CONVERT));
             case "BAN" -> sendListMsg(sender, sql.findPlayerDataList("", Key.GET_BAN));
+            case "ALL" -> sendListMsg(sender, sql.findPlayerDataList("", Key.GET_ALL));
             default -> sender.sendMessage("/wl list <Type>");
         }
     }
@@ -52,19 +53,19 @@ public class list {
         }
 
         for(PlayerData li : list){
-            sender.sendMessage(msg(config.getString("command.info.finish", ""), li.uuid, li.name)
+            sender.sendMessage(msg(config.getString("command.list.finish", ""), li.uuid, li.name)
                     .replace(ph.id.ph, ""+ li.id)
                     .replace(ph.type.ph, li.type.name)
                     .replace(ph.ban.ph, li.ban.name)
-                    .replace(ph.time.ph, getDisplayTime(li.time))
-            );
+                    .replace(ph.timeLong.ph, ""+ li.time)
+                    .replace(ph.time.ph, getDisplayTime(li.time)));
         }
     }
 
 
     public static List<String> tab(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.info")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.list")){
             return List.of("");
         }
 
@@ -73,7 +74,8 @@ public class list {
                 "VISIT",
                 "WHITE",
                 "VISIT_CONVERT",
-                "BAN"
+                "BAN",
+                "ALL"
         );
     }
 }

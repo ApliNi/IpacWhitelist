@@ -19,7 +19,7 @@ public class importData {
 
     public static void cmd(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.importData")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.importData")){
             sender.sendMessage(config.getString("message.noPermission", ""));
             return;
         }

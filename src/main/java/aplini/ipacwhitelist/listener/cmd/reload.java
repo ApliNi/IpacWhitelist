@@ -9,7 +9,7 @@ public class reload {
 
     public static void cmd(CommandSender sender){
 
-        if(!sender.hasPermission("IpacWhitelist.reload")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.reload")){
             sender.sendMessage(config.getString("message.noPermission", ""));
             return;
         }

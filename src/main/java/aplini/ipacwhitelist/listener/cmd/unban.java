@@ -18,7 +18,7 @@ public class unban {
 
     public static void cmd(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.unban")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.unban")){
             sender.sendMessage(config.getString("message.noPermission", ""));
             return;
         }
@@ -71,7 +71,7 @@ public class unban {
 
     public static List<String> tab(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.info")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.unban")){
             return List.of("");
         }
 

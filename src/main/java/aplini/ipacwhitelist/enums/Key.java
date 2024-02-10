@@ -9,4 +9,5 @@ public enum Key {
     GET_VISIT,
     GET_WHITE,
     GET_VISIT_CONVERT,
+    GET_ALL,
 }

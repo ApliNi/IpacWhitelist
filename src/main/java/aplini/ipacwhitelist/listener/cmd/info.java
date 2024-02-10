@@ -19,7 +19,7 @@ public class info {
 
     public static void cmd(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.info")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.info")){
             sender.sendMessage(config.getString("message.noPermission", ""));
             return;
         }
@@ -59,7 +59,7 @@ public class info {
 
     public static List<String> tab(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.info")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.info")){
             return List.of("");
         }
 

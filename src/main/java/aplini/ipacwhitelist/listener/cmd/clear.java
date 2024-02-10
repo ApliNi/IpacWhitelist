@@ -14,8 +14,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import static aplini.ipacwhitelist.IpacWhitelist.config;
-import static aplini.ipacwhitelist.IpacWhitelist.plugin;
+import static aplini.ipacwhitelist.IpacWhitelist.*;
 import static aplini.ipacwhitelist.utils.util.*;
 import static org.bukkit.Bukkit.getServer;
 
@@ -23,7 +22,7 @@ public class clear {
 
     public static void cmd(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.clear")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.clear")){
             sender.sendMessage(config.getString("message.noPermission", ""));
             return;
         }
@@ -35,26 +34,32 @@ public class clear {
 
         String mode = args[1].toUpperCase();
 
-        sender.sendMessage(config.getString("command.clear.title", "")
-                .replace(ph.type.ph, mode)
-                .replace(ph.var.ph, args[2]));
-
         // 异步运行
         CompletableFuture.runAsync(() -> {
 
+            sender.sendMessage(config.getString("command.clear.title", "")
+                    .replace(ph.type.ph, mode)
+                    .replace(ph.var.ph, args[2].replace("\\", "")));
+
             // 清理一个玩家的数据
-            if (mode.equals("PLAYER")){
+            if(mode.equals("PLAYER")){
                 // 获取指定玩家的数据
-                Inp inp = new Inp().fromInp(args[1], true);
+                Inp inp = new Inp().fromInp(args[2], true);
                 if(inp == null){
                     sender.sendMessage(config.getString("message.parameterErr", "")
-                            .replace(ph.var.ph, args[1]));
+                            .replace(ph.var.ph, args[2]));
                     return;
                 }
 
                 // 如果没有 UUID 和 NAME 则不运行清理
                 if(inp.pd.uuid == null || inp.pd.name == null){
-                    sender.sendMessage(msg(config.getString("command.clear.isMiss", ""), inp.forUUID, inp.forName));
+                    sender.sendMessage(msg(config.getString("command.clear.isMiss", ""), inp.pd.uuid, inp.pd.name));
+                    return;
+                }
+
+                // 如果在线则不处理
+                if(inp.onlinePlayer != null){
+                    sender.sendMessage(msg(config.getString("command.clear.online", ""), inp.pd.uuid, inp.pd.name));
                     return;
                 }
 
@@ -67,14 +72,14 @@ public class clear {
                 // 运行数据清理
                 clearPlayerData(inp.pd);
                 sender.sendMessage(msg(config.getString("command.clear.ing", ""), inp.pd.uuid, inp.pd.name)
-                        .replace(ph.var.ph, "PLAYER")
-                        .replace(ph.id.ph, "" + inp.pd.id));
+                        .replace(ph.var.ph, "1")
+                        .replace(ph.id.ph, ""+ inp.pd.id));
             }
 
             // 清理一个标签下的所有数据
             else if(mode.equals("TYPE")){
 
-                String typeName = args[1].toUpperCase();
+                String typeName = args[2].toUpperCase();
 
                 List<PlayerData> pds = (switch (typeName) {
                     case "NOT" -> sql.findPlayerDataList("", Key.GET_NOT);
@@ -99,10 +104,16 @@ public class clear {
                         continue;
                     }
 
+                    // 如果在线则不处理
+                    if(server.getPlayer(li.name) != null){
+                        sender.sendMessage(msg(config.getString("command.clear.online", ""), li.uuid, li.name));
+                        continue;
+                    }
+
                     // 未达到可删除的时间则不处理
                     if(!isTimedOut(li.time, config.getLong("command.clear.delTime", 43200))){
                         sender.sendMessage(msg(config.getString("command.clear.delTimeMsg", ""), li.uuid, li.name));
-                        return;
+                        continue;
                     }
 
                     clearPlayerData(li);
@@ -121,10 +132,9 @@ public class clear {
                 return;
             }
 
+            // 运行完毕
+            sender.sendMessage(config.getString("command.clear.finish", ""));
         });
-
-        // 运行完毕
-        sender.sendMessage(config.getString("command.clear.finish", ""));
     }
 
 
@@ -183,7 +193,7 @@ public class clear {
 
     public static List<String> tab(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.clear")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.clear")){
             return List.of("");
         }
 

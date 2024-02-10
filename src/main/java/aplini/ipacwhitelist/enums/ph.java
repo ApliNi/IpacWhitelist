@@ -10,6 +10,7 @@ public enum ph {
     type("%type%"),
     ban("%ban%"),
     time("%time%"),
+    timeLong("%timeLong%"),
     worldPath("%worldPath%"),
     worldName("%worldName%"),
 

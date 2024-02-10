@@ -193,21 +193,29 @@ command:
   info:
     title:   '§6IpacEL §f> §b查询玩家信息:'
     isEmpty: '  - §a%playerName%§f[§b%playerUUID%§f] §b不存在'
-    finish:  '  - §a%playerName%§f[§b%playerUUID%§f]: ID: %id%, TYPE: %type%, BAN: %ban%, TIME: %time%'
+    finish: >
+      §f  - §a%playerName%§f[§b%playerUUID%§f]:
+          §aID: §b%id%
+          §aTYPE: §b%type%
+          §aBAN: §b%ban%
+          §aTIME: §b%time%
 
   list:
-    title:   '§6IpacEL §f> §b查询玩家信息[%type%]:'
+    title:   '§6IpacEL §f> §b查询玩家信息[§a%type%§b]:'
     noData:  '  - §b这个标签下没有任何数据'
     isEmpty: '  - §a%playerName%§f[§b%playerUUID%§f] §b不存在'
-    finish:  '  - §a%playerName%§f[§b%playerUUID%§f]: ID: %id%, TYPE: %type%, BAN: %ban%, TIME: %time%'
+    finish: >
+      §f  - §a%playerName%§f[§b%playerUUID%§f]: [TIME: %time%]
+          §f{§bID§f: §6%id%§f, §bType§f: "§6%type%§f", §bBan§f: "§6%ban%§f", §bUUID§f: "§a%playerUUID%§f", §bName§f: "§a%playerName%§f", §bTime§f: §6%timeLong%§f}
 
   clear:
-    title: '§6IpacEL §f> §b运行数据清理[%type%:%var%]:'
-    isMiss: '  - [%var%:%id%] §a%playerName%§f[§b%playerUUID%§f] §b缺少必要的玩家信息'
+    title: '§6IpacEL §f> §b运行数据清理[§a%type%:%var%§b]:'
+    isMiss: '  - §a%playerName%§f[§b%playerUUID%§f] §b缺少必要的玩家信息'
+    online: '  - §a%playerName%§f[§b%playerUUID%§f] §b玩家在线'
 
     # 只处理离线超过指定时间的账户, 防止清除后被保存 (秒
     delTime: 43200 # 12小时. 它必须大于数据缓存时间
-    delTimeMsg: '  - [%var%:%id%] §a%playerName%§f[§b%playerUUID%§f] §b未达到可删除的时间'
+    delTimeMsg: '  - §a%playerName%§f[§b%playerUUID%§f] §b未达到可删除的时间'
 
     # 运行指令
     runCommand:
@@ -241,7 +249,7 @@ command:
     # 从文本文件中导入数据, 每行一条数据
     file: 'Data.txt'
     # 用于匹配数据的正则, 这里是 v3 版本的 List 指令导出格式. 使用指令: /wl list * ALL
-    regExp: '.*IpacEL > \d+ -> \{ID: \d+, Type: "([^"]+)", Ban: "([^"]+)", UUID: "([^"]+)", Name: "([^"]+)", Time: (-?\d+)\}$'
+    regExp: '\{ID: \d+, Type: "([^"]+)", Ban: "([^"]+)", UUID: "([^"]+)", Name: "([^"]+)", Time: (-?\d+)\}$'
     # 不同数据所在的匹配组 ID
     TYPE: 1
     BAN: 2

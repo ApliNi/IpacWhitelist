@@ -20,21 +20,23 @@ public class Inp {
 
     public Player onlinePlayer = null;
 
-    public final PlayerData pd = new PlayerData();
+    public PlayerData pd = new PlayerData();
     public List<PlayerData> pds = new ArrayList<>();
 
     // 从用户输入中得到玩家数据
     public Inp fromInp(String _inp, boolean allowDel){
+
         // 如果包含反斜杠, 则表示这是来自控制台的消息, 需要进行预处理
         int index = _inp.indexOf("\\");
-        if(index != -1){
-            this.inpString = _inp.substring(0, index);
-        }else{
+        if(index == -1){
             this.inpString = _inp;
+        }else{
+            this.inpString = _inp.substring(0, index);
         }
         this.inp = util.setUUID36(this.inpString);
+
         // 根据用户输入的数据类型填充数据
-        if(inp.length() == 36){
+        if(this.inp.length() == 36){
             this.forUUID = this.inp.toLowerCase();
             this.uuidObj = UUID.fromString(this.inp);
             this.onlinePlayer = server.getPlayer(this.uuidObj);
@@ -46,9 +48,14 @@ public class Inp {
             this.forName = this.inp;
             this.onlinePlayer = server.getPlayer(this.inp);
         }
+
         // 在数据库中查询数据
-        this.pd.setPlayerInfo(forUUID, forName);
-        this.pds = sql.getPlayerDataList(this.pd.uuid, this.pd.name, allowDel, true);
+        this.pds = sql.getPlayerDataList(this.forUUID, this.forName, allowDel, true);
+        if(this.pds.isEmpty()){
+            this.pd.setPlayerInfo(this.forUUID, this.forName);
+        }else{
+            this.pd = this.pds.get(0);
+        }
         return this;
     }
     public Inp fromInp(String _inp){

@@ -20,7 +20,7 @@ public class del {
 
     public static void cmd(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.del")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.del")){
             sender.sendMessage(config.getString("message.noPermission", ""));
             return;
         }
@@ -73,7 +73,7 @@ public class del {
 
     public static List<String> tab(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.del")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.del")){
             return List.of("");
         }
 

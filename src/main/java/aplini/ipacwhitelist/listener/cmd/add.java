@@ -10,8 +10,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 
-import static aplini.ipacwhitelist.IpacWhitelist.config;
-import static aplini.ipacwhitelist.IpacWhitelist.server;
+import static aplini.ipacwhitelist.IpacWhitelist.*;
 import static aplini.ipacwhitelist.func.eventFunc.runEventFunc;
 import static aplini.ipacwhitelist.listener.onPlayerLogin.visitPlayerList;
 import static aplini.ipacwhitelist.utils.util.msg;
@@ -21,7 +20,7 @@ public class add {
 
     public static void cmd(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.add")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.add")){
             sender.sendMessage(config.getString("message.noPermission", ""));
             return;
         }
@@ -79,7 +78,7 @@ public class add {
 
     public static List<String> tab(CommandSender sender, String[] args){
 
-        if(!sender.hasPermission("IpacWhitelist.add")){
+        if(!sender.hasPermission("IpacWhitelist.cmd.add")){
             return List.of("");
         }
 
