@@ -45,17 +45,44 @@ public class sql {
 
     // 初始化数据库
     public static void initialize(){
-        try {
-            final Statement statement = conn.createStatement();
-            statement.execute("PRAGMA auto_vacuum = FULL;");
-            statement.execute("PRAGMA journal_mode = WAL;");
-            statement.close();
+//        try {
+//            Statement statement = conn.createStatement();
+//            statement.execute("PRAGMA auto_vacuum = FULL;");
+//            statement.execute("PRAGMA journal_mode = WAL;");
+//            statement.close();
+//
+//            // 重新连接数据库
+////            reconnect();
+//
+//            // 加载数据表
+//            conn.prepareStatement("""
+//                    CREATE TABLE IF NOT EXISTS "player" (
+//                        "ID"        INTEGER NOT NULL,
+//                        "Type"      INTEGER NOT NULL,
+//                        "Ban"       INTEGER NOT NULL,
+//                        "UUID"      TEXT    NOT NULL,
+//                        "Name"      TEXT    NOT NULL %s,     -- 大小写敏感控制
+//                        "Time"      INTEGER NOT NULL,
+//                        "Config"    TEXT    NOT NULL,
+//                        PRIMARY KEY("ID" AUTOINCREMENT)
+//                    );
+//                    """.formatted(config.getBoolean("sqlite.nameCaseSensitive", false) ? "" : "COLLATE NOCASE")
+//            ).execute();
+//
+//            statement = conn.createStatement();
+//            statement.execute("");
+//            statement.execute("");
+//            statement.execute("");
+//            statement.execute("");
+//            statement.execute("");
+//            statement.close();
 
-            // 重新连接数据库
-            reconnect();
+        try (Statement statement = conn.createStatement()) {
 
-            // 加载数据表
-            conn.prepareStatement("""
+            statement.executeUpdate("PRAGMA auto_vacuum = FULL;");
+            statement.executeUpdate("PRAGMA journal_mode = WAL;");
+
+            statement.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS "player" (
                         "ID"        INTEGER NOT NULL,
                         "Type"      INTEGER NOT NULL,
@@ -66,13 +93,14 @@ public class sql {
                         "Config"    TEXT    NOT NULL,
                         PRIMARY KEY("ID" AUTOINCREMENT)
                     );
-                    CREATE INDEX IF NOT EXISTS IDX_Type ON "player" (Type);
-                    CREATE INDEX IF NOT EXISTS IDX_Ban  ON "player" (Ban );
-                    CREATE INDEX IF NOT EXISTS IDX_UUID ON "player" (UUID);
-                    CREATE INDEX IF NOT EXISTS IDX_Name ON "player" (Name);
-                    CREATE INDEX IF NOT EXISTS IDX_Time ON "player" (Time);
                     """.formatted(config.getBoolean("sqlite.nameCaseSensitive", false) ? "" : "COLLATE NOCASE")
-            ).execute();
+            );
+
+            statement.executeUpdate("CREATE INDEX IF NOT EXISTS IDX_Type ON \"player\" (Type);");
+            statement.executeUpdate("CREATE INDEX IF NOT EXISTS IDX_Ban  ON \"player\" (Ban );");
+            statement.executeUpdate("CREATE INDEX IF NOT EXISTS IDX_UUID ON \"player\" (UUID);");
+            statement.executeUpdate("CREATE INDEX IF NOT EXISTS IDX_Name ON \"player\" (Name);");
+            statement.executeUpdate("CREATE INDEX IF NOT EXISTS IDX_Time ON \"player\" (Time);");
 
         } catch (Exception e) {throw new RuntimeException(e);}
     }
@@ -132,6 +160,9 @@ public class sql {
     }
     public static PlayerData getPlayerData(String uuid, String name, boolean allowDel){
         List<PlayerData> pds = getPlayerDataList(uuid, name, allowDel, false);
+        if(pds.isEmpty()){
+            return new PlayerData();
+        }
         return pds.get(0);
     }
     public static PlayerData getPlayerData(Player player, boolean allowDel){
@@ -148,10 +179,13 @@ public class sql {
         // 是否允许查询已删除的数据
         String additional = (switch(mode){
 
+            case GET_BAN ->
+                    " AND `Ban` = %s ".formatted(Type.BAN.num);
+
             case GET_VISIT_OR_NOT ->
                     " AND (`Type` = %s OR `Type` = %s) ".formatted(Type.VISIT.num, Type.NOT.num);
 
-            case GET_WHITE_OR_VISIT_NOT_BAN ->
+            case GET_WHITE_OR_VISIT__AND_BAN ->
                     " AND (`Type` = %s OR `Type` = %s) AND `Ban` = %s ".formatted(Type.WHITE.num, Type.VISIT.num, Type.NOT.num);
 
             case GET_NOT ->
@@ -161,13 +195,10 @@ public class sql {
                     " AND `Type` = %s ".formatted(Type.WHITE.num);
 
             case GET_VISIT ->
-                    " AND `Ban` = %s ".formatted(Type.VISIT.num);
+                    " AND `Type` = %s ".formatted(Type.VISIT.num);
 
             case GET_VISIT_CONVERT ->
-                    " AND `Ban` = %s ".formatted(Type.VISIT_CONVERT.num);
-
-            case GET_BAN ->
-                    " AND `Ban` = %s ".formatted(Type.BAN.num);
+                    " AND `Type` = %s ".formatted(Type.VISIT_CONVERT.num);
 
             case GET_ALL ->
                     "";

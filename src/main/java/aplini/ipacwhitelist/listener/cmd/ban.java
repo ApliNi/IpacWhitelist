@@ -96,7 +96,7 @@ public class ban {
 
         // 查询匹配的输入
         List<String> list = new ArrayList<>();
-        for(PlayerData li : sql.findPlayerDataList(setUUID36(args[1]), Key.GET_WHITE_OR_VISIT_NOT_BAN)){
+        for(PlayerData li : sql.findPlayerDataList(setUUID36(args[1]), Key.GET_WHITE_OR_VISIT__AND_BAN)){
             list.add(li.uuid +" - "+ li.name +" [TYPE: "+ li.type.name +", BAN: "+ li.ban.name +"] ");
         }
         return list;

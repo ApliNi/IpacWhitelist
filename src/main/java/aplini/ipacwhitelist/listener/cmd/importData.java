@@ -53,19 +53,18 @@ public class importData {
                         continue;
                     }
                     // 检查名称和 UUID
-                    pd.uuid = setUUID36(pd.uuid);
                     pd.name = setUUID36(pd.name);
                     if(!Pattern.matches(config.getString("whitelist.playerNameRule", ".*"), pd.name)){
                         sender.sendMessage("  - [失败] 参数不可识别或未通过检查: NAME");
                         continue;
                     }
                     // 检查是否存在现有的数据
+                    pd.uuid = setUUID36(pd.uuid);
                     PlayerData pdForDB = sql.getPlayerData(pd.uuid, pd.name, true);
                     if(!pdForDB.isNull()){
                         sender.sendMessage("  - 存在重复数据");
                         continue;
                     }
-
                     pd.updateTime = false;
                     pd.save();
                     sender.sendMessage("  - 导入成功 "+ pd.name +"["+ pd.uuid +"]: TYPE: "+ pd.type.name +", BAN: "+ pd.ban.name +", TIME: "+ getDisplayTime(pd.time)+ ". ");

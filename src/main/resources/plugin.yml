@@ -52,8 +52,8 @@ permissions:
 
   IpacWhitelist.cmd.clear:
     description: '使用 /wl clear 指令'
-    default: false
+    default: op
 
   IpacWhitelist.cmd.importData:
     description: '使用 /wl importData 指令'
-    default: false
+    default: op

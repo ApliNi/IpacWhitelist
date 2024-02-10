@@ -70,4 +70,10 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
             allowJoin = true;
         });
     }
+
+    // 插件禁用
+    public void onDisable() {
+        // 关闭数据库连接
+        sql.closeConn();
+    }
 }
