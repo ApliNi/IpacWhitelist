@@ -56,7 +56,7 @@ public class clear {
                     return;
                 }
 
-                // 如果没有 UUID 和 NAME 则不运行清理
+                // 如果没有 UUID 和 NAME 则不处理
                 if(inp.pd.uuid == null || inp.pd.name == null){
                     sender.sendMessage(msg(config.getString("command.clear.isMiss", ""), inp.pd.uuid, inp.pd.name));
                     return;
@@ -71,6 +71,13 @@ public class clear {
                 // 未达到可删除的时间则不处理
                 if(!isTimedOut(inp.pd.time, config.getLong("command.clear.delTime", 43200))){
                     sender.sendMessage(msg(config.getString("command.clear.delTimeMsg", ""), inp.pd.uuid, inp.pd.name));
+                    return;
+                }
+
+                // 如果存在重复的名称则不处理
+                List<PlayerData> pdsForName = sql.getPlayerDataList(null, inp.pd.name, true, true);
+                if(pdsForName.size() > 1){
+                    sender.sendMessage(msg(config.getString("command.clear.repeat", ""), inp.pd.uuid, inp.pd.name));
                     return;
                 }
 
@@ -103,7 +110,7 @@ public class clear {
                 for(PlayerData li : pds){
                     i++;
 
-                    // 如果没有 UUID 和 NAME 则不运行清理
+                    // 如果没有 UUID 和 NAME 则不处理
                     if(li.uuid == null || li.name == null){
                         sender.sendMessage(msg(config.getString("command.clear.isMiss", ""), li.uuid, li.name));
                         continue;
@@ -119,6 +126,13 @@ public class clear {
                     if(!isTimedOut(li.time, config.getLong("command.clear.delTime", 43200))){
                         sender.sendMessage(msg(config.getString("command.clear.delTimeMsg", ""), li.uuid, li.name));
                         continue;
+                    }
+
+                    // 如果存在重复的名称则不处理
+                    List<PlayerData> pdsForName = sql.getPlayerDataList(null, li.name, true, true);
+                    if(pdsForName.size() > 1){
+                        sender.sendMessage(msg(config.getString("command.clear.repeat", ""), li.uuid, li.name));
+                        return;
                     }
 
                     clearPlayerData(li);
