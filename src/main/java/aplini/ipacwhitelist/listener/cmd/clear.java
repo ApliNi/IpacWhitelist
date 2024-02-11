@@ -22,6 +22,11 @@ public class clear {
 
     public static void cmd(CommandSender sender, String[] args){
 
+        if(config.getBoolean("command.clear.enable", false)){
+            sender.sendMessage(config.getString("message.noEnable", ""));
+            return;
+        }
+
         if(!sender.hasPermission("IpacWhitelist.cmd.clear")){
             sender.sendMessage(config.getString("message.noPermission", ""));
             return;

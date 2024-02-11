@@ -208,7 +208,9 @@ command:
       §f  - §a%playerName%§f[§7%playerUUID%§f]: [§7TIME: §6%time%§f]
           §f{§bID§f: §6%id%§f, §bType§f: "§6%type%§f", §bBan§f: "§6%ban%§f", §bUUID§f: "§a%playerUUID%§f", §bName§f: "§a%playerName%§f", §bTime§f: §6%timeLong%§f}
 
+  # 用于清理玩家数据的功能, 请提前在本地测试完毕后再启用
   clear:
+    enable: false
     title: '§6IpacEL §f> §b运行数据清理[§a%type%:%var%§b]:'
     isMiss: '  - §a%playerName%§f[§7%playerUUID%§f] §b缺少必要的玩家信息'
     online: '  - §a%playerName%§f[§7%playerUUID%§f] §b玩家在线'
@@ -245,7 +247,9 @@ command:
     ing:     '  - [%var%:%id%] §a%playerName%§f[§7%playerUUID%§f] §a已完成'
     finish:  '§6IpacEL §f> §a数据清理运行完毕'
 
+  # 从旧版本 IpacWhitelist 导入数据的功能, 默认关闭防止误触
   importData:
+    enable: false
     # 从文本文件中导入数据, 每行一条数据
     file: 'Data.txt'
     # 用于匹配数据的正则, 这里是 v3 版本的 List 指令导出格式. 使用指令: /wl list * ALL
@@ -260,6 +264,7 @@ command:
 
 # 其他消息
 message:
+  noEnable: '§6IpacEL §f> §b功能未启用'
   noPermission: '§6IpacEL §f> §b没有权限'
   parameterErr: '§6IpacEL §f> §a参数不可识别或未通过检查: §b%var%'
   playerLoginErr: '§6IpacEL §f> §b出现未知的错误, 请联系管理员检查'
