@@ -38,7 +38,8 @@ public class add {
             return;
         }
 
-        sender.sendMessage(config.getString("command.add.title", ""));
+        sender.sendMessage(config.getString("command.add.title", "")
+                .replace(ph.var.ph, inp.inp));
 
         // 遍历数据库中的匹配项
         for(PlayerData li : inp.pds){

@@ -37,7 +37,8 @@ public class info {
             return;
         }
 
-        sender.sendMessage(config.getString("command.info.title", ""));
+        sender.sendMessage(config.getString("command.info.title", "")
+                .replace(ph.var.ph, inp.inp));
 
         // 不存在匹配项
         if(inp.pds.isEmpty()){

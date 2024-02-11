@@ -6,19 +6,45 @@ public enum Type {
     // | ID | Type | Ban | UUID | Name | Time | Config |
 
     // 账户类型
-    NOT(0, "NOT"), // 未定义 or 不在白名单中
-    VISIT(1, "VISIT"), // 参观账户
-    WHITE(2, "WHITE"), // 白名单
-    VISIT_CONVERT(4, "VISIT_CONVERT"), // 参观账户需要转为白名单
-    // Ban
-    BAN(1, "BAN"),
+
+    // 未定义 or 不在白名单中
+    NOT(
+            0,
+            0,
+            "NOT"),
+
+    // 参观账户
+    VISIT(
+            1,
+            1,
+            "VISIT"),
+
+    // 白名单
+    WHITE(
+            2,
+            3,
+            "WHITE"),
+
+    // 参观账户需要转为白名单
+    VISIT_CONVERT(
+            4,
+            2,
+            "VISIT_CONVERT"),
+
+    // Ban, 这个数据存储在独立的列中
+    BAN(
+            1,
+            999,
+            "BAN"),
 
     ;
 
     public final int num;      // 数据值
     public final String name;  // 显示名称
-    Type(int num, String name){
+    public final int weights;
+    Type(int num, int weights, String name){
         this.num = num;
+        this.weights = weights;
         this.name = name;
     }
 

@@ -38,7 +38,8 @@ public class del {
             return;
         }
 
-        sender.sendMessage(config.getString("command.del.title", ""));
+        sender.sendMessage(config.getString("command.del.title", "")
+                .replace(ph.var.ph, inp.inp));
 
         // 不存在匹配项
         if(inp.pds.isEmpty()){

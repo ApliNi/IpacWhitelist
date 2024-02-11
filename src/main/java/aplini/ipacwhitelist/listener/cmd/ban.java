@@ -39,7 +39,8 @@ public class ban {
             return;
         }
 
-        sender.sendMessage(config.getString("command.ban.title", ""));
+        sender.sendMessage(config.getString("command.ban.title", "")
+                .replace(ph.var.ph, inp.inp));
 
         // 不存在匹配项, 添加到黑名单
         if(inp.pds.isEmpty()){

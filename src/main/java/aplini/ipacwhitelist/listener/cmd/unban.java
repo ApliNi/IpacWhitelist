@@ -36,7 +36,8 @@ public class unban {
             return;
         }
 
-        sender.sendMessage(config.getString("command.unban.title", ""));
+        sender.sendMessage(config.getString("command.unban.title", "")
+                .replace(ph.var.ph, inp.inp));
 
         // 不存在匹配项
         if(inp.pds.isEmpty()){

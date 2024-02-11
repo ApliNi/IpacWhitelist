@@ -11,7 +11,7 @@ import static aplini.ipacwhitelist.IpacWhitelist.config;
 import static aplini.ipacwhitelist.IpacWhitelist.server;
 
 public class Inp {
-    public String inpString = null;
+    public String _inpString = null;
     public String inp = null;
 
     public String forName = null;
@@ -29,11 +29,11 @@ public class Inp {
         // 如果包含反斜杠, 则表示这是来自控制台的消息, 需要进行预处理
         int index = _inp.indexOf("\\");
         if(index == -1){
-            this.inpString = _inp;
+            this._inpString = _inp;
         }else{
-            this.inpString = _inp.substring(0, index);
+            this._inpString = _inp.substring(0, index);
         }
-        this.inp = util.setUUID36(this.inpString);
+        this.inp = util.setUUID36(this._inpString);
 
         // 根据用户输入的数据类型填充数据
         if(this.inp.length() == 36){

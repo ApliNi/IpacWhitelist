@@ -58,6 +58,16 @@ public class PlayerData {
         this.name = name;
     }
 
+    // 与一个数据进行对比, 取其中权重较高的项进行更新
+    public void compareAndConvert(PlayerData pd2){
+        if(pd2.type.weights > this.type.weights){
+            this.type = pd2.type;
+        }
+        if(pd2.ban.weights > this.ban.weights){
+            this.ban = pd2.ban;
+        }
+    }
+
     // 保存数据
     public void save(){
         sql.savePlayerData(this);

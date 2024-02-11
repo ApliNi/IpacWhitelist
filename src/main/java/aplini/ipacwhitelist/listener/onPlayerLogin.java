@@ -93,9 +93,12 @@ public class onPlayerLogin implements Listener {
         PlayerData pd = null;
 
         // 处理重复的数据
-        // 1. 检查是否有 UUID 匹配的数据, 存在则合并内容. 理论上不会产生 UUID 相同的记录, 以防万一
-        // 2.1. 如果数据库中没有 UUID 匹配的记录, 则填充玩家信息
-        // 2.2. 更新玩家名称. 正版用户改名
+        // 1.1. 检查是否有 UUID 匹配的数据, 存在则合并内容. 理论上不会产生 UUID 相同的记录, 以防万一
+        // 1.2.   如果数据库中没有 UUID 匹配的记录, 则填充玩家信息
+        // 1.3.   否则更新玩家名称
+        // 2.1. 检查是否有名称匹配的数据
+        // 2.2.   检查是否存在名称相同, 但 UUID 不同的数据
+        // 2.3.   存在则合并内容
         // 3. 检查是否有(与新)名称匹配但 UUID 为空的数据, 存在则使用数据库中的记录. 否则会使用第二步产生的数据
 
         // 如果存在多个 UUID, 则转换数据, 并删除另一个
@@ -106,13 +109,8 @@ public class onPlayerLogin implements Listener {
                 pd = li;
                 continue;
             }
-            // 对比其他数据与第一个, 取其中数值最大的一项进行转换
-            if(li.type.num > pd.type.num){
-                pd.type = li.type;
-            }
-            if(li.ban.num > pd.ban.num){
-                pd.ban = li.ban;
-            }
+            // 对比和转换数据
+            pd.compareAndConvert(li);
             // 删除多余记录
             li.delete();
         }
@@ -127,24 +125,29 @@ public class onPlayerLogin implements Listener {
         }
 
         // 检查所有匹配的名称, 如果 id 不同则代表不同的数据, 进行转换并删除另一个
-        List<PlayerData> pdsForName = sql.getPlayerDataList("", playerName, true, true);
+        List<PlayerData> pdsForName = sql.getPlayerDataList(null, playerName, true, true);
         for(PlayerData li : pdsForName){
-            // 如果 pd 不在数据库中, 则使用数据库中匹配的记录
-            if(pd.isNull()){
-                pd = li;
-                continue;
+            // 检查是否存在名称相同, 但 UUID 不同的数据
+            if(config.getBoolean("whitelist.preventNameDuplication", true)){
+                if(!li.uuid.equals(playerUUID)){
+                    event.disallow(KICK_OTHER, msg(config.getString("whitelist.preventNameDuplicationMsg", ""), playerUUID, playerName));
+                    return;
+                }
             }
-            // 排除 id 相同的记录
-            if(li.id != pd.id){continue;}
-            // 对比其他数据与第一个, 取其中数值最大的一项进行转换
-            if(li.type.num > pd.type.num){
-                pd.type = li.type;
+            // 如果 UUID 为空, 则可以合并
+            if(li.uuid.isEmpty()){
+                // 如果 pd 不在数据库中, 则使用数据库中匹配的记录
+                if(pd.isNull()){
+                    pd = li;
+                    continue;
+                }
+                // 排除 id 相同的记录
+                if(li.id == pd.id){continue;}
+                // 对比和转换数据
+                pd.compareAndConvert(li);
+                // 删除多余记录
+                li.delete();
             }
-            if(li.ban.num > pd.ban.num){
-                pd.ban = li.ban;
-            }
-            // 删除多余记录
-            li.delete();
         }
 
         // 被封禁的账户
