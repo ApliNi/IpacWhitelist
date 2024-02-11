@@ -206,7 +206,7 @@ public class sql {
             default -> "";
         });
         try {
-            PreparedStatement sql = conn.prepareStatement("SELECT * FROM `player` WHERE `Name` LIKE ? OR `UUID` LIKE ? "+ additional +" LIMIT 999999;");
+            PreparedStatement sql = conn.prepareStatement("SELECT * FROM `player` WHERE (`Name` LIKE ? OR `UUID` LIKE ?) "+ additional +" LIMIT 999999;");
             sql.setString(1, inp +"%");
             sql.setString(2, inp +"%");
             ResultSet results = sql.executeQuery();

@@ -19,7 +19,7 @@ public class importData {
 
     public static void cmd(CommandSender sender, String[] args){
 
-        if(config.getBoolean("command.importData.enable", false)){
+        if(!config.getBoolean("command.importData.enable", false)){
             sender.sendMessage(config.getString("message.noEnable", ""));
             return;
         }

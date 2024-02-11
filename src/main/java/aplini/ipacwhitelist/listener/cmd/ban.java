@@ -91,6 +91,7 @@ public class ban {
                     list.add(uuid +" - "+ player.getName() +" [TYPE: WHITE] ");
                 }
             }
+            list.add("....");
             return list;
         }
 

@@ -69,13 +69,17 @@ public class list {
             return List.of("");
         }
 
-        return List.of(
-                "NOT",
-                "VISIT",
-                "WHITE",
-                "VISIT_CONVERT",
-                "BAN",
-                "ALL"
-        );
+        if(args.length < 1){
+            return List.of(
+                    "NOT",
+                    "VISIT",
+                    "WHITE",
+                    "VISIT_CONVERT",
+                    "BAN",
+                    "ALL"
+            );
+        }
+
+        return null;
     }
 }

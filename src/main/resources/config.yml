@@ -219,6 +219,9 @@ command:
     delTime: 43200 # 12小时. 它必须大于数据缓存时间
     delTimeMsg: '  - §a%playerName%§f[§7%playerUUID%§f] §b未达到可删除的时间'
 
+    # [注意]
+    # 清理数据的配置尽量使用 playerUUID, 而非 playerName, 防止因为重名而误删数据
+
     # 运行指令
     runCommand:
       - 'lp user %playerUUID% clear'      # 清除玩家权限

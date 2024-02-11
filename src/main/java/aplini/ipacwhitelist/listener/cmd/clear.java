@@ -22,7 +22,7 @@ public class clear {
 
     public static void cmd(CommandSender sender, String[] args){
 
-        if(config.getBoolean("command.clear.enable", false)){
+        if(!config.getBoolean("command.clear.enable", false)){
             sender.sendMessage(config.getString("message.noEnable", ""));
             return;
         }
@@ -146,11 +146,9 @@ public class clear {
     static void clearPlayerData(PlayerData pd){
 
         // 将清理完的 Type 设置为 NOT
-        // 不处理 Ban 账户的数据
-        if(pd.ban == Type.NOT){
-            pd.type = Type.NOT;
-            pd.save();
-        }
+        // 这不会修改 Ban 属性
+        pd.type = Type.NOT;
+        pd.save();
 
         // 执行数据清理指令
         for(String li : config.getStringList("command.clear.runCommand")){
@@ -210,6 +208,9 @@ public class clear {
         }
         else if(args.length == 3){
             if(args[1].equalsIgnoreCase("PLAYER")){
+                if(args[2].isEmpty()){
+                    return List.of("....");
+                }
                 List<String> list = new ArrayList<>();
                 for(PlayerData li : sql.findPlayerDataList(setUUID36(args[2]))){
                     list.add(li.uuid +" - "+ li.name +" [TYPE: "+ li.type.name +", BAN: "+ li.ban.name +"] ");

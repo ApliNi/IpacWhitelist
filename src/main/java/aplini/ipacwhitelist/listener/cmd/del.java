@@ -88,6 +88,7 @@ public class del {
                     list.add(uuid +" - "+ player.getName() +" [TYPE: WHITE] ");
                 }
             }
+            list.add("....");
             return list;
         }
 

@@ -91,6 +91,7 @@ public class add {
                     list.add(uuid +" - "+ player.getName() +" [TYPE: VISIT] ");
                 }
             }
+            list.add("....");
             return list;
         }
 
