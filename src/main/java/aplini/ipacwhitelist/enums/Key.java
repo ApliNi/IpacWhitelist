@@ -2,12 +2,13 @@ package aplini.ipacwhitelist.enums;
 
 public enum Key {
     NULL,
-    GET_VISIT_OR_NOT,
-    GET_WHITE_OR_VISIT__AND_BAN,
+    GET_ALLOW_ADD,
+    GET_ALLOW_BAN,
     GET_BAN,
     GET_NOT,
     GET_VISIT,
     GET_WHITE,
     GET_VISIT_CONVERT,
     GET_ALL,
+    GET_NAME_CONFLICT,
 }

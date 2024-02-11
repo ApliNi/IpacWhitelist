@@ -40,6 +40,7 @@ public class list {
             case "VISIT_CONVERT" -> sendListMsg(sender, sql.findPlayerDataList("", Key.GET_VISIT_CONVERT));
             case "BAN" -> sendListMsg(sender, sql.findPlayerDataList("", Key.GET_BAN));
             case "ALL" -> sendListMsg(sender, sql.findPlayerDataList("", Key.GET_ALL));
+            case "NAME_CONFLICT" -> sendListMsg(sender, sql.findPlayerDataList("", Key.GET_NAME_CONFLICT));
             default -> sender.sendMessage("/wl list <Type>");
         }
     }
@@ -69,14 +70,15 @@ public class list {
             return List.of("");
         }
 
-        if(args.length < 1){
+        if(args.length < 3){
             return List.of(
                     "NOT",
                     "VISIT",
                     "WHITE",
                     "VISIT_CONVERT",
                     "BAN",
-                    "ALL"
+                    "ALL",
+                    "NAME_CONFLICT"
             );
         }
 

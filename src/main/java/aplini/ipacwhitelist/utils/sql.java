@@ -176,39 +176,55 @@ public class sql {
         if(inp == null){
             throw new RuntimeException("[IpacWhitelist] sql.getPlayerData 传入空数据");
         }
-        // 是否允许查询已删除的数据
-        String additional = (switch(mode){
 
-            case GET_BAN ->
-                    " AND `Ban` = %s ".formatted(Type.BAN.num);
-
-            case GET_VISIT_OR_NOT ->
-                    " AND (`Type` = %s OR `Type` = %s) ".formatted(Type.VISIT.num, Type.NOT.num);
-
-            case GET_WHITE_OR_VISIT__AND_BAN ->
-                    " AND (`Type` = %s OR `Type` = %s) AND `Ban` = %s ".formatted(Type.WHITE.num, Type.VISIT.num, Type.NOT.num);
-
-            case GET_NOT ->
-                    " AND `Type` = %s ".formatted(Type.NOT.num);
-
-            case GET_WHITE ->
-                    " AND `Type` = %s ".formatted(Type.WHITE.num);
-
-            case GET_VISIT ->
-                    " AND `Type` = %s ".formatted(Type.VISIT.num);
-
-            case GET_VISIT_CONVERT ->
-                    " AND `Type` = %s ".formatted(Type.VISIT_CONVERT.num);
-
-            case GET_ALL ->
-                    "";
-
-            default -> "";
-        });
         try {
-            PreparedStatement sql = conn.prepareStatement("SELECT * FROM `player` WHERE (`Name` LIKE ? OR `UUID` LIKE ?) "+ additional +" LIMIT 999999;");
-            sql.setString(1, inp +"%");
-            sql.setString(2, inp +"%");
+            // 允许"条件"自定义更多的内容
+            PreparedStatement sql = null;
+
+            // 根据条件拼接字符串
+            String additional = (switch(mode){
+
+                case GET_BAN ->
+                        " AND `Ban` = '%s' ".formatted(Type.BAN.num);
+
+                case GET_NOT ->
+                        " AND `Type` = '%s' ".formatted(Type.NOT.num);
+
+                case GET_WHITE ->
+                        " AND `Type` = '%s' ".formatted(Type.WHITE.num);
+
+                case GET_VISIT ->
+                        " AND `Type` = '%s' ".formatted(Type.VISIT.num);
+
+                case GET_VISIT_CONVERT ->
+                        " AND `Type` = '%s' ".formatted(Type.VISIT_CONVERT.num);
+
+                case GET_ALLOW_ADD -> // 获取可以被添加到白名单的账户
+                        " AND (`Type` = '%s' OR `Type` = '%s') AND `Ban` = '%s' ".formatted(Type.VISIT.num, Type.NOT.num, Type.NOT.num);
+
+                case GET_ALLOW_BAN -> // 获取可以被封禁的账户
+                        " AND (`Type` = '%s' OR `Type` = '%s') AND `Ban` = '%s' ".formatted(Type.WHITE.num, Type.VISIT.num, Type.NOT.num);
+
+                case GET_ALL -> {
+                    sql = conn.prepareStatement("SELECT * FROM `player` LIMIT 999999;");
+                    yield "";
+                }
+
+                case GET_NAME_CONFLICT -> {
+                    sql = conn.prepareStatement("SELECT * FROM `player` WHERE `Name` IN (SELECT `Name` FROM `player` GROUP BY `Name` HAVING COUNT(*) > 1);");
+                    yield "";
+                }
+
+                default -> "";
+            });
+
+            if(sql == null){
+                // 默认的 SQL 模板语句
+                // 用于模糊匹配名称或 UUID
+                sql = conn.prepareStatement("SELECT * FROM `player` WHERE (`Name` LIKE ? OR `UUID` LIKE ?) %s LIMIT 999999;".formatted(additional));
+                sql.setString(1, inp +"%");
+                sql.setString(2, inp +"%");
+            }
             ResultSet results = sql.executeQuery();
 
             List<PlayerData> pd = new ArrayList<>();

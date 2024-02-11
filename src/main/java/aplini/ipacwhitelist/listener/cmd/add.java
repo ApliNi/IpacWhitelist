@@ -97,7 +97,7 @@ public class add {
 
         // 查询匹配的输入
         List<String> list = new ArrayList<>();
-        for(PlayerData li : sql.findPlayerDataList(setUUID36(args[1]), Key.GET_VISIT_OR_NOT)){
+        for(PlayerData li : sql.findPlayerDataList(setUUID36(args[1]), Key.GET_ALLOW_ADD)){
             list.add(li.uuid +" - "+ li.name +" [TYPE: "+ li.type.name +", BAN: "+ li.ban.name +"] ");
         }
         return list;
