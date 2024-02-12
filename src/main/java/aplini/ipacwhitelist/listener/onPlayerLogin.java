@@ -36,6 +36,8 @@ public class onPlayerLogin implements Listener {
     public static final List<String> visitPlayerList = new ArrayList<>();
     // 白名单玩家列表
     public static final List<String> playerList = new ArrayList<>();
+    // 这些玩家是第一次加入服务器
+    public static final List<String> firstPlayerList = new ArrayList<>();
 
 
     @EventHandler(priority = EventPriority.LOWEST) // 玩家登录服务器
@@ -190,10 +192,8 @@ public class onPlayerLogin implements Listener {
                     pd.type = Type.VISIT;
                     pd.setPlayerInfo(playerUUID, playerName);
                     pd.save();
-                    // 通过 AuthMe 注册账户
-                    if(config.getBoolean("whitelist.VISIT.AuthMePlugin.autoRegisterAndLogin", true)){
-                        authmeRegisterPlayer(player, config.getString("whitelist.VISIT.AuthMePlugin.autoRegisterPassword", ""));
-                    }
+                    // 添加第一次加入的玩家列表
+                    firstPlayerList.add(pd.uuid);
                     // 参观账户第一次登录服务器
                     runEventFunc("whitelist.VISIT.onNewPlayerLoginEvent", player, playerUUID, playerName);
 
@@ -224,9 +224,14 @@ public class onPlayerLogin implements Listener {
         PlayerData pd = getPlayerData(player, true);
         switch(pd.type){
             case VISIT -> {
-                // 自动登录
+                // AuthMe 自动注册和登录
                 if(config.getBoolean("whitelist.VISIT.AuthMePlugin.autoRegisterAndLogin", true)){
-                    authmeLoginPlayer(player);
+                    // 注册账户
+                    boolean regState = authmeRegisterPlayer(player, config.getString("whitelist.VISIT.AuthMePlugin.autoRegisterPassword", ""));
+                    // 第一次注册后无需登录
+                    if(!regState || !config.getBoolean("whitelist.VISIT.AuthMePlugin.noLoginAfterRegister", true)){
+                        authmeLoginPlayer(player);
+                    }
                 }
                 // 记录在线的参观账户
                 visitPlayerList.add(pd.uuid);

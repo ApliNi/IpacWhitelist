@@ -73,6 +73,8 @@ whitelist:
     AuthMePlugin:
       # 为参观账户自动注册和登录, 相当于 `/authme register <playerName> <password>` 和 `/authme forcelogin <playerName>`, 但不会踢出玩家
       autoRegisterAndLogin: true
+      # 第一次注册后无需登录, 如果 AuthMe 启用了此功能, 这里也需要启用. 建议启用
+      noLoginAfterRegister: true
       # 需要在这里填写一个复杂的密码, 只要满足 AuthMe 的密码规则即可
       autoRegisterPassword: 'complexPassword'
 
@@ -240,6 +242,7 @@ command:
     # 清除文件
     # %worldPath% = 所有地图的根目录
     # %worldName% = 所有地图的名称
+    # %playerUUID32%  = 32位, 不带连字符的 UUID
     clearFile:
       # 清理所有地图下的存档
       - '%worldPath%/playerdata/%playerUUID%.dat'

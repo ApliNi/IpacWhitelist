@@ -172,6 +172,7 @@ public class clear {
             // 获取命令
             String cmd = li
                     .replace(ph.playerUUID.ph, pd.uuid)
+                    .replace(ph.playerUUID32.ph, pd.uuid.replace("-", ""))
                     .replace(ph.playerName.ph, pd.name);
             // 运行命令
             Bukkit.getScheduler().callSyncMethod(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd));
@@ -185,8 +186,9 @@ public class clear {
         for(String li : config.getStringList("command.clear.clearFile")){
 
             String filePath = li
-                    .replace("%playerUUID%", pd.uuid)
-                    .replace("%playerName%", pd.name);
+                    .replace(ph.playerUUID.ph, pd.uuid)
+                    .replace(ph.playerUUID32.ph, pd.uuid.replace("-", ""))
+                    .replace(ph.playerName.ph, pd.name);
 
             // 如果包含 %worldPath% 则遍历所有地图
             if(li.contains(ph.worldPath.ph) || li.contains(ph.worldName.ph)){

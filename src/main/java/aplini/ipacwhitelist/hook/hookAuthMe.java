@@ -23,12 +23,15 @@ public class hookAuthMe implements Listener {
     // @EventHandler(priority = EventPriority.LOWEST)
 
     // 注册账户
-    public static void authmeRegisterPlayer(Player player, String password){
-        if(AuthmeAPI == null) return;
+    // 返回是否进行了注册操作, 如果已经注册过, 则返回 false
+    public static boolean authmeRegisterPlayer(Player player, String password){
+        if(AuthmeAPI == null) return false;
         // 如果已注册则跳过
         if(!AuthmeAPI.isRegistered(player.getName())){
             AuthmeAPI.forceRegister(player, password);
+            return true;
         }
+        return false;
     }
 
     // 登录账户
