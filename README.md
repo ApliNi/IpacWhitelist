@@ -114,6 +114,31 @@
 </details>
 
 
+### 错误处理
+
+<details><summary>点击展开这部分内容</summary>
+
+#### 解决名称重复问题
+这个错误在 v4 版本 (默认配置) 中已被修复, 但可能因为数据导入 / 玩家修改名称, 或其他未知的问题触发了这个检查, 可根据此步骤修复.
+
+玩家名称重复时可通过指令 `/wl list NAME_CONFLICT` 检查, 输出内容就像这样:
+```
+IpacEL > 查询玩家信息[NAME_CONFLICT]:
+  - [2024-02-10 10:31:50] {ID: 50, Type: "WHITE", Ban: "NOT", UUID: "aaa", Name: "A", Time: 1707532310}
+  - [2024-01-06 19:38:08] {ID: 147, Type: "VISIT", Ban: "NOT", UUID: "bbb", Name: "A", Time: 1704541088}
+  - [2024-02-06 18:03:08] {ID: 13, Type: "WHITE", Ban: "NOT", UUID: "ccc", Name: "B", Time: 1707213788}
+  - [2024-01-06 19:36:24] {ID: 148, Type: "WHITE", Ban: "NOT", UUID: "ddd", Name: "B", Time: 1704540984}
+```
+
+[其他错误造成的名称重复] 如果同一个玩家 (比如 A) 存在两个 UUID, 并且其中一个为参观账户 `VISIT` 或 `NOT`, 则数据 `147` 很可能是一条产生错误的数据, 并且这个 UUID 下没有实际有效的玩家存档.
+请手动检查玩家存档是否为空, 然后使用 `/wl clear PLAYER bbb` 删除这条数据, 并清理产生的存档文件.
+
+[玩家改名造成的名称重复] 如果出现例如玩家 B 的情况, 可能因为两个白名单内的玩家修改过名称, 并且其中一位玩家没有上线过 (玩家 "B" -> "C", 并且玩家 "E" -> "B", 且玩家 C 没有上线过).
+这时候需要让玩家 C 上线一次 (这将自动更新玩家名称), 或者手动更新玩家 C 的名称来解决.
+
+</details>
+
+
 ### 配置
 ```yaml
 
@@ -159,6 +184,11 @@ whitelist:
   maxPlayers: true
   maxPlayersIncludesVisit: true  # 参观账户是否包含在玩家总数中
   maxPlayersMsg: '§6IpacEL §f> §b服务器已满'
+
+  # 防止名称相同, 但 UUID 不同的玩家加入
+  preventNameDuplication: true
+  preventNameDuplicationMsg: '§6IpacEL §f> §b存在名称重复的玩家, 请联系管理员检查'
+
 
   # 以下根据玩家当前的类型对配置分类
 
@@ -282,49 +312,65 @@ whitelist:
 command:
 
   add:
-    title:   '§6IpacEL §f> §a添加到白名单:'
-    isBan:   '  - §a%playerName%§f[§b%playerUUID%§f] §b已在黑名单中, 不可操作'
-    isExist: '  - §a%playerName%§f[§b%playerUUID%§f] §b已在白名单中'
-    isVisit: '  - §a%playerName%§f[§b%playerUUID%§f] §a已从参观账户中重置'
-    finish:  '  - §a%playerName%§f[§b%playerUUID%§f] §a已完成'
+    title:   '§6IpacEL §f> §a添加到白名单[§b%var%§a]:'
+    isBan:   '  - §a%playerName%§f[§7%playerUUID%§f] §b已在黑名单中, 不可操作'
+    isExist: '  - §a%playerName%§f[§7%playerUUID%§f] §b已在白名单中'
+    isVisit: '  - §a%playerName%§f[§7%playerUUID%§f] §a已从参观账户中重置'
+    finish:  '  - §a%playerName%§f[§7%playerUUID%§f] §a已完成'
 
   del:
-    title:   '§6IpacEL §f> §b从白名单移出:'
-    isEmpty: '  - §a%playerName%§f[§b%playerUUID%§f] §b不存在'
-    isMulti: '  - §a%playerName%§f[§b%playerUUID%§f] §b重复的匹配项'
-    isBan:   '  - §a%playerName%§f[§b%playerUUID%§f] §b已在黑名单中, 不可操作'
-    finish:  '  - §a%playerName%§f[§b%playerUUID%§f] §a已完成'
+    title:   '§6IpacEL §f> §b从白名单移出[§a%var%§b]:'
+    isEmpty: '  - §a%playerName%§f[§7%playerUUID%§f] §b不存在'
+    isMulti: '  - §a%playerName%§f[§7%playerUUID%§f] §b存在重复数据'
+    isBan:   '  - §a%playerName%§f[§7%playerUUID%§f] §b已在黑名单中, 不可操作'
+    finish:  '  - §a%playerName%§f[§7%playerUUID%§f] §a已完成'
 
   ban:
-    title:   '§6IpacEL §f> §b添加到黑名单:'
-    isBan:   '  - §a%playerName%§f[§b%playerUUID%§f] §b已在黑名单中'
-    isMulti: '  - §a%playerName%§f[§b%playerUUID%§f] §b重复的匹配项'
-    finish:  '  - §a%playerName%§f[§b%playerUUID%§f] §a已完成'
+    title:   '§6IpacEL §f> §b添加到黑名单[§a%var%§b]:'
+    isBan:   '  - §a%playerName%§f[§7%playerUUID%§f] §b已在黑名单中'
+    isMulti: '  - §a%playerName%§f[§7%playerUUID%§f] §b存在重复数据'
+    finish:  '  - §a%playerName%§f[§7%playerUUID%§f] §a已完成'
 
   unban:
-    title:   '§6IpacEL §f> §a从黑名单移出:'
-    isEmpty: '  - §a%playerName%§f[§b%playerUUID%§f] §b不存在'
-    isMulti: '  - §a%playerName%§f[§b%playerUUID%§f] §b重复的匹配项'
-    isUnban: '  - §a%playerName%§f[§b%playerUUID%§f] §b不在黑名单中'
-    finish:  '  - §a%playerName%§f[§b%playerUUID%§f] §a已完成'
+    title:   '§6IpacEL §f> §a从黑名单移出[§b%var%§a]:'
+    isEmpty: '  - §a%playerName%§f[§7%playerUUID%§f] §b不存在'
+    isMulti: '  - §a%playerName%§f[§7%playerUUID%§f] §b存在重复数据'
+    isUnban: '  - §a%playerName%§f[§7%playerUUID%§f] §b不在黑名单中'
+    finish:  '  - §a%playerName%§f[§7%playerUUID%§f] §a已完成'
 
   info:
-    title:   '§6IpacEL §f> §b查询玩家信息:'
-    isEmpty: '  - §a%playerName%§f[§b%playerUUID%§f] §b不存在'
-    finish:  '  - §a%playerName%§f[§b%playerUUID%§f]: ID: %id%, TYPE: %type%, BAN: %ban%, TIME: %time%'
+    title:   '§6IpacEL §f> §b查询玩家信息[§a%var%§b]:'
+    isEmpty: '  - §a%playerName%§f[§7%playerUUID%§f] §b不存在'
+    finish: >
+      §f  - §a%playerName%§f[§7%playerUUID%§f]: [§bID: §6%id%§f]
+            - §bTYPE: §6%type%
+            - §bBAN: §6%ban%
+            - §bTIME: §6%time%
 
   list:
-    title:   '§6IpacEL §f> §b查询玩家信息[%type%]:'
-    isEmpty: '  - §a%playerName%§f[§b%playerUUID%§f] §b不存在'
-    finish:  '  - §a%playerName%§f[§b%playerUUID%§f]: ID: %id%, TYPE: %type%, BAN: %ban%, TIME: %time%'
+    title:   '§6IpacEL §f> §b查询玩家信息[§a%type%§b]:'
+    noData:  '  - §b这个标签下没有任何数据'
+    isEmpty: '  - §a%playerName%§f[§7%playerUUID%§f] §b不存在'
+    finish:  '  - [§6%time%§f] {§bID§f: §6%id%§f, §bType§f: "§6%type%§f", §bBan§f: "§6%ban%§f", §bUUID§f: "§a%playerUUID%§f", §bName§f: "§a%playerName%§f", §bTime§f: §6%timeLong%§f}'
 
+  # 用于清理玩家数据的功能, 请提前在本地测试完毕后再启用
+  # [注意]
+  # 在使用清理功能前请检查是否存在名称重复的数据: /wl list NAME_CONFLICT
   clear:
-    title: '§6IpacEL §f> §b运行数据清理[%type%:%var%]:'
-    isMiss: '  - [%var%:%id%] §a%playerName%§f[§b%playerUUID%§f] §b缺少必要的玩家信息'
+    enable: false
+    title:  '§6IpacEL §f> §b运行数据清理[§a%type%:%var%§b]:'
+    isMiss: '  - §a%playerName%§f[§7%playerUUID%§f] §b缺少必要的玩家信息'
+    online: '  - §a%playerName%§f[§7%playerUUID%§f] §b玩家在线'
 
     # 只处理离线超过指定时间的账户, 防止清除后被保存 (秒
     delTime: 43200 # 12小时. 它必须大于数据缓存时间
-    delTimeMsg: '  - [%var%:%id%] §a%playerName%§f[§b%playerUUID%§f] §b未达到可删除的时间'
+    delTimeMsg: '  - §a%playerName%§f[§7%playerUUID%§f] §b未达到可删除的时间'
+
+    # 不应该处理存在重复名称的数据
+    repeat: '  - §a%playerName%§f[§7%playerUUID%§f] §b存在重复的名称'
+
+    # [注意]
+    # 清理数据的配置尽量使用 playerUUID, 而非 playerName, 防止因为重名而误删数据
 
     # 运行指令
     runCommand:
@@ -351,12 +397,28 @@ command:
     # 循环之间的时间间隔 (毫秒
     delayLoop: 727
 
-    ing:     '  - [%var%:%id%] §a%playerName%§f[§b%playerUUID%§f] §a已完成'
+    ing:     '  - [%var%:%id%] §a%playerName%§f[§7%playerUUID%§f] §a已完成'
     finish:  '§6IpacEL §f> §a数据清理运行完毕'
+
+  # 从旧版本 IpacWhitelist 导入数据的功能, 默认关闭防止误触
+  importData:
+    enable: false
+    # 从文本文件中导入数据, 每行一条数据
+    file: 'Data.txt'
+    # 用于匹配数据的正则, 这里是 v3 版本的 List 指令导出格式. 使用指令: /wl list * ALL
+    regExp: '\{ID: \d+, Type: "([^"]+)", Ban: "([^"]+)", UUID: "([^"]+)", Name: "([^"]+)", Time: (-?\d+)\}$'
+    # 不同数据所在的匹配组 ID
+    TYPE: 1
+    BAN: 2
+    UUID: 3
+    NAME: 4
+    TIME: 5
 
 
 # 其他消息
 message:
+  noEnable: '§6IpacEL §f> §b功能未启用'
+  noPermission: '§6IpacEL §f> §b没有权限'
   parameterErr: '§6IpacEL §f> §a参数不可识别或未通过检查: §b%var%'
   playerLoginErr: '§6IpacEL §f> §b出现未知的错误, 请联系管理员检查'
 

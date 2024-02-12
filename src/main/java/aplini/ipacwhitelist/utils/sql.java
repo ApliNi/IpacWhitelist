@@ -211,7 +211,9 @@ public class sql {
                 }
 
                 case GET_NAME_CONFLICT -> {
-                    sql = conn.prepareStatement("SELECT * FROM `player` WHERE `Name` IN (SELECT `Name` FROM `player` GROUP BY `Name` HAVING COUNT(*) > 1);");
+                    sql = conn.prepareStatement(
+                            "SELECT * FROM `player` WHERE `Name` IN (SELECT `Name` FROM `player` WHERE (`Type` != '%s' OR `Ban` != '%s') GROUP BY `Name` HAVING COUNT(*) > 1);"
+                                    .formatted(Type.NOT.num, Type.NOT.num));
                     yield "";
                 }
 

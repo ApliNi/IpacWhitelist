@@ -128,7 +128,14 @@ public class onPlayerLogin implements Listener {
         // 检查所有匹配的名称, 如果 id 不同则代表不同的数据, 进行转换并删除另一个
         List<PlayerData> pdsForName = sql.getPlayerDataList(null, playerName, true, true);
         for(PlayerData li : pdsForName){
+            // 如果 Type 和 Ban 均为 NOT 则将这条记录删除, 然后这不属于名称重复
+            // 用于支持通过 /wl del 删除名称重复的记录
+            if(li.type == Type.NOT && li.ban == Type.NOT){
+                li.delete();
+                continue;
+            }
             // 检查是否存在名称相同, 但 UUID 不同的数据
+            // 主要用于解决部分同时支持正版和离线账户服务器上有时没有正确应用正版 UUID 的错误
             if(config.getBoolean("whitelist.preventNameDuplication", true)){
                 if(!li.uuid.equals(playerUUID)){
                     event.disallow(KICK_OTHER, msg(config.getString("whitelist.preventNameDuplicationMsg", ""), playerUUID, playerName));
