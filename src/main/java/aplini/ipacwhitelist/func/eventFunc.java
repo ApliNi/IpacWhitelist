@@ -65,7 +65,7 @@ public class eventFunc {
             }
 
             // 广播消息, 但排除这个玩家
-            for(String li : config.getStringList(cp +".msgBroadcast")){
+            for(String li : config.getStringList(cp +".msgExclude")){
                 // 获取消息文本
                 String msg = li
                         .replace(ph.playerUUID.ph, playerUUID)

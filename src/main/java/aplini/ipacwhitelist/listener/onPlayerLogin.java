@@ -239,11 +239,13 @@ public class onPlayerLogin implements Listener {
                 runEventFunc("whitelist.VISIT.onPlayerJoinEvent", player);
                 plugin.getLogger().info(pd.name +" 以参观模式加入服务器");
             }
-            case VISIT_CONVERT, WHITE -> {
+            case VISIT_CONVERT -> {
                 // 如果需要进行账户转换
-                if(pd.type == Type.VISIT_CONVERT){
-                    runEventFunc("whitelist.VISIT_CONVERT.onPlayerJoinEvent", player);
-                }
+                runEventFunc("whitelist.VISIT_CONVERT.onPlayerJoinEvent", player);
+                // 记录在线玩家
+                playerList.add(pd.uuid);
+            }
+            case WHITE -> {
                 // 记录在线玩家
                 playerList.add(pd.uuid);
             }
@@ -264,6 +266,8 @@ public class onPlayerLogin implements Listener {
             case WHITE -> {
                 // 记录在线玩家
                 playerList.remove(pd.uuid);
+                // 玩家退出事件
+                runEventFunc("whitelist.WHITE.onPlayerQuitEvent", player, pd.uuid, pd.name);
             }
         }
 
