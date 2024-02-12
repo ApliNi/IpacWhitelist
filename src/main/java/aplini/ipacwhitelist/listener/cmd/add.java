@@ -3,14 +3,17 @@ package aplini.ipacwhitelist.listener.cmd;
 import aplini.ipacwhitelist.enums.Key;
 import aplini.ipacwhitelist.enums.Type;
 import aplini.ipacwhitelist.enums.ph;
-import aplini.ipacwhitelist.utils.*;
+import aplini.ipacwhitelist.utils.Inp;
+import aplini.ipacwhitelist.utils.PlayerData;
+import aplini.ipacwhitelist.utils.sql;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static aplini.ipacwhitelist.IpacWhitelist.*;
+import static aplini.ipacwhitelist.IpacWhitelist.config;
+import static aplini.ipacwhitelist.IpacWhitelist.server;
 import static aplini.ipacwhitelist.func.eventFunc.runEventFunc;
 import static aplini.ipacwhitelist.listener.onPlayerLogin.visitPlayerList;
 import static aplini.ipacwhitelist.utils.util.msg;

@@ -13,7 +13,8 @@ import java.util.regex.Pattern;
 
 import static aplini.ipacwhitelist.IpacWhitelist.config;
 import static aplini.ipacwhitelist.IpacWhitelist.plugin;
-import static aplini.ipacwhitelist.utils.util.*;
+import static aplini.ipacwhitelist.utils.util.getDisplayTime;
+import static aplini.ipacwhitelist.utils.util.setUUID36;
 
 public class importData {
 

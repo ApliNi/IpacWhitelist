@@ -1,9 +1,9 @@
 package aplini.ipacwhitelist.listener;
 
 import aplini.ipacwhitelist.IpacWhitelist;
-import aplini.ipacwhitelist.utils.PlayerData;
 import aplini.ipacwhitelist.enums.Type;
 import aplini.ipacwhitelist.enums.ph;
+import aplini.ipacwhitelist.utils.PlayerData;
 import aplini.ipacwhitelist.utils.sql;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -93,6 +93,7 @@ public class onPlayerLogin implements Listener {
         PlayerData pd = null;
 
         // 处理重复的数据
+        // [!] 这些注释可能和实际的代码不匹配
         // 1.1. 检查是否有 UUID 匹配的数据, 存在则合并内容. 理论上不会产生 UUID 相同的记录, 以防万一
         // 1.2.   如果数据库中没有 UUID 匹配的记录, 则填充玩家信息
         // 1.3.   否则更新玩家名称
