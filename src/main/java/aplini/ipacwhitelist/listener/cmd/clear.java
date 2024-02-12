@@ -76,12 +76,13 @@ public class clear {
                     return;
                 }
 
-                // 如果存在重复的名称则不处理
-                List<PlayerData> pdsForName = sql.getPlayerDataList(null, inp.pd.name, true, true);
-                if(pdsForName.size() > 1){
-                    sender.sendMessage(msg(config.getString("command.clear.repeat", ""), inp.pd.uuid, inp.pd.name));
-                    return;
-                }
+                // 允许单独清理一个名称重复的玩家数据
+//                // 如果存在重复的名称则不处理
+//                List<PlayerData> pdsForName = sql.getPlayerDataList(null, inp.pd.name, true, true);
+//                if(pdsForName.size() > 1){
+//                    sender.sendMessage(msg(config.getString("command.clear.repeat", ""), inp.pd.uuid, inp.pd.name));
+//                    return;
+//                }
 
                 // 运行数据清理
                 clearPlayerData(inp.pd);
