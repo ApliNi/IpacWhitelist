@@ -73,8 +73,6 @@ whitelist:
     AuthMePlugin:
       # 为参观账户自动注册和登录, 相当于 `/authme register <playerName> <password>` 和 `/authme forcelogin <playerName>`, 但不会踢出玩家
       autoRegisterAndLogin: true
-      # 第一次注册后无需登录, 如果 AuthMe 启用了此功能, 这里也需要启用. 建议启用
-      noLoginAfterRegister: true
       # 需要在这里填写一个复杂的密码, 只要满足 AuthMe 的密码规则即可
       autoRegisterPassword: 'complexPassword'
 

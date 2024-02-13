@@ -9,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
+import static aplini.ipacwhitelist.IpacWhitelist.config;
 import static aplini.ipacwhitelist.func.eventFunc.runEventFunc;
 import static aplini.ipacwhitelist.listener.onPlayerLogin.playerList;
 
@@ -19,27 +20,20 @@ public class hookAuthMe implements Listener {
         AuthmeAPI = AuthMeApi.getInstance();
     }
 
-    // AuthMe 操作应发生在玩家加入服务器时
-    // @EventHandler(priority = EventPriority.LOWEST)
+    // 需要传入 player 对象的 AuthMe 操作应发生在玩家加入服务器时
 
-    // 注册账户
-    // 返回是否进行了注册操作, 如果已经注册过, 则返回 false
-    public static boolean authmeRegisterPlayer(Player player, String password){
-        if(AuthmeAPI == null) return false;
-        // 如果已注册则跳过
-        if(!AuthmeAPI.isRegistered(player.getName())){
-            AuthmeAPI.forceRegister(player, password);
-            return true;
-        }
-        return false;
-    }
-
-    // 登录账户
-    public static void authmeLoginPlayer(Player player){
+    // 自动注册和登录
+    public static void AuthMeAutoRegisteredAndLogin(Player player){
         if(AuthmeAPI == null) return;
-        // 如果已经登录则跳过
-        if(!AuthmeAPI.isAuthenticated(player)){
-            AuthmeAPI.forceLogin(player);
+        // 检查玩家是否已注册
+        if(AuthmeAPI.isRegistered(player.getName())){
+            // 自动登录
+            if(!AuthmeAPI.isAuthenticated(player)){
+                AuthmeAPI.forceLogin(player);
+            }
+        }else{
+            // 自动注册并登录
+            AuthmeAPI.forceRegister(player, config.getString("whitelist.VISIT.AuthMePlugin.autoRegisterPassword", ""), true);
         }
     }
 
@@ -55,7 +49,7 @@ public class hookAuthMe implements Listener {
 
     // AuthMe 玩家输入错误密码
     @EventHandler(priority = EventPriority.MONITOR)
-    static public void onAuthMeFailedLoginEvent(FailedLoginEvent event) {
+    public void onAuthMeFailedLoginEvent(FailedLoginEvent event) {
         Player player = event.getPlayer();
         if(playerList.contains(player.getUniqueId().toString())){
             runEventFunc("whitelist.WHITE.onAuthMeFailedLoginEvent", player);
@@ -64,7 +58,7 @@ public class hookAuthMe implements Listener {
 
     // AuthMe 玩家注销
     @EventHandler(priority = EventPriority.MONITOR)
-    static public void onLogoutEvent(LogoutEvent event) {
+    public void onLogoutEvent(LogoutEvent event) {
         Player player = event.getPlayer();
         if(playerList.contains(player.getUniqueId().toString())){
             runEventFunc("whitelist.WHITE.onAuthMeLogoutEvent", player);
