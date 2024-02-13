@@ -97,7 +97,7 @@ public class clear {
                 String typeName = args[2].toUpperCase();
 
                 List<PlayerData> pds = (switch (typeName) {
-//                    case "NOT" -> sql.findPlayerDataList("", Key.GET_NOT);
+                    case "NOT" -> sql.findPlayerDataList("", Key.GET_NOT);
                     case "VISIT" -> sql.findPlayerDataList("", Key.GET_VISIT);
                     case "BAN" -> sql.findPlayerDataList("", Key.GET_BAN);
                     default -> null;
@@ -238,7 +238,7 @@ public class clear {
             }
             else if(args[1].equalsIgnoreCase("TYPE")){
                 return List.of(
-//                        "NOT",
+                        "NOT",
                         "VISIT",
                         "BAN"
                 );

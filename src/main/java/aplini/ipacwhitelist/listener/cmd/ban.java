@@ -68,9 +68,9 @@ public class ban {
                 return;
             }
             // 添加到黑名单
+            runEventFunc("whitelist.BAN.onWhitelistBanEvent", inp.onlinePlayer, li.uuid, li.name);
             li.ban = Type.BAN;
             li.save();
-            runEventFunc("whitelist.BAN.onWhitelistBanEvent", inp.onlinePlayer, li.uuid, li.name);
             sender.sendMessage(msg(config.getString("command.ban.finish", ""), li.uuid, li.name));
             return;
         }

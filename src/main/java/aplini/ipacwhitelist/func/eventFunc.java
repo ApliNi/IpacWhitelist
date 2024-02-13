@@ -72,6 +72,7 @@ public class eventFunc {
                         .replace(ph.playerName.ph, playerName);
                 // 发送消息
                 if(player != null){
+                    server.getConsoleSender().sendMessage(msg);
                     for(Player liPlayer : server.getOnlinePlayers()){
                         if(!liPlayer.getName().equals(playerName)){
                             liPlayer.sendMessage(msg);

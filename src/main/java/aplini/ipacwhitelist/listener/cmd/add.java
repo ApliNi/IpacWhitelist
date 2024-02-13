@@ -11,9 +11,9 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-import static aplini.ipacwhitelist.IpacWhitelist.config;
-import static aplini.ipacwhitelist.IpacWhitelist.server;
+import static aplini.ipacwhitelist.IpacWhitelist.*;
 import static aplini.ipacwhitelist.func.eventFunc.runEventFunc;
 import static aplini.ipacwhitelist.listener.onPlayerLogin.visitPlayerList;
 import static aplini.ipacwhitelist.utils.util.msg;
@@ -53,28 +53,33 @@ public class add {
             }
             // 重置参观账户
             if(li.type == Type.VISIT){
-                li.type = Type.VISIT_CONVERT;
-                li.save();
                 // 运行参观账户转换程序
                 runEventFunc("whitelist.VISIT.onWhitelistAddEvent", inp.onlinePlayer, li.uuid, li.name);
+                li.type = Type.VISIT_CONVERT;
+                li.save();
                 sender.sendMessage(msg(config.getString("command.add.isVisit", ""), li.uuid, li.name));
                 return;
             }
-            // 已添加到白名单中
+            // 非 NOT 类型
             if(li.isExist()){
                 sender.sendMessage(msg(config.getString("command.add.isExist", ""), li.uuid, li.name));
                 return;
             }
             // 从已删除的数据中恢复, 如果 UUID 相同则恢复, 否则只能添加一条新数据
-            else if(li.uuid.equals(inp.forUUID)){
+            else if(Objects.equals(li.uuid, inp.forUUID)){
                 li.type = Type.WHITE;
                 li.save();
                 sender.sendMessage(msg(config.getString("command.add.finish", ""), li.uuid, li.name));
                 return;
             }
+            // 需要创建单独的数据
+            // else {}
         }
 
-        // 创建一条新数据
+        // 创建新数据
+        inp.pd = new PlayerData();
+        inp.pd.type = Type.WHITE;
+        inp.pd.setPlayerInfo(inp.forUUID, inp.forName);
         inp.pd.save();
         sender.sendMessage(msg(config.getString("command.add.finish", ""), inp.forUUID, inp.forName));
     }

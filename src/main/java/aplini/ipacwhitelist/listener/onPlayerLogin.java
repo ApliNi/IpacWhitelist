@@ -127,33 +127,36 @@ public class onPlayerLogin implements Listener {
         // 检查所有匹配的名称, 如果 id 不同则代表不同的数据, 进行转换并删除另一个
         List<PlayerData> pdsForName = sql.getPlayerDataList(null, playerName, true, true);
         for(PlayerData li : pdsForName){
+            // 排除 id 相同的记录
+            if(li.id == pd.id){continue;}
+
             // 如果 Type 和 Ban 均为 NOT 则将这条记录删除, 然后这不属于名称重复
-            // 用于支持通过 /wl del 删除名称重复的记录
+            // 处理名称重复, 但被标记为已删除的数据. 通过 /wl del 产生
             if(li.type == Type.NOT && li.ban == Type.NOT){
-                li.delete();
+                // 可以选择删除或仅忽略
+//                li.delete();
                 continue;
-            }
-            // 检查是否存在名称相同, 但 UUID 不同的数据
-            // 主要用于解决部分同时支持正版和离线账户服务器上有时没有正确应用正版 UUID 的错误
-            if(config.getBoolean("whitelist.preventNameDuplication", true)){
-                if(!li.uuid.equals(playerUUID)){
-                    event.disallow(KICK_OTHER, msg(config.getString("whitelist.preventNameDuplicationMsg", ""), playerUUID, playerName));
-                    return;
-                }
             }
             // 如果 UUID 为空, 则可以合并
             if(li.uuid.isEmpty()){
                 // 如果 pd 不在数据库中, 则使用数据库中匹配的记录
                 if(pd.isNull()){
                     pd = li;
+                    pd.setPlayerInfo(playerUUID, playerName);
                     continue;
                 }
-                // 排除 id 相同的记录
-                if(li.id == pd.id){continue;}
                 // 对比和转换数据
                 pd.compareAndConvert(li);
                 // 删除多余记录
                 li.delete();
+            }
+            // 检查是否存在名称相同, 但 UUID 不同的数据
+            // 主要用于解决部分同时支持正版和离线账户服务器上有时没有正确应用正版 UUID 的错误
+            else if(!li.uuid.equals(playerUUID)){
+                if(config.getBoolean("whitelist.preventNameDuplication", true)){
+                    event.disallow(KICK_OTHER, msg(config.getString("whitelist.preventNameDuplicationMsg", ""), playerUUID, playerName));
+                    return;
+                }
             }
         }
 
@@ -186,13 +189,9 @@ public class onPlayerLogin implements Listener {
 
                 // 参观账户第一次加入服务器, 创建参观账户数据
                 if(pd.type == Type.NOT){
-                    pd.type = Type.VISIT;
-                    pd.setPlayerInfo(playerUUID, playerName);
-                    pd.save();
-
                     // 参观账户第一次登录服务器
                     runEventFunc("whitelist.VISIT.onNewPlayerLoginEvent", player, playerUUID, playerName);
-
+                    pd.type = Type.VISIT;
                     plugin.getLogger().info("为新的参观账户创建数据: "+ playerName);
                 }
 
@@ -202,16 +201,27 @@ public class onPlayerLogin implements Listener {
                 event.allow();
             }
 
-            // 需要进行转换的参观账户和白名单
-            case VISIT_CONVERT, WHITE -> {
-                // 如果需要进行账户转换
-                if(pd.type == Type.VISIT_CONVERT){
-                    runEventFunc("whitelist.VISIT_CONVERT.onPlayerLoginEvent", player, playerUUID, playerName);
-                }
-
+            // 需要进行转换的参观账户
+            case VISIT_CONVERT -> {
+                // Type = WHITE 会在玩家加入时进行
+                // 在登录过程中转换参观账户
+                runEventFunc("whitelist.VISIT_CONVERT.onPlayerLoginEvent", player, playerUUID, playerName);
                 event.allow();
             }
+
+            // 白名单
+            case WHITE -> {
+                event.allow();
+            }
+
+            default -> {
+                plugin.getLogger().warning("出现未知的错误: 不存在有效数据的玩家登录服务器: "+ player.getUniqueId());
+                event.disallow(KICK_OTHER, config.getString("message.playerLoginErr", ""));
+            }
         }
+
+        // 保存玩家数据
+        pd.save();
     }
 
     @EventHandler(priority = EventPriority.LOWEST) // 玩家加入服务器
@@ -232,40 +242,49 @@ public class onPlayerLogin implements Listener {
                 plugin.getLogger().info(pd.name +" 以参观模式加入服务器");
             }
             case VISIT_CONVERT -> {
-                // 如果需要进行账户转换
+                // 在加入过程中转换参观账户
                 runEventFunc("whitelist.VISIT_CONVERT.onPlayerJoinEvent", player);
+                // 在这里设置为白名单
+                pd.type = Type.WHITE;
+                pd.save();
                 // 记录在线玩家
                 playerList.add(pd.uuid);
             }
             case WHITE -> {
                 // 记录在线玩家
                 playerList.add(pd.uuid);
+            }
+            default -> {
+                plugin.getLogger().warning("出现未知的错误: 不存在有效数据的玩家加入服务器: "+ pd.id +": "+ pd.type.name +": "+ player.getUniqueId());
+                player.kickPlayer(config.getString("message.playerLoginErr", ""));
             }
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST) // 玩家退出
     public void onPlayerQuit(PlayerQuitEvent event){
-        Player player = event.getPlayer();
-        PlayerData pd = getPlayerData(player, true);
-        switch(pd.type){
-            case VISIT -> {
-                // 记录在线的参观账户
-                visitPlayerList.remove(pd.uuid);
-                // 参观账户退出事件
-                runEventFunc("whitelist.VISIT.onPlayerQuitEvent", player, pd.uuid, pd.name);
-            }
-            case WHITE -> {
-                // 记录在线玩家
-                playerList.remove(pd.uuid);
-                // 玩家退出事件
-                runEventFunc("whitelist.WHITE.onPlayerQuitEvent", player, pd.uuid, pd.name);
-            }
-        }
-
-        // 玩家退出后等待指定时间才能重新连接
-        playerQuitIng.add(pd.uuid);
         CompletableFuture.runAsync(() -> {
+            Player player = event.getPlayer();
+            PlayerData pd = getPlayerData(player, true);
+            switch(pd.type){
+                case VISIT -> {
+                    // 记录在线的参观账户
+                    visitPlayerList.remove(pd.uuid);
+                    // 参观账户退出事件
+                    runEventFunc("whitelist.VISIT.onPlayerQuitEvent", player, pd.uuid, pd.name);
+                }
+                case WHITE -> {
+                    // 记录在线玩家
+                    playerList.remove(pd.uuid);
+                    // 玩家退出事件
+                    runEventFunc("whitelist.WHITE.onPlayerQuitEvent", player, pd.uuid, pd.name);
+                }
+                // 玩家可能因为 del / ban 等操作被退出服务器
+                // default -> {}
+            }
+
+            // 玩家退出后等待指定时间才能重新连接
+            playerQuitIng.add(pd.uuid);
             try {
                 TimeUnit.MILLISECONDS.sleep(plugin.getConfig().getInt("whitelist.repeatJoinInterval", 1200));
             } catch (InterruptedException ignored) {}

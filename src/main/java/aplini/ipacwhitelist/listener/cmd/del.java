@@ -64,10 +64,9 @@ public class del {
                 sender.sendMessage(msg(config.getString("command.del.isBan", ""), li.uuid, li.name));
                 return;
             }
-            // 移出白名单
+            runEventFunc("whitelist.WHITE.onWhitelistDelEvent", inp.onlinePlayer, li.uuid, li.name);
             li.type = Type.NOT;
             li.save();
-            runEventFunc("whitelist.WHITE.onWhitelistDelEvent", inp.onlinePlayer, li.uuid, li.name);
             sender.sendMessage(msg(config.getString("command.del.finish", ""), li.uuid, li.name));
             return;
         }
@@ -81,18 +80,7 @@ public class del {
         }
 
         if(args[1].isEmpty()){
-            // 返回在线玩家列表
-            List<String> list = new ArrayList<>();
-            for(Player player : server.getOnlinePlayers()){
-                String uuid = player.getUniqueId().toString();
-                if(visitPlayerList.contains(uuid)){
-                    list.add(uuid +" - "+ player.getName() +" [TYPE: VISIT] ");
-                }else{
-                    list.add(uuid +" - "+ player.getName() +" [TYPE: WHITE] ");
-                }
-            }
-            list.add("....");
-            return list;
+            return List.of("....");
         }
 
         // 查询匹配的输入
