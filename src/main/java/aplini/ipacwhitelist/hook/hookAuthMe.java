@@ -20,21 +20,15 @@ public class hookAuthMe implements Listener {
         AuthmeAPI = AuthMeApi.getInstance();
     }
 
-    // 需要传入 player 对象的 AuthMe 操作应发生在玩家加入服务器时
+    // 注册这个名称, true = 注册完成, false = 无需注册
+    public static boolean registeredPlayerName(String playerName){
+        // 此方法会自动检查是否已注册
+        return AuthmeAPI.registerPlayer(playerName, config.getString("whitelist.VISIT.AuthMePlugin.autoRegisterPassword", ""));
+    }
 
-    // 自动注册和登录
-    public static void AuthMeAutoRegisteredAndLogin(Player player){
-        if(AuthmeAPI == null) return;
-        // 检查玩家是否已注册
-        if(AuthmeAPI.isRegistered(player.getName())){
-            // 自动登录
-            if(!AuthmeAPI.isAuthenticated(player)){
-                AuthmeAPI.forceLogin(player);
-            }
-        }else{
-            // 自动注册并登录
-            AuthmeAPI.forceRegister(player, config.getString("whitelist.VISIT.AuthMePlugin.autoRegisterPassword", ""), true);
-        }
+    // 强制登录账户
+    public static void forceLoginPlayer(Player player){
+        AuthmeAPI.forceLogin(player);
     }
 
     // AuthMe 玩家登录成功事件

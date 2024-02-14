@@ -23,10 +23,11 @@ import java.util.regex.Pattern;
 import static aplini.ipacwhitelist.IpacWhitelist.config;
 import static aplini.ipacwhitelist.IpacWhitelist.plugin;
 import static aplini.ipacwhitelist.func.eventFunc.runEventFunc;
-import static aplini.ipacwhitelist.hook.hookAuthMe.AuthMeAutoRegisteredAndLogin;
+import static aplini.ipacwhitelist.hook.hookAuthMe.forceLoginPlayer;
+import static aplini.ipacwhitelist.hook.hookAuthMe.registeredPlayerName;
 import static aplini.ipacwhitelist.utils.sql.getPlayerData;
 import static aplini.ipacwhitelist.utils.util.msg;
-import static org.bukkit.event.player.PlayerLoginEvent.Result.*;
+import static org.bukkit.event.player.PlayerLoginEvent.Result.KICK_OTHER;
 
 public class onPlayerLogin implements Listener {
     // 退出之后需要等待一段时间才能再次加入
@@ -235,6 +236,20 @@ public class onPlayerLogin implements Listener {
             case VISIT -> {
                 // 记录在线的参观账户
                 visitPlayerList.add(pd.uuid);
+                // 为参观账户注册账号
+                if(config.getBoolean("whitelist.VISIT.AuthMePlugin.autoRegisterAndLogin", true)){
+                    if(registeredPlayerName(pd.name)){
+                        plugin.getLogger().info("为参观账户 "+ player.getName() +" 注册账号");
+                    }
+                    // by games647
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                            forceLoginPlayer(player);
+                        });
+                        // delay the login process to let auth plugins initialize the player
+                        // Magic number however as there is no direct event from those plugins
+                    }, 10);
+                }
                 // 参观账户加入事件
                 runEventFunc("whitelist.VISIT.onPlayerJoinEvent", player);
                 plugin.getLogger().info(pd.name +" 以参观模式加入服务器");
@@ -259,21 +274,44 @@ public class onPlayerLogin implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR) // 玩家加入服务器, 最后执行
-    public void onPlayerJoinEventMONITOR(PlayerJoinEvent event){
-        CompletableFuture.runAsync(() -> {
-            // 在这里实现参观账户自动登录
-            Player player = event.getPlayer();
-            if(visitPlayerList.contains(player.getUniqueId().toString())){
-                // AuthMe 自动注册和登录
-                if(config.getBoolean("whitelist.VISIT.AuthMePlugin.autoRegisterAndLogin", true)){
-                    // 登录账户
-                    plugin.getLogger().info("为参观账户自动注册/登录: " + player.getName());
-                    AuthMeAutoRegisteredAndLogin(player);
-                }
-            }
-        });
-    }
+//    @EventHandler(priority = EventPriority.MONITOR) // 玩家加入服务器, 最后执行
+//    public void onPlayerJoinEventMONITOR(PlayerJoinEvent event){
+//        CompletableFuture.runAsync(() -> {
+//            // 在这里实现参观账户自动登录
+//            Player player = event.getPlayer();
+//            if(visitPlayerList.contains(player.getUniqueId().toString())){
+//                // AuthMe 自动注册和登录
+//                if(config.getBoolean("whitelist.VISIT.AuthMePlugin.autoRegisterAndLogin", true)){
+//                    // 登录账户
+//                    forceLoginPlayer(player);
+//
+//                    final int loopCount = config.getInt("whitelist.VISIT.AuthMePlugin.doubleCheck", 4);
+//                    if(loopCount <= 0){
+//                        return;
+//                    }
+//
+//                    // 每 20 刻度重复检查...
+//                    new BukkitRunnable(){
+//                        private int count = 0;
+//                        @Override
+//                        public void run() {
+//                            try{
+//                                if(count < loopCount){
+//                                    count++;
+//                                    plugin.getLogger().info("为参观账户自动注册/登录: " + player.getName());
+//                                    AuthMeAutoRegisteredAndLogin(player);
+//                                }else{
+//                                    cancel();
+//                                }
+//                            }catch(Exception e){
+//                                cancel();
+//                            }
+//                        }
+//                    }.runTaskTimer(plugin, 10, 10);
+//                }
+//            }
+//        });
+//    }
 
     @EventHandler(priority = EventPriority.LOWEST) // 玩家退出
     public void onPlayerQuit(PlayerQuitEvent event){
