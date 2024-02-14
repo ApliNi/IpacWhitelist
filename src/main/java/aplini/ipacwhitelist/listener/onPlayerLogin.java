@@ -55,7 +55,7 @@ public class onPlayerLogin implements Listener {
         for(String li : config.getStringList("whitelist.ipBlacklist")){
             if(Pattern.matches(li, playerIP)){
                 plugin.getLogger().info("%s 在IP黑名单中: %s".formatted(playerName, playerIP));
-                event.disallow(KICK_BANNED, msg(config.getString("whitelist.ipBlacklistMsg", ""), playerUUID, playerName)
+                event.disallow(KICK_OTHER, msg(config.getString("whitelist.ipBlacklistMsg", ""), playerUUID, playerName)
                         .replace(ph.ip.ph, playerIP));
                 return;
             }
@@ -63,7 +63,7 @@ public class onPlayerLogin implements Listener {
 
         // 玩家名称字符检查
         if(!Pattern.matches(config.getString("whitelist.playerNameRule", ".*"), playerName)){
-            event.disallow(KICK_BANNED, msg(config.getString("whitelist.playerNameRuleMsg", ""), playerUUID, playerName));
+            event.disallow(KICK_OTHER, msg(config.getString("whitelist.playerNameRuleMsg", ""), playerUUID, playerName));
             return;
         }
 
@@ -87,7 +87,7 @@ public class onPlayerLogin implements Listener {
                 nowPlayers += visitPlayerList.size();
             }
             if(nowPlayers >= Bukkit.getMaxPlayers() && !player.hasPermission("IpacWhitelist.maxPlayer.bypass")){
-                event.disallow(KICK_FULL, config.getString("whitelist.maxPlayersMsg", ""));
+                event.disallow(KICK_OTHER, config.getString("whitelist.maxPlayersMsg", ""));
                 return;
             }
         }
@@ -165,7 +165,7 @@ public class onPlayerLogin implements Listener {
 
         // 被封禁的账户
         if(pd.ban == Type.BAN){
-            event.disallow(KICK_BANNED, msg(config.getString("whitelist.BAN.kickMsg", ""), playerUUID, playerName));
+            event.disallow(KICK_OTHER, msg(config.getString("whitelist.BAN.kickMsg", ""), playerUUID, playerName));
             return;
         }
         // 白名单逻辑
@@ -174,19 +174,19 @@ public class onPlayerLogin implements Listener {
             case VISIT, NOT -> {
                 // 未启用参观账户
                 if(!config.getBoolean("whitelist.visitEnable", true)){
-                    event.disallow(KICK_WHITELIST, msg(config.getString("whitelist.NOT.notMsg", ""), playerUUID, playerName));
+                    event.disallow(KICK_OTHER, msg(config.getString("whitelist.NOT.notMsg", ""), playerUUID, playerName));
                     return;
                 }
 
                 // 玩家名称字符检查
                 if(!Pattern.matches(config.getString("whitelist.VISIT.playerNameRule", ".*"), playerName)){
-                    event.disallow(KICK_BANNED, msg(config.getString("whitelist.VISIT.playerNameRuleMsg", ""), playerName, playerUUID));
+                    event.disallow(KICK_OTHER, msg(config.getString("whitelist.VISIT.playerNameRuleMsg", ""), playerName, playerUUID));
                     return;
                 }
 
                 // 参观账户人数限制
                 if(visitPlayerList.size() >= config.getInt("whitelist.VISIT.maxPlayers", 0)){
-                    event.disallow(KICK_FULL, config.getString("whitelist.VISIT.maxPlayersMsg", ""));
+                    event.disallow(KICK_OTHER, config.getString("whitelist.VISIT.maxPlayersMsg", ""));
                     return;
                 }
 
