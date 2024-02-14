@@ -135,7 +135,7 @@ public class clear {
                     List<PlayerData> pdsForName = sql.getPlayerDataList(null, li.name, true, true);
                     if(pdsForName.size() > 1){
                         sender.sendMessage(msg(config.getString("command.clear.repeat", ""), li.uuid, li.name));
-                        return;
+                        continue;
                     }
 
                     clearPlayerData(li);
