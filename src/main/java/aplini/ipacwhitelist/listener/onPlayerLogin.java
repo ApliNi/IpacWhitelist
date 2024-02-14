@@ -80,9 +80,12 @@ public class onPlayerLogin implements Listener {
         }
 
         // 最大人数限制
-        if(config.getBoolean("whitelist.maxPlayers", false)){
+        if(config.getBoolean("whitelist.maxPlayers", true)){
             // 当前玩家数量来自 visitPlayerList 和 playerList
-            int nowPlayers = playerList.size() + (config.getBoolean("whitelist.maxPlayersIncludesVisit", true) ? visitPlayerList.size() : 0);
+            int nowPlayers = playerList.size();
+            if(config.getBoolean("whitelist.maxPlayersIncludesVisit", true)){
+                nowPlayers += visitPlayerList.size();
+            }
             if(nowPlayers >= Bukkit.getMaxPlayers() && !player.hasPermission("IpacWhitelist.maxPlayer.bypass")){
                 event.disallow(KICK_FULL, config.getString("whitelist.maxPlayersMsg", ""));
                 return;
@@ -230,11 +233,6 @@ public class onPlayerLogin implements Listener {
         PlayerData pd = getPlayerData(player, true);
         switch(pd.type){
             case VISIT -> {
-                // AuthMe 自动注册和登录
-                if(config.getBoolean("whitelist.VISIT.AuthMePlugin.autoRegisterAndLogin", true)){
-                    // 登录账户
-                    AuthMeAutoRegisteredAndLogin(player);
-                }
                 // 记录在线的参观账户
                 visitPlayerList.add(pd.uuid);
                 // 参观账户加入事件
@@ -259,6 +257,22 @@ public class onPlayerLogin implements Listener {
                 player.kickPlayer(config.getString("message.playerLoginErr", ""));
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR) // 玩家加入服务器, 最后执行
+    public void onPlayerJoinEventMONITOR(PlayerJoinEvent event){
+        CompletableFuture.runAsync(() -> {
+            // 在这里实现参观账户自动登录
+            Player player = event.getPlayer();
+            if(visitPlayerList.contains(player.getUniqueId().toString())){
+                // AuthMe 自动注册和登录
+                if(config.getBoolean("whitelist.VISIT.AuthMePlugin.autoRegisterAndLogin", true)){
+                    // 登录账户
+                    plugin.getLogger().info("为参观账户自动注册/登录: " + player.getName());
+                    AuthMeAutoRegisteredAndLogin(player);
+                }
+            }
+        });
     }
 
     @EventHandler(priority = EventPriority.LOWEST) // 玩家退出
