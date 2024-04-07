@@ -45,38 +45,6 @@ public class sql {
 
     // 初始化数据库
     public static void initialize(){
-//        try {
-//            Statement statement = conn.createStatement();
-//            statement.execute("PRAGMA auto_vacuum = FULL;");
-//            statement.execute("PRAGMA journal_mode = WAL;");
-//            statement.close();
-//
-//            // 重新连接数据库
-////            reconnect();
-//
-//            // 加载数据表
-//            conn.prepareStatement("""
-//                    CREATE TABLE IF NOT EXISTS "player" (
-//                        "ID"        INTEGER NOT NULL,
-//                        "Type"      INTEGER NOT NULL,
-//                        "Ban"       INTEGER NOT NULL,
-//                        "UUID"      TEXT    NOT NULL,
-//                        "Name"      TEXT    NOT NULL %s,     -- 大小写敏感控制
-//                        "Time"      INTEGER NOT NULL,
-//                        "Config"    TEXT    NOT NULL,
-//                        PRIMARY KEY("ID" AUTOINCREMENT)
-//                    );
-//                    """.formatted(config.getBoolean("sqlite.nameCaseSensitive", false) ? "" : "COLLATE NOCASE")
-//            ).execute();
-//
-//            statement = conn.createStatement();
-//            statement.execute("");
-//            statement.execute("");
-//            statement.execute("");
-//            statement.execute("");
-//            statement.execute("");
-//            statement.close();
-
         try (Statement statement = conn.createStatement()) {
 
             statement.executeUpdate("PRAGMA auto_vacuum = FULL;");

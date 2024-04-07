@@ -13,10 +13,10 @@ import static aplini.ipacwhitelist.IpacWhitelist.config;
 import static aplini.ipacwhitelist.func.eventFunc.runEventFunc;
 import static aplini.ipacwhitelist.listener.onPlayerLogin.playerList;
 
-public class hookAuthMe implements Listener {
+public class authMe implements Listener {
     private static AuthMeApi AuthmeAPI = null;
     // 加载 API
-    public hookAuthMe(){
+    public authMe(){
         AuthmeAPI = AuthMeApi.getInstance();
     }
 

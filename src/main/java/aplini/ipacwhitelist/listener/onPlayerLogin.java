@@ -1,6 +1,7 @@
 package aplini.ipacwhitelist.listener;
 
 import aplini.ipacwhitelist.IpacWhitelist;
+import aplini.ipacwhitelist.enums.Key;
 import aplini.ipacwhitelist.enums.Type;
 import aplini.ipacwhitelist.enums.ph;
 import aplini.ipacwhitelist.utils.PlayerData;
@@ -22,10 +23,14 @@ import java.util.regex.Pattern;
 
 import static aplini.ipacwhitelist.IpacWhitelist.config;
 import static aplini.ipacwhitelist.IpacWhitelist.plugin;
+import static aplini.ipacwhitelist.enums.Type.getType;
 import static aplini.ipacwhitelist.func.eventFunc.runEventFunc;
-import static aplini.ipacwhitelist.hook.hookAuthMe.forceLoginPlayer;
-import static aplini.ipacwhitelist.hook.hookAuthMe.registeredPlayerName;
+import static aplini.ipacwhitelist.hook.authMe.forceLoginPlayer;
+import static aplini.ipacwhitelist.hook.authMe.registeredPlayerName;
+import static aplini.ipacwhitelist.hook.geyser.isGeyserPlayer;
+import static aplini.ipacwhitelist.utils.netReq.isPremiumPlayer;
 import static aplini.ipacwhitelist.utils.sql.getPlayerData;
+import static aplini.ipacwhitelist.utils.util.SEL;
 import static aplini.ipacwhitelist.utils.util.msg;
 import static org.bukkit.event.player.PlayerLoginEvent.Result.KICK_OTHER;
 
@@ -124,7 +129,7 @@ public class onPlayerLogin implements Listener {
             pd = new PlayerData();
             pd.setPlayerInfo(playerUUID, playerName);
         }else{
-            // 更新玩家名称
+            // 我们始终需要更新玩家名称
             pd.name = playerName;
         }
 
@@ -137,7 +142,8 @@ public class onPlayerLogin implements Listener {
             // 如果 Type 和 Ban 均为 NOT 则将这条记录删除, 然后这不属于名称重复
             // 处理名称重复, 但被标记为已删除的数据. 通过 /wl del 产生
             if(li.type == Type.NOT && li.ban == Type.NOT){
-                // 可以选择删除或仅忽略
+                // 可以选择删除或仅忽略, 我们准备好了对于这些数据的"保护", 应避免任何可能有用的数据被删除
+                // 如果遇到出乎意料的错误, 可以尝试开启自动删除
 //                li.delete();
                 continue;
             }
@@ -163,6 +169,43 @@ public class onPlayerLogin implements Listener {
                 }
             }
         }
+
+        // 根据玩家登录来源自动添加到白名单
+        if(config.getBoolean("whitelist.AutoWL.enable", false) && pd.type == Type.NOT){
+
+            Type onGeyserPlayer = (Type) SEL(getType(config.getString("whitelist.AutoWL.onGeyserPlayer", "NOT")), Type.NOT);
+            Type onPremiumPlayer = (Type) SEL(getType(config.getString("whitelist.AutoWL.onPremiumPlayer", "NOT")), Type.NOT);
+            Type onOtherPlayer = (Type) SEL(getType(config.getString("whitelist.AutoWL.onOtherPlayer", "NOT")), Type.NOT);
+
+            // 检查基岩版玩家
+            if(onGeyserPlayer != Type.NOT && isGeyserPlayer(player.getUniqueId())){
+                pd.type = onGeyserPlayer;
+            }
+            // 检查正版账户
+            else if(onPremiumPlayer != Type.NOT){
+                Key data = isPremiumPlayer(playerName, playerUUID);
+                if(data == Key.ERR){
+                    event.disallow(KICK_OTHER, msg(config.getString("whitelist.AutoWL.onPremiumPlayerErrMsg", ""), playerUUID, playerName));
+                }else if(data == Key.TRUE){
+                    pd.type = onPremiumPlayer;
+                }
+            }
+            // 其他的
+            else if(onOtherPlayer != Type.NOT){
+                pd.type = onOtherPlayer;
+            }
+
+            if(pd.type != Type.NOT) {
+                plugin.getLogger().info("[AutoWL] 玩家 " + playerName + " 已设置白名单 "+ pd.type.name);
+            }
+
+            // 处理 Ban 属性
+            if(pd.type == Type.BAN){
+                pd.type = Type.NOT;
+                pd.ban = Type.BAN;
+            }
+        }
+
 
         // 被封禁的账户
         if(pd.ban == Type.BAN){
@@ -274,45 +317,6 @@ public class onPlayerLogin implements Listener {
         }
     }
 
-//    @EventHandler(priority = EventPriority.MONITOR) // 玩家加入服务器, 最后执行
-//    public void onPlayerJoinEventMONITOR(PlayerJoinEvent event){
-//        CompletableFuture.runAsync(() -> {
-//            // 在这里实现参观账户自动登录
-//            Player player = event.getPlayer();
-//            if(visitPlayerList.contains(player.getUniqueId().toString())){
-//                // AuthMe 自动注册和登录
-//                if(config.getBoolean("whitelist.VISIT.AuthMePlugin.autoRegisterAndLogin", true)){
-//                    // 登录账户
-//                    forceLoginPlayer(player);
-//
-//                    final int loopCount = config.getInt("whitelist.VISIT.AuthMePlugin.doubleCheck", 4);
-//                    if(loopCount <= 0){
-//                        return;
-//                    }
-//
-//                    // 每 20 刻度重复检查...
-//                    new BukkitRunnable(){
-//                        private int count = 0;
-//                        @Override
-//                        public void run() {
-//                            try{
-//                                if(count < loopCount){
-//                                    count++;
-//                                    plugin.getLogger().info("为参观账户自动注册/登录: " + player.getName());
-//                                    AuthMeAutoRegisteredAndLogin(player);
-//                                }else{
-//                                    cancel();
-//                                }
-//                            }catch(Exception e){
-//                                cancel();
-//                            }
-//                        }
-//                    }.runTaskTimer(plugin, 10, 10);
-//                }
-//            }
-//        });
-//    }
-
     @EventHandler(priority = EventPriority.LOWEST) // 玩家退出
     public void onPlayerQuit(PlayerQuitEvent event){
         CompletableFuture.runAsync(() -> {
@@ -331,7 +335,7 @@ public class onPlayerLogin implements Listener {
                     // 玩家退出事件
                     runEventFunc("whitelist.WHITE.onPlayerQuitEvent", player, pd.uuid, pd.name);
                 }
-                // 玩家可能因为 del / ban 等操作被退出服务器
+                // 玩家可能因为 del / ban 等操作被退出服务器, 但不需要在这里进行处理
                 // default -> {}
             }
 

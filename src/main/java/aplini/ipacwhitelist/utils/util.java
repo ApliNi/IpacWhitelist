@@ -51,4 +51,8 @@ public class util {
     public static String msg(String msg, String var){
         return msg(msg, var, var);
     }
+
+    public static Object SEL(Object obj1, Object obj2){
+        return obj1 != null ? obj1 : obj2;
+    }
 }

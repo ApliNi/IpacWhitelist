@@ -232,8 +232,7 @@ sqlite:
 
 # 连接到其他插件
 hook:
-  # 离线登录插件
-  AuthMe: true
+  AuthMe: true    # 离线登录插件
 
 
 # 白名单配置
@@ -269,6 +268,20 @@ whitelist:
   # 防止名称相同, 但 UUID 不同的玩家加入
   preventNameDuplication: true
   preventNameDuplicationMsg: '§6IpacEL §f> §b存在名称重复的玩家, 请联系管理员检查'
+
+  # 根据玩家登录来源自动添加到白名单, 这仅适用于新玩家
+  AutoWL:
+    enable: false
+
+    # 通过 Geyser 插件检查, 如果没有安装此插件, 则设置为 NOT
+    onGeyserPlayer: WHITE   # 将所有新的基岩版玩家添加到白名单
+
+    # 通过 MojangApi **粗略**地检查是否为正版账户 https://api.mojang.com/users/profiles/minecraft/<playerName>
+    onPremiumPlayer: WHITE  # 将所有新的正版账户添加到白名单
+    onPremiumPlayerErrMsg: '§6IpacEL §f> §b无法连接身份验证服务器, 请稍后重试'
+
+    # 不属于以上任何一类玩家
+    onOtherPlayer: NOT      # 不处理其他玩家
 
 
   # 以下根据玩家当前的类型对配置分类
@@ -464,6 +477,7 @@ command:
     # 清除文件
     # %worldPath% = 所有地图的根目录
     # %worldName% = 所有地图的名称
+    # %playerUUID32%  = 32位, 不带连字符的 UUID
     clearFile:
       # 清理所有地图下的存档
       - '%worldPath%/playerdata/%playerUUID%.dat'

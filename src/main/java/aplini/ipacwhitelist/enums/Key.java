@@ -11,4 +11,7 @@ public enum Key {
     GET_VISIT_CONVERT,
     GET_ALL,
     GET_NAME_CONFLICT,
+    ERR,
+    TRUE,
+    FALSE,
 }
