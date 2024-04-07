@@ -2,6 +2,7 @@ package aplini.ipacwhitelist.listener.cmd;
 
 import aplini.ipacwhitelist.enums.Key;
 import aplini.ipacwhitelist.enums.Type;
+import aplini.ipacwhitelist.enums.pc;
 import aplini.ipacwhitelist.enums.ph;
 import aplini.ipacwhitelist.utils.Inp;
 import aplini.ipacwhitelist.utils.PlayerData;
@@ -9,9 +10,8 @@ import aplini.ipacwhitelist.utils.sql;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Supplier;
 
 import static aplini.ipacwhitelist.IpacWhitelist.*;
 import static aplini.ipacwhitelist.func.eventFunc.runEventFunc;
@@ -41,6 +41,20 @@ public class add {
             return;
         }
 
+        // 操作记录
+        Map<String, Object> addData = new HashMap<>();
+        if(config.getBoolean("command.add.logger_sender.enable", false)){
+            if(sender instanceof Player){
+                Player player = (Player) sender;
+                addData.put(pc.CmdAddLogSender.key,
+                        config.getString("command.add.logger_sender.isPlayer", "")
+                                .replace(ph.playerName.ph, player.getName())
+                                .replace(ph.playerUUID.ph, player.getUniqueId().toString()));
+            }else{
+                addData.put(pc.CmdAddLogSender.key, config.getString("command.add.logger_sender.isOther", "[Other]"));
+            }
+        }
+
         sender.sendMessage(config.getString("command.add.title", "")
                 .replace(ph.var.ph, inp.inp));
 
@@ -56,6 +70,7 @@ public class add {
                 // 运行参观账户转换程序
                 runEventFunc("whitelist.VISIT.onWhitelistAddEvent", inp.onlinePlayer, li.uuid, li.name);
                 li.type = Type.VISIT_CONVERT;
+                li.config.putAll(addData);
                 li.save();
                 sender.sendMessage(msg(config.getString("command.add.isVisit", ""), li.uuid, li.name));
                 return;
@@ -68,6 +83,7 @@ public class add {
             // 从已删除的数据中恢复, 如果 UUID 相同则恢复, 否则只能添加一条新数据
             else if(Objects.equals(li.uuid, inp.forUUID)){
                 li.type = Type.WHITE;
+                li.config.putAll(addData);
                 li.save();
                 sender.sendMessage(msg(config.getString("command.add.finish", ""), li.uuid, li.name));
                 return;
@@ -79,6 +95,7 @@ public class add {
         // 创建新数据
         inp.pd = new PlayerData();
         inp.pd.type = Type.WHITE;
+        inp.pd.config.putAll(addData);
         inp.pd.setPlayerInfo(inp.forUUID, inp.forName);
         inp.pd.save();
         sender.sendMessage(msg(config.getString("command.add.finish", ""), inp.forUUID, inp.forName));

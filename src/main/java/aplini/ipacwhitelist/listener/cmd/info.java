@@ -1,5 +1,6 @@
 package aplini.ipacwhitelist.listener.cmd;
 
+import aplini.ipacwhitelist.enums.pc;
 import aplini.ipacwhitelist.enums.ph;
 import aplini.ipacwhitelist.utils.Inp;
 import aplini.ipacwhitelist.utils.PlayerData;
@@ -9,6 +10,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static aplini.ipacwhitelist.IpacWhitelist.config;
 import static aplini.ipacwhitelist.IpacWhitelist.server;
@@ -54,6 +56,11 @@ public class info {
                     .replace(ph.ban.ph, li.ban.name)
                     .replace(ph.time.ph, getDisplayTime(li.time))
             );
+            for(Map.Entry<String, Object> entry : inp.pd.config.data.entrySet()){
+                sender.sendMessage(config.getString("command.info.config", "")
+                        .replace(ph.key.ph, pc.get(entry.getKey()).name)
+                        .replace(ph.var.ph, (String) entry.getValue()));
+            }
         }
     }
 

@@ -41,7 +41,7 @@ public class PlayerData {
             this.uuid = results.getString("UUID");
             this.name = results.getString("Name");
             this.time = results.getLong("Time");
-            this.config = new PlayerConfig();
+            this.config = new PlayerConfig().setYamlStr(results.getString("Config"));
         } catch (Exception e) {
             throw new RuntimeException("[IpacWhitelist] [错误] 无法解析数据库中的玩家数据");
         }

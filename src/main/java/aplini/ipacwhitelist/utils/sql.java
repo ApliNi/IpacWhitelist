@@ -231,7 +231,7 @@ public class sql {
                 sql.setString(++i, pd.uuid);
                 sql.setString(++i, pd.name);
                 sql.setLong(++i, pd.time);
-                sql.setString(++i, pd.config.getString());
+                sql.setString(++i, pd.config.getYamlStr());
             } else {
                 sql = conn.prepareStatement("UPDATE `player` SET `Type` = ?, `Ban` = ?, `UUID` = ?, `Name` = ?, `Time` = ?, `Config` = ? WHERE `ID` = ?;");
                 sql.setInt(++i, pd.type.num);
@@ -239,7 +239,7 @@ public class sql {
                 sql.setString(++i, pd.uuid);
                 sql.setString(++i, pd.name);
                 sql.setLong(++i, pd.time);
-                sql.setString(++i, pd.config.getString());
+                sql.setString(++i, pd.config.getYamlStr());
                 sql.setInt(++i, pd.id);
             }
             sql.executeUpdate();

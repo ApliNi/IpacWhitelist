@@ -6,7 +6,7 @@
 
     <groupId>ApliNi</groupId>
     <artifactId>IpacWhitelist</artifactId>
-    <version>4.1.0-rc1</version>
+    <version>4.1.1-rc1</version>
     <packaging>jar</packaging>
 
     <name>IpacWhitelist</name>
@@ -114,6 +114,11 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>5.0.0-alpha.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>2.2</version>
         </dependency>
     </dependencies>
 </project>

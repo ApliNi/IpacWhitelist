@@ -4,6 +4,7 @@ public enum ph {
 
     ip("%ip%"),
     var("%var%"),
+    key("%key%"),
     playerUUID("%playerUUID%"),
     playerUUID32("%playerUUID32%"),
     playerName("%playerName%"),

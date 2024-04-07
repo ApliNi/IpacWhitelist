@@ -188,6 +188,12 @@ command:
     isVisit: '  - §a%playerName%§f[§7%playerUUID%§f] §a已从参观账户中重置'
     finish:  '  - §a%playerName%§f[§7%playerUUID%§f] §a已完成'
 
+    # 尝试记录最后一个操作者的信息
+    logger_sender:
+      enable: false
+      isPlayer: '%playerName%[%playerUUID%]'
+      isOther:  '[控制台]'
+
   del:
     title:   '§6IpacEL §f> §b从白名单移出[§a%var%§b]:'
     isEmpty: '  - §a%playerName%§f[§7%playerUUID%§f] §b不存在'
@@ -213,9 +219,10 @@ command:
     isEmpty: '  - §a%playerName%§f[§7%playerUUID%§f] §b不存在'
     finish: >
       §f  - §a%playerName%§f[§7%playerUUID%§f]: [§bID: §6%id%§f]
-            - §bTYPE: §6%type%
-            - §bBAN: §6%ban%
-            - §bTIME: §6%time%
+          - §bTYPE: §6%type%
+          - §bBAN: §6%ban%
+          - §bTIME: §6%time%
+    config: '    - §bDATA: §6%key% §f-> §a%var%'
 
   list:
     title:   '§6IpacEL §f> §b查询玩家信息[§a%type%§b]:'
