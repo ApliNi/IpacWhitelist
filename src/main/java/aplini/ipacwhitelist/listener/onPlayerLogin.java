@@ -17,7 +17,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -47,6 +46,12 @@ public class onPlayerLogin implements Listener {
     @EventHandler(priority = EventPriority.LOWEST) // 玩家登录服务器
     public void onPlayerLoginEvent(PlayerLoginEvent event) {
 
+        // 如果结果已被设置, 我们可以忽略这个玩家
+        // 同时防止这个事件循环回来 (触发两次)
+        if(event.getResult() != PlayerLoginEvent.Result.ALLOWED){
+            return;
+        }
+
         // 设置不允许登录的结果, 在允许登录的分支取消它. 防止出错造成意外的玩家登录
         event.disallow(KICK_OTHER, config.getString("message.playerLoginErr", ""));
 
@@ -54,26 +59,24 @@ public class onPlayerLogin implements Listener {
         String playerName = player.getName();
         String playerUUID = player.getUniqueId().toString();
         String playerIP = event.getRealAddress().toString();
-        playerIP = playerIP.substring(playerIP.lastIndexOf("/") +1);
+        String playerAddressHost = event.getHostname();
+        plugin.getLogger().info("%s[%s] -> Server[%s]".formatted(playerName, playerIP, playerAddressHost));
 
 
         // 玩家 ip 地址检查
         // 原始ip格式: ipv4: "/127.0.0.1", ipv6: "/0:0:0:0:0:0:0:1" 没有方括号
-        for(String li : config.getStringList("whitelist.ipBlacklist")){
-            if(Pattern.matches(li, playerIP)){
-                plugin.getLogger().info("%s 在IP黑名单中: %s".formatted(playerName, playerIP));
-                event.disallow(KICK_OTHER, msg(config.getString("whitelist.ipBlacklistMsg", ""), playerUUID, playerName)
-                        .replace(ph.ip.ph, playerIP));
-                return;
-            }
+        if(config.getStringList("whitelist.ipBlacklist").stream().anyMatch(li -> Pattern.matches(li, playerIP))){
+            plugin.getLogger().info("%s 在IP黑名单中: %s".formatted(playerName, playerIP));
+            event.disallow(KICK_OTHER, msg(config.getString("whitelist.ipBlacklistMsg", ""), playerUUID, playerName)
+                    .replace(ph.ip.ph, playerIP));
+            return;
         }
 
         // 限定玩家只能通过以下地址加入服务器
-        String playerAddressHost = Objects.requireNonNull(player.getAddress()).getHostString();
-        plugin.getLogger().info("玩家 %s 通过地址 %s 连接服务器".formatted(playerName, playerAddressHost));
         if(config.getBoolean("whitelist.addressConfig.enable", false)){
-            if(!config.getStringList("whitelist.addressConfig.list").contains(playerAddressHost)){
+            if(config.getStringList("whitelist.addressConfig.list").stream().noneMatch(li -> Pattern.matches(li, playerAddressHost))){
                 event.disallow(KICK_OTHER, msg(config.getString("whitelist.addressConfig.kickMsg", ""), playerUUID, playerName));
+                return;
             }
         }
 
@@ -234,8 +237,9 @@ public class onPlayerLogin implements Listener {
 
                 // 限定参观模式可使用的地址
                 if(config.getBoolean("whitelist.VISIT.addressConfig.enable", false)){
-                    if(!config.getStringList("whitelist.VISIT.addressConfig.list").contains(playerAddressHost)){
+                    if(config.getStringList("whitelist.VISIT.addressConfig.list").stream().noneMatch(li -> Pattern.matches(li, playerAddressHost))){
                         event.disallow(KICK_OTHER, msg(config.getString("whitelist.VISIT.addressConfig.kickMsg", ""), playerUUID, playerName));
+                        return;
                     }
                 }
 

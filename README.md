@@ -241,10 +241,18 @@ whitelist:
 
   # 简易的 ip 黑名单. 在这里添加正则表达式, 匹配的ip不允许加入服务器 (也不允许使用参观账户
   # 使用 /wl reload 重载配置即可应用
+  # IP 地址格式: ipv4: "/127.0.0.1", ipv6: "/0:0:0:0:0:0:0:1" 没有方括号
   ipBlacklist: [ ]
-  #    - '^192\.168\.100\..+$'
-  #    - '^fe80::1234:.+$' # IPv6 没有方括号
+  #  - '^/192\.168\.100\..+$'
+  #  - '^/fe80::1234:.+$'
   ipBlacklistMsg: '§6IpacEL §f> §b您已被列入黑名单: §a%playerName%' # var: %ip%
+
+  # 限定玩家只能通过以下地址连接服务器
+  addressConfig:
+    enable: false
+    list: [ ]
+    #  - '^0:0:0:0:0:0:0:0:25565$'
+    kickMsg: '§6IpacEL §f> §b此地址不可用'
 
   # 玩家名称字符检查
   # 名称长度为 3 到 16 字符, 允许包含 Geyser 的 "." 前缀
@@ -298,6 +306,13 @@ whitelist:
 
   # 参观账户
   VISIT:
+
+    # 限定参观模式可使用的地址
+    addressConfig:
+      enable: false
+      list: [ ]
+      kickMsg: '§6IpacEL §f> §b您不在白名单中'
+
     # 参观账户的名称字符检查
     playerNameRule: '^(?:\.?[a-zA-Z0-9_]{3,16})$'
     playerNameRuleMsg: '§6IpacEL §f> §a名称中包含不支持的字符: §b%playerName%'
@@ -333,7 +348,7 @@ whitelist:
         - 'gamemode spectator %playerName%' # 将玩家设置为观察模式
       msg:
         - '§6IpacEL §f> §a您正在使用参观账户=w='
-      #        - '§6IpacEL §f> §b如需加入, 请访问我们的网站: §ahttps://ipacel.cc/'
+      #  - '§6IpacEL §f> §b如需加入, 请访问我们的网站: §ahttps://ipacel.cc/'
       msgExclude:
         - '§6IpacEL §f> §a%playerName% §b使用参观账户加入游戏'
 
