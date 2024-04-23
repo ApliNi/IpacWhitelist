@@ -22,6 +22,12 @@ whitelist:
   #    - '^fe80::1234:.+$' # IPv6 没有方括号
   ipBlacklistMsg: '§6IpacEL §f> §b您已被列入黑名单: §a%playerName%' # var: %ip%
 
+  # 限定玩家只能通过以下地址加入服务器
+  addressConfig:
+    enable: false
+    list: [ ]
+    kickMsg: '§6IpacEL §f> §b此地址不可用'
+
   # 玩家名称字符检查
   # 名称长度为 3 到 16 字符, 允许包含 Geyser 的 "." 前缀
   playerNameRule: '^(?:\.?[a-zA-Z0-9_]{3,16})$'

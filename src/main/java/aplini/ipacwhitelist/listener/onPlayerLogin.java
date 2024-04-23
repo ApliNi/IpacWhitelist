@@ -17,6 +17,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -64,6 +65,15 @@ public class onPlayerLogin implements Listener {
                 event.disallow(KICK_OTHER, msg(config.getString("whitelist.ipBlacklistMsg", ""), playerUUID, playerName)
                         .replace(ph.ip.ph, playerIP));
                 return;
+            }
+        }
+
+        // 限定玩家只能通过以下地址加入服务器
+        String playerAddressHost = Objects.requireNonNull(player.getAddress()).getHostString();
+        plugin.getLogger().info("玩家 %s 通过地址 %s 连接服务器".formatted(playerName, playerAddressHost));
+        if(config.getBoolean("whitelist.addressConfig.enable", false)){
+            if(!config.getStringList("whitelist.addressConfig.list").contains(playerAddressHost)){
+                event.disallow(KICK_OTHER, msg(config.getString("whitelist.addressConfig.kickMsg", ""), playerUUID, playerName));
             }
         }
 
