@@ -232,6 +232,13 @@ public class onPlayerLogin implements Listener {
                     return;
                 }
 
+                // 限定参观模式可使用的地址
+                if(config.getBoolean("whitelist.VISIT.addressConfig.enable", false)){
+                    if(!config.getStringList("whitelist.VISIT.addressConfig.list").contains(playerAddressHost)){
+                        event.disallow(KICK_OTHER, msg(config.getString("whitelist.VISIT.addressConfig.kickMsg", ""), playerUUID, playerName));
+                    }
+                }
+
                 // 玩家名称字符检查
                 if(!Pattern.matches(config.getString("whitelist.VISIT.playerNameRule", ".*"), playerName)){
                     event.disallow(KICK_OTHER, msg(config.getString("whitelist.VISIT.playerNameRuleMsg", ""), playerName, playerUUID));

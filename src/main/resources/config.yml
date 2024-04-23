@@ -80,6 +80,13 @@ whitelist:
 
   # 参观账户
   VISIT:
+
+    # 限定参观模式可使用的地址
+    addressConfig:
+      enable: false
+      list: [ ]
+      kickMsg: '§6IpacEL §f> §b您不在白名单中, 请使用参观地址加入服务器'
+
     # 参观账户的名称字符检查
     playerNameRule: '^(?:\.?[a-zA-Z0-9_]{3,16})$'
     playerNameRuleMsg: '§6IpacEL §f> §a名称中包含不支持的字符: §b%playerName%'
