@@ -1,16 +1,19 @@
 name: IpacWhitelist
+authors: [ ApliNi ]
 version: '${project.version}'
 main: aplini.ipacwhitelist.IpacWhitelist
 api-version: 1.19
 
 softdepend:
   - AuthMe
+  - Geyser-Spigot
+  - PlaceholderAPI
 
 commands:
   wl:
     description: 白名单指令
     usage: /<command>
-    aliases: [ipacwhitelist]
+    aliases: [ ipacwhitelist ]
 
 permissions:
 

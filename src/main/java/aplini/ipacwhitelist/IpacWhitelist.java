@@ -1,5 +1,6 @@
 package aplini.ipacwhitelist;
 
+import aplini.ipacwhitelist.api.PlaceholderAPI;
 import aplini.ipacwhitelist.hook.authMe;
 import aplini.ipacwhitelist.listener.commandHandler;
 import aplini.ipacwhitelist.listener.onPlayerLogin;
@@ -44,6 +45,9 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
         // 连接到插件
         if(config.getBoolean("hook.AuthMe", true)){
             getServer().getPluginManager().registerEvents(new authMe(), plugin);
+        }
+        if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")){
+            new PlaceholderAPI().register();
         }
 
         // 注册指令

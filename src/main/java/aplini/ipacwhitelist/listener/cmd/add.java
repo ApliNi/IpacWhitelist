@@ -77,6 +77,7 @@ public class add {
             }
             // 非 NOT 类型
             if(li.isExist()){
+                li.save();  // 更新时间记录
                 sender.sendMessage(msg(config.getString("command.add.isExist", ""), li.uuid, li.name));
                 return;
             }

@@ -30,8 +30,7 @@ import static aplini.ipacwhitelist.hook.authMe.registeredPlayerName;
 import static aplini.ipacwhitelist.hook.geyser.isGeyserPlayer;
 import static aplini.ipacwhitelist.utils.netReq.isPremiumPlayer;
 import static aplini.ipacwhitelist.utils.sql.getPlayerData;
-import static aplini.ipacwhitelist.utils.util.SEL;
-import static aplini.ipacwhitelist.utils.util.msg;
+import static aplini.ipacwhitelist.utils.util.*;
 import static org.bukkit.event.player.PlayerLoginEvent.Result.KICK_OTHER;
 
 public class onPlayerLogin implements Listener {
@@ -279,16 +278,23 @@ public class onPlayerLogin implements Listener {
 
             // 白名单
             case WHITE -> {
+                // 白名单超时
+                if(getTime() - pd.time > config.getLong("whitelist.WHITE.timeOut", 18394560)){
+                    event.disallow(KICK_OTHER, config.getString("whitelist.WHITE.timeOutMsg", ""));
+                    return;
+                }
                 event.allow();
             }
 
             default -> {
                 plugin.getLogger().warning("出现未知的错误: 不存在有效数据的玩家登录服务器: "+ player.getUniqueId());
                 event.disallow(KICK_OTHER, config.getString("message.playerLoginErr", ""));
+                return;
             }
         }
 
         // 保存玩家数据
+        // 以上代码通过 return 来绕过这里的保存操作, 只有成功加入游戏才需要保存
         pd.save();
     }
 

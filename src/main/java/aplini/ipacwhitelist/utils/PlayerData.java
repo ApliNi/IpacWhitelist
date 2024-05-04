@@ -16,7 +16,7 @@ public class PlayerData {
     public Type ban     = Type.NOT;
     public String uuid  = null;
     public String name  = null;
-    public long time    = 0;
+    public long time    = 0;    // 秒级时间戳
     public PlayerConfig config  = new PlayerConfig();
 
     // 保存数据时是否更新时间

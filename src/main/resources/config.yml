@@ -153,6 +153,11 @@ whitelist:
 
   # 白名单中的玩家
   WHITE:
+
+    # 距离上一次上线超过此时间就踢出, 如果需要取消可以修改为较大的数值
+    timeOut: 18394560 # 7个月
+    timeOutMsg: '§6IpacEL §f> §a白名单已超时, 请联系管理员恢复'
+
     onPlayerLoginEvent: [ ] # 玩家登录服务器
 
     onPlayerJoinEvent: # 玩家加入服务器
@@ -199,7 +204,7 @@ command:
   add:
     title:   '§6IpacEL §f> §a添加到白名单[§b%var%§a]:'
     isBan:   '  - §a%playerName%§f[§7%playerUUID%§f] §b已在黑名单中, 不可操作'
-    isExist: '  - §a%playerName%§f[§7%playerUUID%§f] §b已在白名单中'
+    isExist: '  - §a%playerName%§f[§7%playerUUID%§f] §b已在白名单中, 已更新时间记录'
     isVisit: '  - §a%playerName%§f[§7%playerUUID%§f] §a已从参观账户中重置'
     finish:  '  - §a%playerName%§f[§7%playerUUID%§f] §a已完成'
 
@@ -307,6 +312,17 @@ command:
     NAME: 4
     TIME: 5
 
+
+# API 相关配置
+api:
+  PlaceholderAPI:
+    iwl_player_type: {}
+    iwl_player_type_name:
+      NOT: '不存在'
+      VISIT: '参观账户'
+      WHITE: '白名单'
+      VISIT_CONVERT: '白名单 (正在转换)'
+      BAN: '已封禁'
 
 # 其他消息
 message:
