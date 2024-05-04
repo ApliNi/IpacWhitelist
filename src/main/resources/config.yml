@@ -21,7 +21,7 @@ whitelist:
   ipBlacklist: [ ]
   #  - '^/192\.168\.100\..+$'
   #  - '^/fe80::1234:.+$'
-  ipBlacklistMsg: '§6IpacEL §f> §b您已被列入黑名单: §a%playerName%' # var: %ip%
+  ipBlacklistMsg: '§6IpacEL §f> §b您的 IP 已被列入黑名单: §a%playerName%' # var: %ip%
 
   # 限定玩家只能通过以下地址连接服务器
   addressConfig:
@@ -156,7 +156,7 @@ whitelist:
 
     # 距离上一次上线超过此时间就踢出, 如果需要取消可以修改为较大的数值
     timeOut: 18394560 # 7个月
-    timeOutMsg: '§6IpacEL §f> §a白名单已超时, 请联系管理员恢复'
+    timeOutMsg: '§6IpacEL §f> §a太久没有上线? 请联系管理员恢复'
 
     onPlayerLoginEvent: [ ] # 玩家登录服务器
 
