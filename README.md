@@ -111,8 +111,10 @@ v4 版本改动特别大, 建议不要从旧配置中复制内容到新配置, �
 ## API 和扩展功能
 
 #### PlaceholderAPI 占位符
-- `iwl_player_type_name` - 显示当前玩家类型的显示名称, 名称可配置
-- `iwl_player_type` - 显示当前玩家类型的内部名称
+- `%iwl_player_type%` - 显示当前玩家类型的内部名称
+- `%iwl_player_type(playerName|playerUUID)%` - 显示指定玩家类型的内部名称
+- `%iwl_player_type_name%` - 显示当前玩家类型的显示名称, 名称可配置
+- `%iwl_player_type_name(playerName|playerUUID)%` - 显示指定玩家类型的显示名称, 名称可配置
 
 ---
 

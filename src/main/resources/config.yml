@@ -21,7 +21,7 @@ whitelist:
   ipBlacklist: [ ]
   #  - '^/192\.168\.100\..+$'
   #  - '^/fe80::1234:.+$'
-  ipBlacklistMsg: '§6IpacEL §f> §b您的 IP 已被列入黑名单: §a%playerName%' # var: %ip%
+  ipBlacklistMsg: '§6IpacEL §f> §b您的 IP 已被列入黑名单' # var: %ip%
 
   # 限定玩家只能通过以下地址连接服务器
   addressConfig:

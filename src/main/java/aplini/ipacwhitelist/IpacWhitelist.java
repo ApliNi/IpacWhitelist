@@ -47,7 +47,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
             getServer().getPluginManager().registerEvents(new authMe(), plugin);
         }
         if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")){
-            new PlaceholderAPI().register();
+            new PlaceholderAPI(plugin).register();
         }
 
         // 注册指令
