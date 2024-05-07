@@ -1,10 +1,7 @@
 package aplini.ipacwhitelist.api;
 
 import aplini.ipacwhitelist.IpacWhitelist;
-import aplini.ipacwhitelist.enums.Type;
 import aplini.ipacwhitelist.utils.Inp;
-import aplini.ipacwhitelist.utils.PlayerData;
-import aplini.ipacwhitelist.utils.sql;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static aplini.ipacwhitelist.IpacWhitelist.config;
+import static aplini.ipacwhitelist.enums.Type.BAN;
 
 public class PlaceholderAPI extends PlaceholderExpansion {
 
@@ -65,11 +63,11 @@ public class PlaceholderAPI extends PlaceholderExpansion {
 
         switch(cmd){
             case "player_type" -> {
-                Type type = (inp.pd.ban == Type.BAN)? Type.BAN : inp.pd.type;
+                aplini.ipacwhitelist.enums.Type type = (inp.pd.ban == BAN)? BAN : inp.pd.type;
                 return type.name;
             }
             case "player_type_name" -> {
-                Type type = (inp.pd.ban == Type.BAN)? Type.BAN : inp.pd.type;
+                aplini.ipacwhitelist.enums.Type type = (inp.pd.ban == BAN)? BAN : inp.pd.type;
                 return config.getString("api.PlaceholderAPI.iwl_player_type_name." + type.name, "未定义变量名 " + type.name);
             }
         }
