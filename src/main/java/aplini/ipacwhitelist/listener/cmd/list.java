@@ -22,7 +22,7 @@ public class list {
         }
 
         if(args.length < 2){
-            sender.sendMessage("/wl list <Type>");
+            sender.sendMessage("/wl list <NOT | VISIT | WHITE | VISIT_CONVERT | BAN | ALL | NAME_CONFLICT | WHITE_TIMEOUT>");
             return;
         }
 
@@ -41,6 +41,7 @@ public class list {
             case "BAN" -> sendListMsg(sender, sql.findPlayerDataList("", Key.GET_BAN));
             case "ALL" -> sendListMsg(sender, sql.findPlayerDataList("", Key.GET_ALL));
             case "NAME_CONFLICT" -> sendListMsg(sender, sql.findPlayerDataList("", Key.GET_NAME_CONFLICT));
+            case "WHITE_TIMEOUT" -> sendListMsg(sender, sql.findPlayerDataList("", Key.GET_WHITE_TIMEOUT));
             default -> sender.sendMessage("/wl list <Type>");
         }
     }
@@ -78,7 +79,8 @@ public class list {
                     "VISIT_CONVERT",
                     "BAN",
                     "ALL",
-                    "NAME_CONFLICT"
+                    "NAME_CONFLICT",
+                    "WHITE_TIMEOUT"
             );
         }
 

@@ -173,6 +173,11 @@ public class sql {
                 case GET_ALLOW_BAN -> // 获取可以被封禁的账户
                         " AND (`Type` = '%s' OR `Type` = '%s') AND `Ban` = '%s' ".formatted(Type.WHITE.num, Type.VISIT.num, Type.NOT.num);
 
+                case GET_WHITE_TIMEOUT -> {
+                    long timeout =  getTime() - config.getLong("whitelist.WHITE.timeOut", 18394560);
+                    yield " AND `Type` = '%s' AND `Time` < '%s' ".formatted(Type.WHITE.num, timeout);
+                }
+
                 case GET_ALL -> {
                     sql = conn.prepareStatement("SELECT * FROM `player` LIMIT 999999;");
                     yield "";

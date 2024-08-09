@@ -279,7 +279,7 @@ public class onPlayerLogin implements Listener {
             // 白名单
             case WHITE -> {
                 // 白名单超时
-                if(getTime() - pd.time > config.getLong("whitelist.WHITE.timeOut", 18394560)){
+                if(pd.time < getTime() - config.getLong("whitelist.WHITE.timeOut", 18394560)){
                     event.disallow(KICK_OTHER, config.getString("whitelist.WHITE.timeOutMsg", ""));
                     return;
                 }
