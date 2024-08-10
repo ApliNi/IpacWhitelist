@@ -274,7 +274,7 @@ whitelist:
   ipBlacklist: [ ]
   #  - '^/192\.168\.100\..+$'
   #  - '^/fe80::1234:.+$'
-  ipBlacklistMsg: '§6IpacEL §f> §b您的 IP 已被列入黑名单: §a%playerName%' # var: %ip%
+  ipBlacklistMsg: '§6IpacEL §f> §b您的 IP 已被列入黑名单' # var: %ip%
 
   # 限定玩家只能通过以下地址连接服务器
   addressConfig:
@@ -305,6 +305,19 @@ whitelist:
   # 防止名称相同, 但 UUID 不同的玩家加入
   preventNameDuplication: true
   preventNameDuplicationMsg: '§6IpacEL §f> §b存在名称重复的玩家, 请联系管理员检查'
+
+  # 允许这些玩家加入游戏, 不参与白名单检查
+  # 与 AutoWL 不同的是, 通过这些方法加入的玩家不会被记入白名单, 也不参与白名单配置中的其他检查
+  bypass:
+    enable: false
+    bypassMaxPlayersLimit: false  # 同时绕过最大玩家数限制
+    # 通过 IP 检查玩家
+    ipList: [ ]
+    #  - '^/127\.0\.0\.1$'
+    #  - '^/0:0:0:0:0:0:0:1$'
+
+
+  # 从这里开始, 接下来的操作涉及数据库查询与更新
 
   # 根据玩家登录来源自动添加到白名单, 这仅适用于新玩家
   AutoWL:

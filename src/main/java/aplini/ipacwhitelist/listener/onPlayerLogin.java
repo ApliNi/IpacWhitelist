@@ -110,6 +110,27 @@ public class onPlayerLogin implements Listener {
             }
         }
 
+        // 白名单绕过
+        if(config.getBoolean("whitelist.bypass.enable", false)){
+
+            boolean bypass = false;
+
+            // 检查 ip 列表
+            if(config.getStringList("whitelist.bypass.ipList").stream().anyMatch(li -> Pattern.matches(li, playerIP))){
+                bypass = true;
+            }
+
+            if(bypass){
+                // 最大玩家数量
+                if(!config.getBoolean("whitelist.bypass.bypassMaxPlayersLimit", false)){
+                    playerList.add(playerUUID);
+                }
+
+                event.allow();
+                return;
+            }
+        }
+
         PlayerData pd = null;
 
         // 处理重复的数据
