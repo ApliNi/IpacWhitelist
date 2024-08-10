@@ -40,6 +40,8 @@ public class onPlayerLogin implements Listener {
     public static final List<String> visitPlayerList = new ArrayList<>();
     // 白名单玩家列表
     public static final List<String> playerList = new ArrayList<>();
+    // 绕过这些玩家列表
+    public static final List<String> bypassPlayerList = new ArrayList<>();
 
 
     @EventHandler(priority = EventPriority.LOWEST) // 玩家登录服务器
@@ -121,12 +123,14 @@ public class onPlayerLogin implements Listener {
             }
 
             if(bypass){
+                plugin.getLogger().info("[bypass] [%s]: \"%s\"".formatted(playerName, playerIP));
+                bypassPlayerList.add(playerUUID);
+                event.allow();
+
                 // 最大玩家数量
                 if(!config.getBoolean("whitelist.bypass.bypassMaxPlayersLimit", false)){
                     playerList.add(playerUUID);
                 }
-
-                event.allow();
                 return;
             }
         }
@@ -321,6 +325,12 @@ public class onPlayerLogin implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST) // 玩家加入服务器
     public void onPlayerJoinEvent(PlayerJoinEvent event){
+
+        // 绕过
+        if(bypassPlayerList.contains(event.getPlayer().getUniqueId().toString())){
+            return;
+        }
+
         Player player = event.getPlayer();
         PlayerData pd = getPlayerData(player, true);
         switch(pd.type){
@@ -368,6 +378,12 @@ public class onPlayerLogin implements Listener {
     @EventHandler(priority = EventPriority.LOWEST) // 玩家退出
     public void onPlayerQuit(PlayerQuitEvent event){
         CompletableFuture.runAsync(() -> {
+
+            if(bypassPlayerList.contains(event.getPlayer().getUniqueId().toString())){
+                bypassPlayerList.remove(event.getPlayer().getUniqueId().toString());
+                return;
+            }
+
             Player player = event.getPlayer();
             PlayerData pd = getPlayerData(player, true);
             switch(pd.type){
