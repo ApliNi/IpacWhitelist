@@ -254,7 +254,7 @@ public class onPlayerLogin implements Listener {
             // 参观账户不在白名单中
             case VISIT, NOT -> {
                 // 未启用参观账户
-                if(!config.getBoolean("whitelist.visitEnable", true)){
+                if(!config.getBoolean("whitelist.NOT.visitEnable", true)){
                     event.disallow(KICK_OTHER, msg(config.getString("whitelist.NOT.notMsg", ""), playerUUID, playerName));
                     return;
                 }
@@ -338,7 +338,7 @@ public class onPlayerLogin implements Listener {
                 // 记录在线的参观账户
                 visitPlayerList.add(pd.uuid);
                 // 为参观账户注册账号
-                if(config.getBoolean("whitelist.VISIT.AuthMePlugin.autoRegisterAndLogin", true)){
+                if(config.getBoolean("whitelist.VISIT.AuthMePlugin.autoRegisterAndLogin", false)){
                     if(registeredPlayerName(pd.name)){
                         plugin.getLogger().info("为参观账户 "+ player.getName() +" 注册账号");
                     }
