@@ -43,7 +43,7 @@ public class IpacWhitelist extends JavaPlugin implements Listener {
     public void onEnable(){
 
         // 连接到插件
-        if(config.getBoolean("hook.AuthMe", true)){
+        if(Bukkit.getPluginManager().isPluginEnabled("AuthMe") && config.getBoolean("hook.AuthMe", true)){
             getServer().getPluginManager().registerEvents(new authMe(), plugin);
         }
         if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")){
