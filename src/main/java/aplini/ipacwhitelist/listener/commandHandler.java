@@ -55,24 +55,19 @@ public class commandHandler implements Listener, CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args){
 
-        // 检测是否是RCON发送者
-        boolean isRcon = sender instanceof RemoteConsoleCommandSender;
-
-        // RCON发送者使用同步执行，其他发送者使用异步执行
-        if (isRcon) {
+        // 对 RCON 发送者使用同步执行
+        if(sender instanceof RemoteConsoleCommandSender){
             // 同步执行命令处理
             executeCommand(sender, args);
-        } else {
+        }else{
             // 异步处理指令
-            CompletableFuture.runAsync(() -> {
-                executeCommand(sender, args);
-            });
+            CompletableFuture.runAsync(() -> executeCommand(sender, args));
         }
         return true;
     }
 
     // 提取命令执行逻辑到单独的方法
-    private void executeCommand(CommandSender sender, String[] args) {
+    private void executeCommand(CommandSender sender, String[] args){
         // 如果没有主权限, 则什么都不能运行
         if(!sender.hasPermission("IpacWhitelist.cmd")){
             sender.sendMessage(config.getString("message.noPermission", ""));
