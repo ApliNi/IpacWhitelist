@@ -460,8 +460,6 @@ whitelist:
 
     onWhitelistUnbanEvent: [ ] # 玩家从黑名单中移出
 
-    onPlayerLoginEvent: [ ] # 玩家登录服务器
-
 
 # 指令配置
 # 如无必要, 请勿修改这部分消息, 防止信息显示错误
