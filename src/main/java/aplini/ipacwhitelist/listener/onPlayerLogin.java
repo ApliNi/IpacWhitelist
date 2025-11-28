@@ -361,13 +361,32 @@ public class onPlayerLogin implements Listener {
                 runEventFunc("whitelist.VISIT_CONVERT.onPlayerJoinEvent", player);
                 // 在这里设置为白名单
                 pd.type = Type.WHITE;
+
+                // 处理白名单加入
+                if(true){
+                    runEventFunc("whitelist.WHITE.onPlayerJoinEvent", player);
+                    // 玩家以白名单身份首次加入服务器
+                    if(pd.config.data.get("whiteFirstJoin") != "1"){
+                        pd.config.data.put("whiteFirstJoin", "1");
+                        runEventFunc("whitelist.WHITE.onPlayerWhiteFirstJoin", player);
+                    }
+                }
+
                 pd.save();
                 // 记录在线玩家
                 playerList.add(pd.uuid);
             }
             case WHITE -> {
-                // 白名单玩家加入事件
-                runEventFunc("whitelist.WHITE.onPlayerJoinEvent", player);
+                // 处理白名单加入
+                if(true){
+                    runEventFunc("whitelist.WHITE.onPlayerJoinEvent", player);
+                    // 玩家以白名单身份首次加入服务器
+                    if(pd.config.data.get("whiteFirstJoin") != "1"){
+                        pd.config.data.put("whiteFirstJoin", "1");
+                        pd.save();
+                        runEventFunc("whitelist.WHITE.onPlayerWhiteFirstJoin", player);
+                    }
+                }
                 // 记录在线玩家
                 playerList.add(pd.uuid);
             }

@@ -366,7 +366,7 @@ whitelist:
     # [AuthMe] 自动注册登录参观账户
     AuthMePlugin:
       # 为参观账户自动注册和登录, 相当于 `/authme register <playerName> <password>` 和 `/authme forcelogin <playerName>`, 但不会踢出玩家
-      autoRegisterAndLogin: true
+      autoRegisterAndLogin: false
       # 需要在这里填写一个复杂的密码, 只要满足 AuthMe 的密码规则即可
       autoRegisterPassword: 'complexPassword'
 
@@ -429,6 +429,8 @@ whitelist:
     onPlayerJoinEvent: # 玩家加入服务器
       msgBroadcast:
         - '§6IpacEL §f> §a%playerName% §b加入游戏'
+
+    onPlayerWhiteFirstJoin: [ ] # 玩家以白名单身份首次加入服务器
 
     onAuthMeLoginEvent: # 玩家通过 AuthMe 登录成功
       msgBroadcast:
