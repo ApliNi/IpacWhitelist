@@ -308,6 +308,7 @@ public class onPlayerLogin implements Listener {
                     event.disallow(KICK_OTHER, config.getString("whitelist.WHITE.timeOutMsg", ""));
                     return;
                 }
+                runEventFunc("whitelist.WHITE.onPlayerLoginEvent", player, playerUUID, playerName);
                 event.allow();
             }
 
@@ -365,6 +366,8 @@ public class onPlayerLogin implements Listener {
                 playerList.add(pd.uuid);
             }
             case WHITE -> {
+                // 白名单玩家加入事件
+                runEventFunc("whitelist.WHITE.onPlayerJoinEvent", player);
                 // 记录在线玩家
                 playerList.add(pd.uuid);
             }
