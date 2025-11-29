@@ -379,6 +379,10 @@ whitelist:
     # [变量] 对于操作数据的功能尽量使用 UUID 而非 NAME, 防止因为名称冲突而影响数据
     # %playerUUID%  = 玩家 UUID 36 位字符串
     # %playerName%  = 玩家名称, 区分大小写
+    # ---
+    # 注意, 部分服务器上的插件会在找不到配置项时回退到默认配置
+    # 因此如果需要禁用一个事件功能, 应该将内部的 cmd / msgBroadcast 等配置设置为空数组 [ ], 而非将事件设置为空数组
+    # ---
     onNewPlayerLoginEvent: # 参观账户第一次登录服务器
       cmd:
         - 'lp user %playerUUID% parent add visit' # 将玩家添加到 visit 权限组

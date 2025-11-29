@@ -31,7 +31,7 @@ public class eventFunc {
         }
 
         // 运行指令
-        for(String li : config.getStringList(cp +".cmd")){
+        for(String li : config.getStringList(cp + ".cmd")){
             // 获取命令
             String cmd = li
                     .replace(ph.playerUUID.ph, playerUUID)
@@ -55,7 +55,7 @@ public class eventFunc {
             }
 
             // 广播消息
-            for(String li : config.getStringList(cp +".msgBroadcast")){
+            for(String li : config.getStringList(cp + ".msgBroadcast")){
                 // 获取消息文本
                 String msg = li
                         .replace(ph.playerUUID.ph, playerUUID)
@@ -65,7 +65,7 @@ public class eventFunc {
             }
 
             // 广播消息, 但排除这个玩家
-            for(String li : config.getStringList(cp +".msgExclude")){
+            for(String li : config.getStringList(cp + ".msgExclude")){
                 // 获取消息文本
                 String msg = li
                         .replace(ph.playerUUID.ph, playerUUID)
