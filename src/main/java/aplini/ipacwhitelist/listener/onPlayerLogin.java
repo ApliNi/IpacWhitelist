@@ -17,12 +17,15 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import static aplini.ipacwhitelist.IpacWhitelist.config;
 import static aplini.ipacwhitelist.IpacWhitelist.plugin;
+import static aplini.ipacwhitelist.enums.Type.VISIT_CONVERT;
 import static aplini.ipacwhitelist.enums.Type.getType;
 import static aplini.ipacwhitelist.func.eventFunc.runEventFunc;
 import static aplini.ipacwhitelist.hook.authMe.forceLoginPlayer;
@@ -356,37 +359,26 @@ public class onPlayerLogin implements Listener {
                 runEventFunc("whitelist.VISIT.onPlayerJoinEvent", player);
                 plugin.getLogger().info(pd.name +" 以参观模式加入服务器");
             }
-            case VISIT_CONVERT -> {
-                // 在加入过程中转换参观账户
-                runEventFunc("whitelist.VISIT_CONVERT.onPlayerJoinEvent", player);
-                // 在这里设置为白名单
-                pd.type = Type.WHITE;
+            case VISIT_CONVERT, WHITE -> {
 
-                // 处理白名单加入
-                if(true){
-                    runEventFunc("whitelist.WHITE.onPlayerJoinEvent", player);
-                    // 玩家以白名单身份首次加入服务器
-                    if(pd.config.data.get("whiteFirstJoin") != "1"){
-                        pd.config.data.put("whiteFirstJoin", "1");
-                        runEventFunc("whitelist.WHITE.onPlayerWhiteFirstJoin", player);
-                    }
+                // 转换参观账户
+                if(pd.type == VISIT_CONVERT){
+                    // 在加入过程中转换参观账户
+                    runEventFunc("whitelist.VISIT_CONVERT.onPlayerJoinEvent", player);
+                    // 在这里设置为白名单
+                    pd.type = Type.WHITE;
+                    pd.save();
                 }
 
-                pd.save();
-                // 记录在线玩家
-                playerList.add(pd.uuid);
-            }
-            case WHITE -> {
                 // 处理白名单加入
-                if(true){
-                    runEventFunc("whitelist.WHITE.onPlayerJoinEvent", player);
-                    // 玩家以白名单身份首次加入服务器
-                    if(pd.config.data.get("whiteFirstJoin") != "1"){
-                        pd.config.data.put("whiteFirstJoin", "1");
-                        pd.save();
-                        runEventFunc("whitelist.WHITE.onPlayerWhiteFirstJoin", player);
-                    }
+                runEventFunc("whitelist.WHITE.onPlayerJoinEvent", player);
+                // 玩家以白名单身份首次加入服务器
+                if(!Objects.equals(pd.config.getString("whiteFirstJoin"), "1")){
+                    pd.config.setString("whiteFirstJoin", "1");
+                    pd.save();
+                    runEventFunc("whitelist.WHITE.onPlayerWhiteFirstJoin", player);
                 }
+
                 // 记录在线玩家
                 playerList.add(pd.uuid);
             }

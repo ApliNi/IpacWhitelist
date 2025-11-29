@@ -10,6 +10,13 @@ public class PlayerConfig {
     public String yamlString = "";
     public Map<String, Object> data = new HashMap<>();
 
+    public String getString(String path){
+        return (String) this.data.get(path);
+    }
+
+    public void setString(String path, String value){
+        this.data.put(path, value);
+    }
 
     public PlayerConfig setYamlStr(String str){
         this.yamlString = str;
