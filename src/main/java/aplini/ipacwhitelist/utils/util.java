@@ -42,8 +42,8 @@ public class util {
 
     // 在字符串填充玩家信息
     public static String msg(String msg, String playerUUID, String playerName){
-        if(playerUUID == null || playerUUID.isEmpty()){playerUUID = "NULL";}
-        if(playerName == null || playerName.isEmpty()){playerName = "NULL";}
+        if(playerUUID == null || playerUUID.isEmpty()){ playerUUID = "NULL"; }
+        if(playerName == null || playerName.isEmpty()){ playerName = "NULL"; }
         return msg
                 .replace(ph.playerUUID.ph, playerUUID)
                 .replace(ph.playerName.ph, playerName);

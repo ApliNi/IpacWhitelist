@@ -60,6 +60,7 @@ v4 版本改动特别大, 建议不要从旧配置中复制内容到新配置, �
 - `/wl del <Name|UUID>`   - 从白名单移出
 - `/wl ban <Name|UUID>`   - 封禁一个玩家
 - `/wl unban <Name|UUID>` - 解除封禁玩家
+- `/wl s <Name|UUID>`     - 搜索玩家信息
 - `/wl info <Name|UUID>`  - 显示玩家信息
 - `/wl list <Type>`       - 查询玩家数据
 - `/wl clear PLAYER|TYPE <Name|UUID|Type>`  - 清除数据
@@ -504,6 +505,14 @@ command:
     isUnban: '  - §a%playerName%§f[§7%playerUUID%§f] §b不在黑名单中'
     finish:  '  - §a%playerName%§f[§7%playerUUID%§f] §a已完成'
 
+  search:
+    byName: 5  # 在名称中搜索的数量, 为 0 则不搜索
+    byUUID: 3  # 在 UUID 中搜索的数量, 为 0 则不搜索
+    byNameTitle: '§6IpacEL §f> §b搜索玩家名称[§a%var%§b]:'
+    byUUIDTitle: '§6IpacEL §f> §b搜索玩家 UUID[§a%var%§b]:'
+    isEmpty: '  - §b不存在'
+    finish:  '  - §a%playerName%§f[§7%playerUUID%§f]: §6%type% §f- §7%time%'
+
   info:
     title:   '§6IpacEL §f> §b查询玩家信息[§a%var%§b]:'
     isEmpty: '  - §a%playerName%§f[§7%playerUUID%§f] §b不存在'
@@ -633,6 +642,10 @@ permissions:
 
   IpacWhitelist.cmd.unban:
     description: '使用 /wl unban 指令'
+    default: op
+
+  IpacWhitelist.cmd.search:
+    description: '使用 /wl search 指令'
     default: op
 
   IpacWhitelist.cmd.info:

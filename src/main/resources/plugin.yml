@@ -45,6 +45,10 @@ permissions:
     description: '使用 /wl unban 指令'
     default: op
 
+  IpacWhitelist.cmd.search:
+    description: '使用 /wl search 指令'
+    default: op
+
   IpacWhitelist.cmd.info:
     description: '使用 /wl info 指令'
     default: op

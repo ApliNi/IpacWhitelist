@@ -89,7 +89,7 @@ public class sql {
         // 是否允许查询已删除的数据
         String additional = " "+
                 (allowDel ? "" : " AND `Type` != %s ".formatted(Type.NOT.num)) +
-                (getArray ? " LIMIT 999999 " : " LIMIT 1 ");
+                (getArray ? " LIMIT 9999999 " : " LIMIT 1 ");
         try {
             PreparedStatement sql;
             // 名称为空, 查询 UUID
@@ -139,7 +139,7 @@ public class sql {
 
 
     // 模糊查找匹配的数据
-    public static List<PlayerData> findPlayerDataList(String inp, Key mode){
+    public static List<PlayerData> findPlayerDataList(String inp, Key mode, long limit){
         // 为空
         if(inp == null){
             throw new RuntimeException("[IpacWhitelist] sql.getPlayerData 传入空数据");
@@ -179,7 +179,7 @@ public class sql {
                 }
 
                 case GET_ALL -> {
-                    sql = conn.prepareStatement("SELECT * FROM `player` LIMIT 999999;");
+                    sql = conn.prepareStatement("SELECT * FROM `player` LIMIT %s;".formatted(limit));
                     yield "";
                 }
 
@@ -190,13 +190,25 @@ public class sql {
                     yield "";
                 }
 
+                case BY_NAME -> {
+                    sql = conn.prepareStatement("SELECT * FROM `player` WHERE (`Name` LIKE ? AND `Type` != '%s') LIMIT %s;".formatted(Type.NOT.num, limit));
+                    sql.setString(1, inp +"%");
+                    yield "";
+                }
+
+                case BY_UUID -> {
+                    sql = conn.prepareStatement("SELECT * FROM `player` WHERE (`UUID` LIKE ? AND `Type` != '%s') LIMIT %s;".formatted(Type.NOT.num, limit));
+                    sql.setString(1, inp +"%");
+                    yield "";
+                }
+
                 default -> "";
             });
 
             if(sql == null){
                 // 默认的 SQL 模板语句
                 // 用于模糊匹配名称或 UUID
-                sql = conn.prepareStatement("SELECT * FROM `player` WHERE (`Name` LIKE ? OR `UUID` LIKE ?) %s LIMIT 999999;".formatted(additional));
+                sql = conn.prepareStatement("SELECT * FROM `player` WHERE (`Name` LIKE ? OR `UUID` LIKE ?) %s LIMIT %s;".formatted(additional, limit));
                 sql.setString(1, inp +"%");
                 sql.setString(2, inp +"%");
             }
@@ -210,6 +222,9 @@ public class sql {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+    public static List<PlayerData> findPlayerDataList(String inp, Key mode){
+        return findPlayerDataList(inp, mode, 9999999);
     }
     public static List<PlayerData> findPlayerDataList(String inp){
         return findPlayerDataList(inp, Key.NULL);

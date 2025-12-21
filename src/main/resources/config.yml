@@ -251,6 +251,15 @@ command:
     isUnban: '  - §a%playerName%§f[§7%playerUUID%§f] §b不在黑名单中'
     finish:  '  - §a%playerName%§f[§7%playerUUID%§f] §a已完成'
 
+  search:
+    byName: true  # 在名称中搜索
+    byUUID: false # 在 UUID 中搜索
+    byNameCount: 5  # 搜索数量
+    byUUIDCount: 3  # 搜索数量
+    title:   '§6IpacEL §f> §b搜索玩家信息[§a%var%§b]:'
+    isEmpty: '  - §a%playerName%§f[§7%playerUUID%§f] §b不存在'
+    finish:  '  - §a%playerName%§f[§7%playerUUID%§f]: §7%time%'
+
   info:
     title:   '§6IpacEL §f> §b查询玩家信息[§a%var%§b]:'
     isEmpty: '  - §a%playerName%§f[§7%playerUUID%§f] §b不存在'

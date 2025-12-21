@@ -31,6 +31,7 @@ public class commandHandler implements Listener, CommandExecutor, TabCompleter {
                     "del",
                     "ban",
                     "unban",
+                    "s", "search",
                     "info",
                     "list",
                     "clear",
@@ -44,6 +45,7 @@ public class commandHandler implements Listener, CommandExecutor, TabCompleter {
             case "del" -> del.tab(sender, args);
             case "ban" -> ban.tab(sender, args);
             case "unban" -> unban.tab(sender, args);
+            case "s", "search" -> search.tab(sender, args);
             case "info" -> info.tab(sender, args);
             case "list" -> list.tab(sender, args);
             case "clear" -> clear.tab(sender, args);
@@ -83,6 +85,7 @@ public class commandHandler implements Listener, CommandExecutor, TabCompleter {
                         - /wl del <Name|UUID>   - 从白名单移出
                         - /wl ban <Name|UUID>   - 封禁一个玩家
                         - /wl unban <Name|UUID> - 解除封禁玩家
+                        - /wl s <Name|UUID>     - 搜索玩家信息
                         - /wl info <Name|UUID>  - 显示玩家信息
                         - /wl list <Type>       - 查询玩家数据
                         - /wl clear PLAYER|TYPE <Name|UUID|Type>  - 清除数据
@@ -98,6 +101,7 @@ public class commandHandler implements Listener, CommandExecutor, TabCompleter {
             case "del" -> del.cmd(sender, args);
             case "ban" -> ban.cmd(sender, args);
             case "unban" -> unban.cmd(sender, args);
+            case "s", "search" -> search.cmd(sender, args);
             case "info" -> info.cmd(sender, args);
             case "list" -> list.cmd(sender, args);
             case "clear" -> clear.cmd(sender, args);

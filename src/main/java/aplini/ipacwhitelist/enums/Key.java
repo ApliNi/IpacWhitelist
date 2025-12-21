@@ -12,6 +12,8 @@ public enum Key {
     GET_ALL,
     GET_NAME_CONFLICT,
     GET_WHITE_TIMEOUT,
+    BY_NAME,
+    BY_UUID,
     ERR,
     TRUE,
     FALSE,
