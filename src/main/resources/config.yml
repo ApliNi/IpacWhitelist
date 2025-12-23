@@ -252,13 +252,12 @@ command:
     finish:  '  - §a%playerName%§f[§7%playerUUID%§f] §a已完成'
 
   search:
-    byName: true  # 在名称中搜索
-    byUUID: false # 在 UUID 中搜索
-    byNameCount: 5  # 搜索数量
-    byUUIDCount: 3  # 搜索数量
-    title:   '§6IpacEL §f> §b搜索玩家信息[§a%var%§b]:'
-    isEmpty: '  - §a%playerName%§f[§7%playerUUID%§f] §b不存在'
-    finish:  '  - §a%playerName%§f[§7%playerUUID%§f]: §7%time%'
+    byName: 5  # 在名称中搜索的数量, 为 0 则不搜索
+    byUUID: 3  # 在 UUID 中搜索的数量, 为 0 则不搜索
+    byNameTitle: '§6IpacEL §f> §b搜索玩家名称[§a%var%§b]:'
+    byUUIDTitle: '§6IpacEL §f> §b搜索玩家 UUID[§a%var%§b]:'
+    isEmpty: '  - §b不存在'
+    finish:  '  - §a%playerName%§f[§7%playerUUID%§f]: §6%type% §f- §7%time%'
 
   info:
     title:   '§6IpacEL §f> §b查询玩家信息[§a%var%§b]:'
