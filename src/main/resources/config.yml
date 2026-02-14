@@ -181,6 +181,7 @@ whitelist:
       msgBroadcast:
         - '§6IpacEL §f> §a%playerName% §b加入游戏'
 
+    playerWhiteFirstJoinFlag: "1" # 兼容性标志, 更新了处理程序后应同步更新此标志
     onPlayerWhiteFirstJoin: [ ] # 玩家以白名单身份首次加入服务器
 
     onAuthMeLoginEvent: # 玩家通过 AuthMe 登录成功

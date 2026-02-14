@@ -372,9 +372,11 @@ public class onPlayerLogin implements Listener {
 
                 // 处理白名单加入
                 runEventFunc("whitelist.WHITE.onPlayerJoinEvent", player);
+
                 // 玩家以白名单身份首次加入服务器
-                if(!Objects.equals(pd.config.getString("whiteFirstJoin"), "1")){
-                    pd.config.setString("whiteFirstJoin", "1");
+                String flag = plugin.getConfig().getString("whitelist.WHITE.playerWhiteFirstJoinFlag", "1");
+                if(!Objects.equals(pd.config.getString("whiteFirstJoin"), flag)){
+                    pd.config.setString("whiteFirstJoin", flag);
                     pd.save();
                     runEventFunc("whitelist.WHITE.onPlayerWhiteFirstJoin", player);
                 }
