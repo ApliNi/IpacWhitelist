@@ -23,6 +23,11 @@ whitelist:
   #  - '^/fe80::1234:.+$'
   ipBlacklistMsg: '§6IpacEL §f> §b您的 IP 已被列入黑名单' # var: %ip%
 
+  # 阻止用户名匹配规则的玩家加入
+  userNameBlacklist: [ ]
+  #  - '^.*_.*_\d+_\d+$'  # 一种批量账号命名格式
+  userNameBlacklistMsg: '§6IpacEL §f> §b您的账号可能存在问题' # var: %playerName%
+
   # 限定玩家只能通过以下地址连接服务器
   addressConfig:
     enable: false

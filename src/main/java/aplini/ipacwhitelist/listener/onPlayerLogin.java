@@ -76,6 +76,14 @@ public class onPlayerLogin implements Listener {
             return;
         }
 
+        // 玩家名称检查
+        if(config.getStringList("whitelist.userNameBlacklist").stream().anyMatch(li -> Pattern.matches(li, playerName))){
+            plugin.getLogger().info("%s 在名称黑名单中".formatted(playerName));
+            event.disallow(KICK_OTHER, msg(config.getString("whitelist.userNameBlacklistMsg", ""), playerUUID, playerName)
+                    .replace(ph.playerName.ph, playerName));
+            return;
+        }
+
         // 限定玩家只能通过以下地址加入服务器
         if(config.getBoolean("whitelist.addressConfig.enable", false)){
             if(config.getStringList("whitelist.addressConfig.list").stream().noneMatch(li -> Pattern.matches(li, playerAddressHost))){
