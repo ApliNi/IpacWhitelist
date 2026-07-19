@@ -13,10 +13,9 @@ public enum ph {
     ban("%ban%"),
     time("%time%"),
     timeLong("%timeLong%"),
-    worldPath("%worldPath%"),
-    worldName("%worldName%"),
-
     ;
+
+
 
     public final String ph;
     ph(String ph){

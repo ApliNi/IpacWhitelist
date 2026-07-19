@@ -309,19 +309,17 @@ command:
     delayStep: 270
 
     # 清除文件
-    # %worldPath% = 所有地图的根目录
-    # %worldName% = 所有地图的名称
+    # * = 匹配单层目录名或文件名的通配符
+    # %playerUUID%    = 36位, 带连字符的 UUID
     # %playerUUID32%  = 32位, 不带连字符的 UUID
+    # %playerName%    = 玩家名称
     clearFile:
-      # 清理所有地图下的存档
-      - '%worldPath%/playerdata/%playerUUID%.dat'
-      - '%worldPath%/playerdata/%playerUUID%.dat_old'
-      - '%worldPath%/advancements/%playerUUID%.json'
-      - '%worldPath%/stats/%playerUUID%.json'
-      # 清理 Essentials 插件下的玩家数据
+      # 清理所有地图下的存档. 如果你的世界目录结构与下面不同, 请自行修改
+      - 'world/players/*/%playerUUID%.*'
+      # My_Worlds 多世界库存文件
+      - 'world/dimensions/minecraft/*/data/my_worlds/playerdata/%playerUUID%.*'
+      # Essentials 插件下的玩家数据
       - 'plugins/Essentials/userdata/%playerUUID%.yml'
-      # 清理粘液科技文件
-      - 'data-storage/Slimefun/waypoints/%playerUUID%.yml'
 
     # 循环之间的时间间隔 (毫秒
     delayLoop: 727

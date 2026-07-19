@@ -7,7 +7,6 @@ import aplini.ipacwhitelist.utils.Inp;
 import aplini.ipacwhitelist.utils.PlayerData;
 import aplini.ipacwhitelist.utils.sql;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 
 import java.io.File;
@@ -190,26 +189,80 @@ public class clear {
                     .replace(ph.playerUUID32.ph, pd.uuid.replace("-", ""))
                     .replace(ph.playerName.ph, pd.name);
 
-            // 如果包含 %worldPath% 则遍历所有地图
-            if(li.contains(ph.worldPath.ph) || li.contains(ph.worldName.ph)){
-                // 遍历所有 world
-                for(World world : getServer().getWorlds()){
-                    String liFilePath = filePath
-                            .replace(ph.worldPath.ph, world.getWorldFolder().getPath())
-                            .replace(ph.worldName.ph, world.getName());
-                    File file = new File(liFilePath);
-                    if(file.delete()){
-                        plugin.getLogger().info("[delFile]: "+ liFilePath);
-                    }
-                }
-            }else{
-                // 直接删除文件
-                File file = new File(filePath);
+            // 展开通配符 * 并删除匹配的文件
+            for(File file : expandFilePattern(filePath)){
                 if(file.delete()){
-                    plugin.getLogger().info("[delFile]: "+ filePath);
+                    plugin.getLogger().info("[delFile]: "+ file.getPath());
                 }
             }
         }
+    }
+
+    /**
+     * 展开包含 * 通配符的文件路径模式。
+     * * 匹配当前位置下的任意单个目录（非递归）。
+     * 不含通配符的路径返回包含单个 File 的列表。
+     */
+    static List<File> expandFilePattern(String pathPattern){
+        List<File> results = new ArrayList<>();
+        String[] parts = pathPattern.replace('\\', '/').split("/");
+        if(parts.length == 0){ return results; }
+        // 从第一个部分开始构建路径，使用当前工作目录作为根
+        expandFilePart(results, new File(parts[0]), parts, 1);
+        return results;
+    }
+
+    static void expandFilePart(List<File> results, File current, String[] parts, int index){
+        if(index >= parts.length){
+            results.add(current);
+            return;
+        }
+        String part = parts[index];
+        boolean isLast = (index == parts.length - 1);
+        if(part.contains("*")){
+            String regex = globToRegex(part);
+            File[] children = current.listFiles(f -> {
+                if(isLast){
+                    return f.isFile() && f.getName().matches(regex);
+                }else{
+                    return f.isDirectory() && f.getName().matches(regex);
+                }
+            });
+            if(children != null){
+                for(File child : children){
+                    expandFilePart(results, child, parts, index + 1);
+                }
+            }
+        }else{
+            expandFilePart(results, new File(current, part), parts, index + 1);
+        }
+    }
+
+    /**
+     * 将含 * 通配符的片段转换为正则表达式。
+     * * → .*   其他正则特殊字符会被转义。
+     */
+    static String globToRegex(String glob){
+        StringBuilder sb = new StringBuilder();
+        for(char c : glob.toCharArray()){
+            switch(c){
+                case '*': sb.append(".*"); break;
+                case '.': sb.append("\\."); break;
+                case '\\': sb.append("\\\\"); break;
+                case '[': sb.append("\\["); break;
+                case ']': sb.append("\\]"); break;
+                case '{': sb.append("\\{"); break;
+                case '}': sb.append("\\}"); break;
+                case '(': sb.append("\\("); break;
+                case ')': sb.append("\\)"); break;
+                case '+': sb.append("\\+"); break;
+                case '^': sb.append("\\^"); break;
+                case '$': sb.append("\\$"); break;
+                case '|': sb.append("\\|"); break;
+                default: sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
 
